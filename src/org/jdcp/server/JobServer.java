@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.rmi.RemoteException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Date;
@@ -179,6 +180,17 @@ public final class JobServer implements JobService {
 			final Serialized<Object> results) throws SecurityException {
 		ScheduledJob sched = jobs.get(jobId);
 		sched.submitTaskResults(taskId, results);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jdcp.remote.JobService#reportException(java.util.UUID, int, java.lang.Exception)
+	 */
+	public void reportException(UUID jobId, int taskId, Exception e)
+			throws SecurityException, RemoteException {
+		ScheduledJob sched = jobs.get(jobId);
+		if (sched != null) {
+			sched.reportException(taskId, e);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -356,6 +368,30 @@ public final class JobServer implements JobService {
 			}
 		}
 
+		public synchronized void reportException(int taskId, Exception ex)
+				throws SecurityException, RemoteException {
+
+			PrintStream log = null;
+
+			try {
+				File logFile = new File(workingDirectory, "job.log");
+				log = new PrintStream(new FileOutputStream(logFile, true));
+				if (taskId != 0) {
+					log.println("A worker reported an exception while processing the job:");
+				} else {
+					log.println("A worker reported an exception while processing a task (" + Integer.toString(taskId) + "):");
+				}
+				log.println(ex);
+			} catch (IOException e) {
+				logger.error("Exception thrown while logging exception for job " + id.toString(), e);
+			} finally {
+				if (log != null) {
+					log.close();
+				}
+			}
+
+		}
+
 		public void scheduleNextTask() throws JobExecutionException {
 			Object task = job.getNextTask();
 			if (task != null) {
@@ -369,7 +405,7 @@ public final class JobServer implements JobService {
 		 * @param sched The <code>ScheduledJob</code> to write results for.
 		 * @throws JobExecutionException
 		 */
-		private void finalizeJob() throws JobExecutionException {
+		private synchronized void finalizeJob() throws JobExecutionException {
 
 			assert(job.isComplete());
 
@@ -381,7 +417,7 @@ public final class JobServer implements JobService {
 				File				outputFile		= new File(outputDirectory, filename);
 
 				File				logFile			= new File(workingDirectory, "job.log");
-				PrintStream			log				= new PrintStream(new FileOutputStream(logFile));
+				PrintStream			log				= new PrintStream(new FileOutputStream(logFile, true));
 
 				log.printf("%tc: Job %s completed.", new Date(), id.toString());
 				log.println();

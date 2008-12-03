@@ -26,6 +26,7 @@ import org.selfip.bkimmel.jobs.Job;
 import org.selfip.bkimmel.progress.PermanentProgressMonitor;
 import org.selfip.bkimmel.progress.ProgressMonitor;
 import org.selfip.bkimmel.rmi.Serialized;
+import org.selfip.bkimmel.util.UnexpectedException;
 import org.selfip.bkimmel.util.classloader.ClassLoaderStrategy;
 import org.selfip.bkimmel.util.classloader.StrategyClassLoader;
 
@@ -401,7 +402,7 @@ public final class ThreadServiceWorkerJob implements Job {
 							try {
 								worker = getTaskWorker(jobId);
 							} catch (ClassNotFoundException e) {
-								e.printStackTrace();
+								service.reportException(jobId, 0, e);
 								worker = null;
 							}
 
@@ -413,16 +414,29 @@ public final class ThreadServiceWorkerJob implements Job {
 
 							this.monitor.notifyStatusChanged("Performing task...");
 							ClassLoader loader = worker.getClass().getClassLoader();
-							Object task = taskDesc.getTask().deserialize(loader);
-							Object results = worker.performTask(task, monitor);
+							Object results;
+
+							try {
+								Object task = taskDesc.getTask().deserialize(loader);
+								results = worker.performTask(task, monitor);
+							} catch (Exception e) {
+								service.reportException(jobId, taskDesc.getTaskId(), e);
+								results = null;
+							}
 
 							this.monitor.notifyStatusChanged("Submitting task results...");
-							service.submitTaskResults(jobId, taskDesc.getTaskId(), new Serialized<Object>(results));
+							if (results != null) {
+								service.submitTaskResults(jobId, taskDesc.getTaskId(), new Serialized<Object>(results));
+							}
 
 						} else {
 
-							int seconds = (Integer) taskDesc.getTask().deserialize();
-							this.idle(seconds);
+							try {
+								int seconds = (Integer) taskDesc.getTask().deserialize();
+								this.idle(seconds);
+							} catch (ClassNotFoundException e) {
+								throw new UnexpectedException(e);
+							}
 
 						}
 
@@ -452,8 +466,6 @@ public final class ThreadServiceWorkerJob implements Job {
 
 				this.monitor.notifyCancelled();
 
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
 			} finally {
 
 				workerQueue.add(this);

@@ -483,4 +483,35 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jdcp.remote.JobService#reportException(java.util.UUID, int, java.lang.Exception)
+	 */
+	@Override
+	public void reportException(final UUID jobId, final int taskId,
+			final Exception ex) throws SecurityException,
+			RemoteException {
+
+		try {
+			Subject.doAsPrivileged(user, new PrivilegedExceptionAction<Object>() {
+
+				@Override
+				public Object run() throws Exception {
+					AccessController.checkPermission(new JdcpPermission("reportException"));
+					service.reportException(jobId, taskId, ex);
+					return null;
+				}
+
+			}, null);
+		} catch (PrivilegedActionException e) {
+			if (e.getException() instanceof SecurityException) {
+				throw (SecurityException) e.getException();
+			} else if (e.getException() instanceof RemoteException) {
+				throw (RemoteException) e.getException();
+			} else {
+				throw new UnexpectedException(e);
+			}
+		}
+
+	}
+
 }

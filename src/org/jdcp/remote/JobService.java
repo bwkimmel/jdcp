@@ -56,6 +56,22 @@ public interface JobService extends Remote {
 	void submitTaskResults(UUID jobId, int taskId, Serialized<Object> results)
 			throws SecurityException, RemoteException;
 
+	/**
+	 * Report that an exception was thrown during the execution of an assigned
+	 * task.
+	 * @param jobId The <code>UUID</code> identifying the job for which the
+	 * 		task was being performed.
+	 * @param taskId The ID of the task that was being performed, or zero (0)
+	 * 		if the exception was not thrown during the processing of a task
+	 * 		(for example, when deserializing the TaskWorker).
+	 * @param e The <code>Exception</code> raised by the task.
+	 * @throws SecurityException If the caller does not have permission to call
+	 * 		this method.
+	 * @throws RemoteException If a problem with the connection is encountered.
+	 */
+	void reportException(UUID jobId, int taskId, Exception e)
+			throws SecurityException, RemoteException;
+
 
 	/* **********************
 	 * Job submission methods
