@@ -18,9 +18,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import org.apache.log4j.Logger;
 import org.jdcp.job.Host;
 import org.jdcp.job.JobExecutionException;
 import org.jdcp.job.JobExecutionWrapper;
@@ -81,9 +80,7 @@ public final class JobServer implements JobService {
 		this.scheduler = scheduler;
 		this.classManager = classManager;
 		this.executor = executor;
-
-		// TODO Replace this with a logger passed from the constructor.
-		this.logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+		this.logger = Logger.getLogger(JobServer.class);
 	}
 
 	/* (non-Javadoc)
@@ -266,7 +263,7 @@ public final class JobServer implements JobService {
 	}
 
 	private void handleJobExecutionException(JobExecutionException e, UUID jobId) {
-		logger.log(Level.WARNING, "Exception thrown from job " + jobId.toString(), e);
+		logger.error("Exception thrown from job " + jobId.toString(), e);
 		removeScheduledJob(jobId, false);
 	}
 
@@ -395,7 +392,7 @@ public final class JobServer implements JobService {
 				FileUtil.deleteRecursive(workingDirectory);
 
 			} catch (IOException e) {
-				logger.log(Level.WARNING, "Exception caught while finalizing job " + id.toString(), e);
+				logger.error("Exception caught while finalizing job " + id.toString(), e);
 			}
 
 		}
@@ -485,12 +482,12 @@ public final class JobServer implements JobService {
 				} catch (JobExecutionException e) {
 					handleJobExecutionException(e, sched.id);
 				} catch (ClassNotFoundException e) {
-					logger.log(Level.WARNING,
+					logger.error(
 							"Exception thrown submitting results of task for job "
 									+ sched.id.toString(), e);
 					removeScheduledJob(sched.id, false);
 				} catch (Exception e) {
-					logger.log(Level.WARNING,
+					logger.error(
 							"Exception thrown while attempting to submit task results for job "
 									+ sched.id.toString(), e);
 					removeScheduledJob(sched.id, false);
