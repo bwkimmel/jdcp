@@ -179,7 +179,9 @@ public final class JobServer implements JobService {
 	public void submitTaskResults(final UUID jobId, final int taskId,
 			final Serialized<Object> results) throws SecurityException {
 		ScheduledJob sched = jobs.get(jobId);
-		sched.submitTaskResults(taskId, results);
+		if (sched != null) {
+			sched.submitTaskResults(taskId, results);
+		}
 	}
 
 	/* (non-Javadoc)
