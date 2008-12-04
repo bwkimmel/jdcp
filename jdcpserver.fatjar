@@ -1,7 +1,7 @@
 #Fat Jar Configuration File
-#Wed Dec 03 19:11:58 EST 2008
+#Thu Dec 04 16:00:50 EST 2008
 onejar.license.required=false
-manifest.classpath=lib/swingx.jar
+manifest.classpath=lib/swingx.jar lib/log4j-1.2.15.jar
 manifest.removesigners=true
 onejar.checkbox=false
 jarname=jdcpserver.jar

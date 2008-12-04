@@ -41,7 +41,7 @@ public final class JobServerMain {
 			System.err.print("Initializing folders...");
 			Preferences pref = Preferences
 					.userNodeForPackage(JobServer.class);
-			String path = pref.get("rootDirectory", "");
+			String path = pref.get("rootDirectory", "./server");
 			File rootDirectory = new File(path);
 			File classesDirectory = new File(rootDirectory, "classes");
 			File jobsDirectory = new File(rootDirectory, "jobs");
