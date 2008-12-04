@@ -45,6 +45,8 @@ public final class JobServer implements JobService {
 
 	private static final int DEFAULT_IDLE_SECONDS = 10;
 
+	private static final Logger logger = Logger.getLogger(JobServer.class);
+
 	private final ProgressMonitor monitor;
 
 	private final TaskScheduler scheduler;
@@ -54,8 +56,6 @@ public final class JobServer implements JobService {
 	private final File outputDirectory;
 
 	private final Map<UUID, ScheduledJob> jobs = new HashMap<UUID, ScheduledJob>();
-
-	private final Logger logger;
 
 	private final Executor executor;
 
@@ -81,7 +81,6 @@ public final class JobServer implements JobService {
 		this.scheduler = scheduler;
 		this.classManager = classManager;
 		this.executor = executor;
-		this.logger = Logger.getLogger(JobServer.class);
 
 		logger.info("JobServer created");
 	}
