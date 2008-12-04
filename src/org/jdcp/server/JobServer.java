@@ -82,6 +82,8 @@ public final class JobServer implements JobService {
 		this.classManager = classManager;
 		this.executor = executor;
 		this.logger = Logger.getLogger(JobServer.class);
+
+		logger.info("JobServer created");
 	}
 
 	/* (non-Javadoc)
