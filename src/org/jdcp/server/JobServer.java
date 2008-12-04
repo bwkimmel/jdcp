@@ -90,6 +90,11 @@ public final class JobServer implements JobService {
 	public UUID createJob(String description) throws SecurityException {
 		ScheduledJob sched = new ScheduledJob(description, monitor);
 		jobs.put(sched.id, sched);
+
+		if (logger.isInfoEnabled()) {
+			logger.info("Job created (" + sched.id.toString() + "): " + description);
+		}
+
 		return sched.id;
 	}
 
@@ -110,6 +115,10 @@ public final class JobServer implements JobService {
 			handleJobExecutionException(e, jobId);
 			throw e;
 		}
+
+		if (logger.isInfoEnabled()) {
+			logger.info("Pending job submitted (" + jobId.toString() + ")");
+		}
 	}
 
 	/* (non-Javadoc)
@@ -126,6 +135,11 @@ public final class JobServer implements JobService {
 		} catch (JobExecutionException e) {
 			handleJobExecutionException(e, sched.id);
 			throw e;
+		}
+
+		if (logger.isInfoEnabled()) {
+			logger.info("Job submitted (" + sched.id.toString() + "): "
+					+ description);
 		}
 
 		return sched.id;
@@ -241,6 +255,10 @@ public final class JobServer implements JobService {
 	public void setClassDefinition(String name, byte[] def)
 			throws SecurityException {
 		classManager.setClassDefinition(name, def);
+
+		if (logger.isInfoEnabled()) {
+			logger.info("Global class definition updated for " + name);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -254,6 +272,11 @@ public final class JobServer implements JobService {
 		}
 
 		sched.classManager.setClassDefinition(name, def);
+
+		if (logger.isInfoEnabled()) {
+			logger.info("Class definition of " + name + " set for job "
+					+ jobId.toString());
+		}
 	}
 
 	/* (non-Javadoc)
@@ -262,6 +285,9 @@ public final class JobServer implements JobService {
 	public void setIdleTime(int idleSeconds) throws IllegalArgumentException,
 			SecurityException {
 		idleTask = new TaskDescription(null, 0, idleSeconds);
+		if (logger.isInfoEnabled()) {
+			logger.info("Idle time set to " + Integer.toString(idleSeconds));
+		}
 	}
 
 	/* (non-Javadoc)
@@ -274,6 +300,10 @@ public final class JobServer implements JobService {
 		}
 
 		scheduler.setJobPriority(jobId, priority);
+		if (logger.isInfoEnabled()) {
+			logger.info("Set job " + jobId.toString() + " priority to "
+					+ Integer.toString(priority));
+		}
 	}
 
 	private void handleJobExecutionException(JobExecutionException e, UUID jobId) {
@@ -286,8 +316,14 @@ public final class JobServer implements JobService {
 		if (sched != null) {
 			if (complete) {
 				sched.monitor.notifyComplete();
+				if (logger.isInfoEnabled()) {
+					logger.info("Job complete (" + jobId.toString() + ")");
+				}
 			} else {
 				sched.monitor.notifyCancelled();
+				if (logger.isInfoEnabled()) {
+					logger.info("Job cancelled (" + jobId.toString() + ")");
+				}
 			}
 			jobs.remove(jobId);
 			scheduler.removeJob(jobId);
