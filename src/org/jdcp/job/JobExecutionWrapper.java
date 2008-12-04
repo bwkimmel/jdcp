@@ -30,6 +30,14 @@ public final class JobExecutionWrapper implements ParallelizableJob {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.jdcp.job.ParallelizableJob#setHostService(org.jdcp.job.HostService)
+	 */
+	@Override
+	public void setHostService(HostService host) {
+		job.setHostService(host);
+	}
+
+	/* (non-Javadoc)
 	 * @see org.jdcp.job.ParallelizableJob#finish()
 	 */
 	@Override
@@ -57,9 +65,9 @@ public final class JobExecutionWrapper implements ParallelizableJob {
 	 * @see org.jdcp.job.ParallelizableJob#initialize(org.jdcp.job.Host)
 	 */
 	@Override
-	public void initialize(Host host) throws JobExecutionException {
+	public void initialize() throws JobExecutionException {
 		try {
-			job.initialize(host);
+			job.initialize();
 		} catch (Exception e) {
 			throw new JobExecutionException(e);
 		}

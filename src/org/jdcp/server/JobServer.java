@@ -21,7 +21,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.log4j.Logger;
-import org.jdcp.job.Host;
+import org.jdcp.job.HostService;
 import org.jdcp.job.JobExecutionException;
 import org.jdcp.job.JobExecutionWrapper;
 import org.jdcp.job.ParallelizableJob;
@@ -336,7 +336,7 @@ public final class JobServer implements JobService {
 	 * to this <code>JobMasterServer</code>.
 	 * @author bkimmel
 	 */
-	private class ScheduledJob implements Host {
+	private class ScheduledJob implements HostService {
 
 		/** The <code>ParallelizableJob</code> to be processed. */
 		public JobExecutionWrapper				job;
@@ -393,7 +393,8 @@ public final class JobServer implements JobService {
 			this.monitor.notifyStatusChanged("");
 
 			this.workingDirectory.mkdir();
-			this.job.initialize(this);
+			this.job.setHostService(this);
+			this.job.initialize();
 		}
 
 		public void submitTaskResults(int taskId, Serialized<Object> results) {

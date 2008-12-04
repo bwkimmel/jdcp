@@ -17,14 +17,13 @@ import org.selfip.bkimmel.progress.ProgressMonitor;
  */
 public abstract class AbstractParallelizableJob implements ParallelizableJob {
 
-	private transient Host host = null;
+	private transient HostService host = null;
 
-	public final void initialize(Host host) throws Exception {
+	public final void setHostService(HostService host) {
 		this.host = host;
-		this.setup();
 	}
 
-	protected void setup() throws Exception {
+	public void initialize() throws Exception {
 		/* nothing to do. */
 	}
 
@@ -49,7 +48,7 @@ public abstract class AbstractParallelizableJob implements ParallelizableJob {
 	/**
 	 * @param name
 	 * @return
-	 * @see org.jdcp.job.Host#createFileOutputStream(java.lang.String)
+	 * @see org.jdcp.job.HostService#createFileOutputStream(java.lang.String)
 	 */
 	protected FileOutputStream createFileOutputStream(String name) {
 		return host.createFileOutputStream(name);
@@ -58,7 +57,7 @@ public abstract class AbstractParallelizableJob implements ParallelizableJob {
 	/**
 	 * @param name
 	 * @return
-	 * @see org.jdcp.job.Host#createRandomAccessFile(java.lang.String)
+	 * @see org.jdcp.job.HostService#createRandomAccessFile(java.lang.String)
 	 */
 	protected RandomAccessFile createRandomAccessFile(String name) {
 		return host.createRandomAccessFile(name);

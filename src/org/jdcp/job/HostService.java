@@ -9,7 +9,7 @@ import java.io.RandomAccessFile;
  * @author brad
  * @see org.jdcp.job.ParallelizableJob#initialize(Host)
  */
-public interface Host {
+public interface HostService {
 
 	/**
 	 * Creates a file in the job's working directory.

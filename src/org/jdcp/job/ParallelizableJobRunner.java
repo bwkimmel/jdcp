@@ -86,7 +86,8 @@ public final class ParallelizableJobRunner implements Job {
 
 			this.monitor = monitor;
 			TaskWorker taskWorker = job.worker();
-			this.job.initialize(host);
+			this.job.setHostService(host);
+			this.job.initialize();
 
 			/* Task loop. */
 			while (!this.monitor.isCancelPending()) {
@@ -207,7 +208,7 @@ public final class ParallelizableJobRunner implements Job {
 
 	}
 
-	private final Host host = new Host() {
+	private final HostService host = new HostService() {
 
 		@Override
 		public FileOutputStream createFileOutputStream(String path) {

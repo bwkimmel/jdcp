@@ -15,7 +15,9 @@ import org.selfip.bkimmel.progress.ProgressMonitor;
  */
 public interface ParallelizableJob extends Job {
 
-	void initialize(Host host) throws Exception;
+	void setHostService(HostService host);
+
+	void initialize() throws Exception;
 
 	void finish() throws Exception;
 
