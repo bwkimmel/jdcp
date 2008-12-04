@@ -3,6 +3,9 @@
  */
 package org.jdcp.job;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import org.selfip.bkimmel.jobs.Job;
 import org.selfip.bkimmel.progress.ProgressMonitor;
 
@@ -15,6 +18,10 @@ public interface ParallelizableJob extends Job {
 	void initialize(Host host) throws Exception;
 
 	void finish() throws Exception;
+
+	void suspend(OutputStream stream) throws Exception;
+
+	void resume(InputStream stream) throws Exception;
 
 	/**
 	 * Gets the next task to be performed.

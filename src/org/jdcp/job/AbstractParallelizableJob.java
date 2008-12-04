@@ -4,6 +4,8 @@
 package org.jdcp.job;
 
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
 
 import org.selfip.bkimmel.progress.ProgressMonitor;
@@ -27,6 +29,20 @@ public abstract class AbstractParallelizableJob implements ParallelizableJob {
 	}
 
 	public void finish() throws Exception {
+		/* nothing to do. */
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jdcp.job.ParallelizableJob#suspend(java.io.OutputStream)
+	 */
+	public void suspend(OutputStream stream) throws Exception {
+		/* nothing to do. */
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jdcp.job.ParallelizableJob#resume(java.io.InputStream)
+	 */
+	public void resume(InputStream stream) throws Exception {
 		/* nothing to do. */
 	}
 

@@ -3,6 +3,9 @@
  */
 package org.jdcp.job;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import org.selfip.bkimmel.progress.ProgressMonitor;
 
 /**
@@ -57,6 +60,30 @@ public final class JobExecutionWrapper implements ParallelizableJob {
 	public void initialize(Host host) throws JobExecutionException {
 		try {
 			job.initialize(host);
+		} catch (Exception e) {
+			throw new JobExecutionException(e);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jdcp.job.ParallelizableJob#suspend(java.io.OutputStream)
+	 */
+	@Override
+	public void suspend(OutputStream stream) throws JobExecutionException {
+		try {
+			job.suspend(stream);
+		} catch (Exception e) {
+			throw new JobExecutionException(e);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jdcp.job.ParallelizableJob#resume(java.io.InputStream)
+	 */
+	@Override
+	public void resume(InputStream stream) throws JobExecutionException {
+		try {
+			job.resume(stream);
 		} catch (Exception e) {
 			throw new JobExecutionException(e);
 		}
