@@ -18,8 +18,9 @@ import javax.jnlp.ServiceManager;
 import javax.jnlp.UnavailableServiceException;
 
 import org.jdcp.remote.JobService;
-import org.selfip.bkimmel.util.StringUtil;
-import org.selfip.bkimmel.util.UnexpectedException;
+
+import ca.eandb.util.util.StringUtil;
+import ca.eandb.util.util.UnexpectedException;
 
 /**
  * @author brad

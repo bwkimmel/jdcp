@@ -12,9 +12,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
 import org.jdcp.concurrent.BackgroundThreadFactory;
-import org.selfip.bkimmel.jobs.Job;
-import org.selfip.bkimmel.progress.ProgressMonitor;
-import org.selfip.bkimmel.util.UnexpectedException;
+
+import ca.eandb.util.jobs.Job;
+import ca.eandb.util.progress.ProgressMonitor;
+import ca.eandb.util.util.UnexpectedException;
 
 /**
  * A <code>Job</code> that runs a <code>ParallelizableJob</code> using multiple

@@ -3,8 +3,8 @@
  */
 package org.jdcp.job;
 
-import org.selfip.bkimmel.jobs.Job;
-import org.selfip.bkimmel.progress.ProgressMonitor;
+import ca.eandb.util.jobs.Job;
+import ca.eandb.util.progress.ProgressMonitor;
 
 /**
  * Represents a job that can be split into smaller chunks.

@@ -31,11 +31,12 @@ import org.jdcp.remote.JobService;
 import org.jdcp.scheduling.TaskScheduler;
 import org.jdcp.server.classmanager.ClassManager;
 import org.jdcp.server.classmanager.ParentClassManager;
-import org.selfip.bkimmel.io.FileUtil;
-import org.selfip.bkimmel.progress.ProgressMonitor;
-import org.selfip.bkimmel.rmi.Serialized;
-import org.selfip.bkimmel.util.UnexpectedException;
-import org.selfip.bkimmel.util.classloader.StrategyClassLoader;
+
+import ca.eandb.util.io.FileUtil;
+import ca.eandb.util.progress.ProgressMonitor;
+import ca.eandb.util.rmi.Serialized;
+import ca.eandb.util.util.UnexpectedException;
+import ca.eandb.util.util.classloader.StrategyClassLoader;
 
 /**
  * @author brad
@@ -100,7 +101,7 @@ public final class JobServer implements JobService {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jdcp.remote.JobService#submitJob(org.selfip.bkimmel.rmi.Envelope, java.util.UUID)
+	 * @see org.jdcp.remote.JobService#submitJob(ca.eandb.util.rmi.Envelope, java.util.UUID)
 	 */
 	public void submitJob(Serialized<ParallelizableJob> job, UUID jobId)
 			throws IllegalArgumentException, SecurityException, ClassNotFoundException, JobExecutionException {
@@ -123,7 +124,7 @@ public final class JobServer implements JobService {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jdcp.remote.JobService#submitJob(org.selfip.bkimmel.rmi.Envelope, java.lang.String)
+	 * @see org.jdcp.remote.JobService#submitJob(ca.eandb.util.rmi.Envelope, java.lang.String)
 	 */
 	public UUID submitJob(Serialized<ParallelizableJob> job, String description)
 			throws SecurityException, ClassNotFoundException, JobExecutionException {
@@ -189,7 +190,7 @@ public final class JobServer implements JobService {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jdcp.remote.JobService#submitTaskResults(java.util.UUID, int, org.selfip.bkimmel.rmi.Envelope)
+	 * @see org.jdcp.remote.JobService#submitTaskResults(java.util.UUID, int, ca.eandb.util.rmi.Envelope)
 	 */
 	public void submitTaskResults(final UUID jobId, final int taskId,
 			final Serialized<Object> results) throws SecurityException {

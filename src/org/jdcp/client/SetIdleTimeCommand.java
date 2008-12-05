@@ -5,7 +5,7 @@ package org.jdcp.client;
 
 import java.rmi.RemoteException;
 
-import org.selfip.bkimmel.util.args.AbstractCommand;
+import ca.eandb.util.util.args.AbstractCommand;
 
 /**
  * @author brad

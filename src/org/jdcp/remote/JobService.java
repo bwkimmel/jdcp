@@ -11,7 +11,8 @@ import org.jdcp.job.JobExecutionException;
 import org.jdcp.job.ParallelizableJob;
 import org.jdcp.job.TaskDescription;
 import org.jdcp.job.TaskWorker;
-import org.selfip.bkimmel.rmi.Serialized;
+
+import ca.eandb.util.rmi.Serialized;
 
 /**
  * A remote service for accepting <code>ParallelizableJob</code>s,

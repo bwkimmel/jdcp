@@ -14,7 +14,8 @@ import javax.security.auth.login.LoginException;
 
 import org.jdcp.remote.AuthenticationService;
 import org.jdcp.remote.JobService;
-import org.selfip.bkimmel.auth.FixedCallbackHandler;
+
+import ca.eandb.util.auth.FixedCallbackHandler;
 
 /**
  * @author brad

@@ -11,8 +11,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-import org.selfip.bkimmel.util.UnexpectedException;
-import org.selfip.bkimmel.util.args.AbstractCommand;
+import ca.eandb.util.util.UnexpectedException;
+import ca.eandb.util.util.args.AbstractCommand;
 
 /**
  * @author brad
@@ -21,7 +21,7 @@ import org.selfip.bkimmel.util.args.AbstractCommand;
 public final class VerifyCommand extends AbstractCommand<Configuration> {
 
 	/* (non-Javadoc)
-	 * @see org.selfip.bkimmel.util.args.AbstractCommand#run(java.lang.String[], java.lang.Object)
+	 * @see ca.eandb.util.util.args.AbstractCommand#run(java.lang.String[], java.lang.Object)
 	 */
 	@Override
 	protected void run(String[] args, Configuration conf) {

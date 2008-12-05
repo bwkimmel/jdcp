@@ -7,7 +7,8 @@ import java.io.Serializable;
 import java.util.UUID;
 
 import org.jdcp.remote.JobService;
-import org.selfip.bkimmel.rmi.Serialized;
+
+import ca.eandb.util.rmi.Serialized;
 
 /**
  * A description of a task assigned by a <code>JobMasterService</code>.

@@ -5,7 +5,7 @@ package org.jdcp.job;
 
 import java.io.Serializable;
 
-import org.selfip.bkimmel.progress.ProgressMonitor;
+import ca.eandb.util.progress.ProgressMonitor;
 
 /**
  * Processes a task that is part of a parallelizable job.

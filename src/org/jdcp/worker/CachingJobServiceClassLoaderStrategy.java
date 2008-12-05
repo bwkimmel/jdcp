@@ -8,7 +8,8 @@ import java.rmi.RemoteException;
 import java.util.UUID;
 
 import org.jdcp.remote.JobService;
-import org.selfip.bkimmel.util.classloader.ClassLoaderStrategy;
+
+import ca.eandb.util.util.classloader.ClassLoaderStrategy;
 
 /**
  * @author brad
@@ -25,7 +26,7 @@ public abstract class CachingJobServiceClassLoaderStrategy implements ClassLoade
 	}
 
 	/* (non-Javadoc)
-	 * @see org.selfip.bkimmel.util.classloader.ClassLoaderStrategy#getClassDefinition(java.lang.String)
+	 * @see ca.eandb.util.util.classloader.ClassLoaderStrategy#getClassDefinition(java.lang.String)
 	 */
 	public final ByteBuffer getClassDefinition(String name) {
 

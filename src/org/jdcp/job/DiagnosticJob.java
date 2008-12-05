@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
 
-import org.selfip.bkimmel.progress.ProgressMonitor;
+import ca.eandb.util.progress.ProgressMonitor;
 
 /**
  * A <code>ParallelizableJob</code> for diagnostic purposes.

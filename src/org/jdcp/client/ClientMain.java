@@ -3,10 +3,10 @@
  */
 package org.jdcp.client;
 
-import org.selfip.bkimmel.util.args.ArgumentProcessor;
-import org.selfip.bkimmel.util.args.BooleanFieldOption;
-import org.selfip.bkimmel.util.args.StringFieldOption;
-import org.selfip.bkimmel.util.args.UnrecognizedCommand;
+import ca.eandb.util.util.args.ArgumentProcessor;
+import ca.eandb.util.util.args.BooleanFieldOption;
+import ca.eandb.util.util.args.StringFieldOption;
+import ca.eandb.util.util.args.UnrecognizedCommand;
 
 /**
  * @author brad

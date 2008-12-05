@@ -6,7 +6,8 @@ package org.jdcp.client;
 import java.util.UUID;
 
 import org.jdcp.job.ParallelizableJob;
-import org.selfip.bkimmel.rmi.Serialized;
+
+import ca.eandb.util.rmi.Serialized;
 
 /**
  * @author brad

@@ -10,7 +10,8 @@ import java.io.IOException;
 import java.util.UUID;
 
 import org.jdcp.remote.JobService;
-import org.selfip.bkimmel.util.StringUtil;
+
+import ca.eandb.util.util.StringUtil;
 
 /**
  * @author brad

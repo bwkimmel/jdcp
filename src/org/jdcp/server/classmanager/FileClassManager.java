@@ -17,8 +17,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.selfip.bkimmel.io.FileUtil;
-import org.selfip.bkimmel.util.UnexpectedException;
+import ca.eandb.util.io.FileUtil;
+import ca.eandb.util.util.UnexpectedException;
 
 /**
  * @author brad
@@ -175,7 +175,7 @@ public final class FileClassManager extends AbstractClassManager implements
 	}
 
 	/* (non-Javadoc)
-	 * @see org.selfip.bkimmel.util.classloader.ClassLoaderStrategy#getClassDefinition(java.lang.String)
+	 * @see ca.eandb.util.util.classloader.ClassLoaderStrategy#getClassDefinition(java.lang.String)
 	 */
 	public ByteBuffer getClassDefinition(String name) {
 		return getClassDefinition(currentDirectory, name);
@@ -286,7 +286,7 @@ public final class FileClassManager extends AbstractClassManager implements
 		}
 
 		/* (non-Javadoc)
-		 * @see org.selfip.bkimmel.util.classloader.ClassLoaderStrategy#getClassDefinition(java.lang.String)
+		 * @see ca.eandb.util.util.classloader.ClassLoaderStrategy#getClassDefinition(java.lang.String)
 		 */
 		public ByteBuffer getClassDefinition(String name) {
 			File directory = getClassDirectory(name);

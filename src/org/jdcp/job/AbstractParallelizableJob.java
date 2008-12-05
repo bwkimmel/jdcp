@@ -6,7 +6,7 @@ package org.jdcp.job;
 import java.io.FileOutputStream;
 import java.io.RandomAccessFile;
 
-import org.selfip.bkimmel.progress.ProgressMonitor;
+import ca.eandb.util.progress.ProgressMonitor;
 
 /**
  * An abstract <code>ParallelizableJob</code> that provides a default

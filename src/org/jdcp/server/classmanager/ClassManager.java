@@ -5,7 +5,7 @@ package org.jdcp.server.classmanager;
 
 import java.nio.ByteBuffer;
 
-import org.selfip.bkimmel.util.classloader.ClassLoaderStrategy;
+import ca.eandb.util.util.classloader.ClassLoaderStrategy;
 
 /**
  * @author brad

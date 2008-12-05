@@ -22,13 +22,14 @@ import org.jdcp.job.TaskDescription;
 import org.jdcp.job.TaskWorker;
 import org.jdcp.remote.AuthenticationService;
 import org.jdcp.remote.JobService;
-import org.selfip.bkimmel.jobs.Job;
-import org.selfip.bkimmel.progress.PermanentProgressMonitor;
-import org.selfip.bkimmel.progress.ProgressMonitor;
-import org.selfip.bkimmel.rmi.Serialized;
-import org.selfip.bkimmel.util.UnexpectedException;
-import org.selfip.bkimmel.util.classloader.ClassLoaderStrategy;
-import org.selfip.bkimmel.util.classloader.StrategyClassLoader;
+
+import ca.eandb.util.jobs.Job;
+import ca.eandb.util.progress.PermanentProgressMonitor;
+import ca.eandb.util.progress.ProgressMonitor;
+import ca.eandb.util.rmi.Serialized;
+import ca.eandb.util.util.UnexpectedException;
+import ca.eandb.util.util.classloader.ClassLoaderStrategy;
+import ca.eandb.util.util.classloader.StrategyClassLoader;
 
 /**
  * A job that processes tasks for a parallelizable job from a remote

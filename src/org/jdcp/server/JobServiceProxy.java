@@ -18,8 +18,9 @@ import org.jdcp.job.TaskDescription;
 import org.jdcp.job.TaskWorker;
 import org.jdcp.remote.JobService;
 import org.jdcp.security.JdcpPermission;
-import org.selfip.bkimmel.rmi.Serialized;
-import org.selfip.bkimmel.util.UnexpectedException;
+
+import ca.eandb.util.rmi.Serialized;
+import ca.eandb.util.util.UnexpectedException;
 
 /**
  * @author brad
@@ -379,7 +380,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jdcp.remote.JobService#submitJob(org.selfip.bkimmel.rmi.Serialized, java.util.UUID)
+	 * @see org.jdcp.remote.JobService#submitJob(ca.eandb.util.rmi.Serialized, java.util.UUID)
 	 */
 	@Override
 	public void submitJob(final Serialized<ParallelizableJob> job, final UUID jobId)
@@ -416,7 +417,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jdcp.remote.JobService#submitJob(org.selfip.bkimmel.rmi.Serialized, java.lang.String)
+	 * @see org.jdcp.remote.JobService#submitJob(ca.eandb.util.rmi.Serialized, java.lang.String)
 	 */
 	@Override
 	public UUID submitJob(final Serialized<ParallelizableJob> job, final String description)
@@ -451,7 +452,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jdcp.remote.JobService#submitTaskResults(java.util.UUID, int, org.selfip.bkimmel.rmi.Serialized)
+	 * @see org.jdcp.remote.JobService#submitTaskResults(java.util.UUID, int, ca.eandb.util.rmi.Serialized)
 	 */
 	@Override
 	public void submitTaskResults(final UUID jobId, final int taskId,

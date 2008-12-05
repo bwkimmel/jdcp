@@ -6,7 +6,7 @@ package org.jdcp.server.classmanager;
 import java.io.File;
 import java.nio.ByteBuffer;
 
-import org.selfip.bkimmel.util.StringUtil;
+import ca.eandb.util.util.StringUtil;
 
 /**
  * @author brad

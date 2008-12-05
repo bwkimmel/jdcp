@@ -3,7 +3,7 @@
  */
 package org.jdcp.job;
 
-import org.selfip.bkimmel.progress.ProgressMonitor;
+import ca.eandb.util.progress.ProgressMonitor;
 
 /**
  * A <code>ParallelizableJob</code> decorator that wraps exceptions thrown by
@@ -107,7 +107,7 @@ public final class JobExecutionWrapper implements ParallelizableJob {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jdcp.job.ParallelizableJob#submitTaskResults(java.lang.Object, java.lang.Object, org.selfip.bkimmel.progress.ProgressMonitor)
+	 * @see org.jdcp.job.ParallelizableJob#submitTaskResults(java.lang.Object, java.lang.Object, ca.eandb.util.progress.ProgressMonitor)
 	 */
 	@Override
 	public void submitTaskResults(Object task, Object results,
@@ -132,7 +132,7 @@ public final class JobExecutionWrapper implements ParallelizableJob {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.selfip.bkimmel.jobs.Job#go(org.selfip.bkimmel.progress.ProgressMonitor)
+	 * @see ca.eandb.util.jobs.Job#go(ca.eandb.util.progress.ProgressMonitor)
 	 */
 	@Override
 	public boolean go(ProgressMonitor monitor) {

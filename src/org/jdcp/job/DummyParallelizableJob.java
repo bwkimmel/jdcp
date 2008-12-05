@@ -7,7 +7,7 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 
-import org.selfip.bkimmel.progress.ProgressMonitor;
+import ca.eandb.util.progress.ProgressMonitor;
 
 /**
  * A dummy parallelizable job to test remote method invocation.

@@ -14,8 +14,9 @@ import javax.jnlp.UnavailableServiceException;
 import javax.swing.JDialog;
 
 import org.jdcp.concurrent.BackgroundThreadFactory;
-import org.selfip.bkimmel.jobs.Job;
-import org.selfip.bkimmel.progress.ProgressPanel;
+
+import ca.eandb.util.jobs.Job;
+import ca.eandb.util.progress.ProgressPanel;
 
 /**
  * @author brad

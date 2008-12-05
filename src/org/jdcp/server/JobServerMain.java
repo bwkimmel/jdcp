@@ -19,7 +19,8 @@ import org.jdcp.scheduling.PrioritySerialTaskScheduler;
 import org.jdcp.scheduling.TaskScheduler;
 import org.jdcp.server.classmanager.FileClassManager;
 import org.jdcp.server.classmanager.ParentClassManager;
-import org.selfip.bkimmel.progress.ProgressPanel;
+
+import ca.eandb.util.progress.ProgressPanel;
 
 /**
  * @author brad
