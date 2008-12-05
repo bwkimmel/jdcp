@@ -3,6 +3,9 @@
  */
 package org.jdcp.server;
 
+import java.awt.Dimension;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -10,7 +13,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.prefs.Preferences;
 
-import javax.swing.JDialog;
+import javax.swing.JFrame;
 
 import org.jdcp.scheduling.PrioritySerialTaskScheduler;
 import org.jdcp.scheduling.TaskScheduler;
@@ -28,14 +31,21 @@ public final class JobServerMain {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		javax.swing.SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				startServer();
+			}
+		});
+	}
+
+	private static void startServer() {
 
 		try {
 
 			System.err.print("Initializing progress monitor...");
-			JDialog dialog = new JDialog();
 			ProgressPanel monitor = new ProgressPanel();
-			dialog.add(monitor);
-			dialog.setBounds(100, 100, 500, 350);
+			monitor.setRootVisible(false);
+			monitor.setPreferredSize(new Dimension(500, 350));
 			System.err.println("OK");
 
 			System.err.print("Initializing folders...");
@@ -64,22 +74,31 @@ public final class JobServerMain {
 			System.err.println("OK");
 
 			System.err.print("Binding service...");
-			Registry registry = LocateRegistry.createRegistry(1099);
+			final Registry registry = LocateRegistry.createRegistry(1099);
 			registry.bind("AuthenticationService", authServer);
 			System.err.println("OK");
 
 			System.err.println("Server ready");
 
-			monitor.setRootVisible(false);
+			JFrame frame = new JFrame("JDCP Server");
+			frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			frame.getContentPane().add(monitor);
+			frame.pack();
 
-			dialog.setTitle("JobServer");
-			dialog.setModal(true);
-			dialog.setVisible(true);
+			frame.addWindowListener(new WindowAdapter() {
+				public void windowClosed(WindowEvent event) {
+					System.err.print("Shutting down...");
+					try {
+						registry.unbind("AuthenticationService");
+						System.err.println("OK");
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					System.exit(0);
+				}
+			});
 
-			System.err.print("Shutting down...");
-			registry.unbind("AuthenticationService");
-			System.err.println("OK");
-			System.exit(0);
+			frame.setVisible(true);
 
 		} catch (Exception e) {
 
