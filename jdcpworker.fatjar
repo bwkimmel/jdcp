@@ -1,5 +1,5 @@
 #Fat Jar Configuration File
-#Wed Dec 03 19:12:53 EST 2008
+#Thu Dec 04 23:38:54 EST 2008
 onejar.license.required=false
 manifest.classpath=
 manifest.removesigners=true
@@ -10,5 +10,5 @@ manifest.mainclass=org.jdcp.worker.WorkerMain
 manifest.file=<createnew>
 jarname.isextern=false
 onejar.expand=
-excludes=<po|jdcp>~org/~jdcp/~client/;<po|jdcp>~org/~jdcp/~job/~DiagnosticJob$DiagnosticTaskWorker.class;<po|jdcp>~org/~jdcp/~job/~DiagnosticJob.class;<po|jdcp>~org/~jdcp/~job/~DummyParallelizableJob$1.class;<po|jdcp>~org/~jdcp/~job/~DummyParallelizableJob.class;<po|jdcp>~org/~jdcp/~job/~JobExecutionException.class;<po|jdcp>~org/~jdcp/~job/~JobExecutionWrapper.class;<po|jdcp>~org/~jdcp/~job/~ParallelizableJobRunner$1.class;<po|jdcp>~org/~jdcp/~job/~ParallelizableJobRunner$Worker.class;<po|jdcp>~org/~jdcp/~job/~ParallelizableJobRunner.class;<po|jdcp>~org/~jdcp/~scheduling/;<po|jdcp>~org/~jdcp/~server/;<jar|junit.jar>;<jar|log4j-1.2.15.jar>
+excludes=<po|jdcp>~org/~jdcp/~client/;<po|jdcp>~org/~jdcp/~job/~DiagnosticJob$DiagnosticTaskWorker.class;<po|jdcp>~org/~jdcp/~job/~DiagnosticJob.class;<po|jdcp>~org/~jdcp/~job/~DummyParallelizableJob$1.class;<po|jdcp>~org/~jdcp/~job/~DummyParallelizableJob.class;<po|jdcp>~org/~jdcp/~job/~JobExecutionWrapper.class;<po|jdcp>~org/~jdcp/~job/~ParallelizableJobRunner$1.class;<po|jdcp>~org/~jdcp/~job/~ParallelizableJobRunner$Worker.class;<po|jdcp>~org/~jdcp/~job/~ParallelizableJobRunner.class;<po|jdcp>~org/~jdcp/~scheduling/;<po|jdcp>~org/~jdcp/~server/;<jar|junit.jar>;<jar|log4j-1.2.15.jar>
 includes=
