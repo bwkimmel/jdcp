@@ -23,7 +23,7 @@ public final class TaskDescription implements Serializable {
 	 * @param taskId The ID of the task to be performed.
 	 * @param task An <code>Object</code> describing the task to be performed.
 	 * 		This should be passed to <code>TaskWorker.performTask</code>.
-	 * @see {@link org.jmist.framework.TaskWorker#performTask(Object, org.jmist.framework.ProgressMonitor)}.
+	 * @see {@link ca.eandb.jmist.framework.TaskWorker#performTask(Object, ca.eandb.jmist.framework.ProgressMonitor)}.
 	 */
 	public TaskDescription(UUID jobId, int taskId, Object task) {
 		this.jobId = jobId;
@@ -39,7 +39,7 @@ public final class TaskDescription implements Serializable {
 	 * may be obtained by calling {@link JobService#getTaskWorker(UUID)}.
 	 * @return The <code>Object</code> describing the task to be performed.
 	 * @see {@link #getJobId()},
-	 * 		{@link org.jmist.framework.TaskWorker#performTask(Object, org.jmist.framework.ProgressMonitor)},
+	 * 		{@link ca.eandb.jmist.framework.TaskWorker#performTask(Object, ca.eandb.jmist.framework.ProgressMonitor)},
 	 * 		{@link JobService#getTaskWorker(UUID)}.
 	 */
 	public Serialized<Object> getTask() {

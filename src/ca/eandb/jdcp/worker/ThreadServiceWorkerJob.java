@@ -61,7 +61,7 @@ public final class ThreadServiceWorkerJob implements Job {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jmist.framework.Job#go(org.jmist.framework.ProgressMonitor)
+	 * @see ca.eandb.jmist.framework.Job#go(ca.eandb.jmist.framework.ProgressMonitor)
 	 */
 	public boolean go(ProgressMonitor monitor) {
 

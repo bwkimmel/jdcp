@@ -23,21 +23,21 @@ public final class DiagnosticJob extends AbstractParallelizableJob implements Se
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jmist.framework.ParallelizableJob#getNextTask()
+	 * @see ca.eandb.jmist.framework.ParallelizableJob#getNextTask()
 	 */
 	public Object getNextTask() {
 		return nextTask < 10 ? nextTask++ : null;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jmist.framework.ParallelizableJob#isComplete()
+	 * @see ca.eandb.jmist.framework.ParallelizableJob#isComplete()
 	 */
 	public boolean isComplete() {
 		return nextTask >= 10 && tasksComplete == nextTask;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jmist.framework.ParallelizableJob#submitTaskResults(java.lang.Object, java.lang.Object, org.jmist.framework.reporting.ProgressMonitor)
+	 * @see ca.eandb.jmist.framework.ParallelizableJob#submitTaskResults(java.lang.Object, java.lang.Object, ca.eandb.util.progress.ProgressMonitor)
 	 */
 	public void submitTaskResults(Object task, Object results,
 			ProgressMonitor monitor) {
@@ -59,14 +59,14 @@ public final class DiagnosticJob extends AbstractParallelizableJob implements Se
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jmist.framework.ParallelizableJob#worker()
+	 * @see ca.eandb.jmist.framework.ParallelizableJob#worker()
 	 */
 	public TaskWorker worker() {
 		return this.worker;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jmist.framework.ParallelizableJob#finish()
+	 * @see ca.eandb.jmist.framework.ParallelizableJob#finish()
 	 */
 	public void finish() throws IOException {
 		PrintStream out = new PrintStream(createFileOutputStream("output.txt"));
@@ -82,7 +82,7 @@ public final class DiagnosticJob extends AbstractParallelizableJob implements Se
 	private static final class DiagnosticTaskWorker implements TaskWorker {
 
 		/* (non-Javadoc)
-		 * @see org.jmist.framework.TaskWorker#performTask(java.lang.Object, org.jmist.framework.reporting.ProgressMonitor)
+		 * @see ca.eandb.jmist.framework.TaskWorker#performTask(java.lang.Object, ca.eandb.util.progress.ProgressMonitor)
 		 */
 		public Object performTask(Object task, ProgressMonitor monitor) {
 			System.out.print("Performing task: ");

@@ -75,7 +75,7 @@ public final class ParallelizableJobRunner implements Job {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jmist.framework.Job#go(org.jmist.framework.reporting.ProgressMonitor)
+	 * @see ca.eandb.jmist.framework.Job#go(ca.eandb.util.progress.ProgressMonitor)
 	 */
 	public synchronized boolean go(final ProgressMonitor monitor) {
 

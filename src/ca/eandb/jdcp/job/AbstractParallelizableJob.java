@@ -68,7 +68,7 @@ public abstract class AbstractParallelizableJob implements ParallelizableJob {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jmist.framework.Job#go(org.jmist.framework.reporting.ProgressMonitor)
+	 * @see ca.eandb.jmist.framework.Job#go(ca.eandb.util.progress.ProgressMonitor)
 	 */
 	public boolean go(ProgressMonitor monitor) {
 
