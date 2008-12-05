@@ -9,7 +9,7 @@ import java.util.UUID;
 
 import org.jdcp.remote.JobService;
 
-import ca.eandb.util.util.classloader.ClassLoaderStrategy;
+import ca.eandb.util.classloader.ClassLoaderStrategy;
 
 /**
  * @author brad
@@ -26,7 +26,7 @@ public abstract class CachingJobServiceClassLoaderStrategy implements ClassLoade
 	}
 
 	/* (non-Javadoc)
-	 * @see ca.eandb.util.util.classloader.ClassLoaderStrategy#getClassDefinition(java.lang.String)
+	 * @see ca.eandb.util.classloader.ClassLoaderStrategy#getClassDefinition(java.lang.String)
 	 */
 	public final ByteBuffer getClassDefinition(String name) {
 

@@ -11,7 +11,7 @@ import java.util.UUID;
 
 import org.jdcp.remote.JobService;
 
-import ca.eandb.util.util.StringUtil;
+import ca.eandb.util.StringUtil;
 
 /**
  * @author brad

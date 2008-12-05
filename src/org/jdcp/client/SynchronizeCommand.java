@@ -11,8 +11,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-import ca.eandb.util.util.UnexpectedException;
-import ca.eandb.util.util.args.AbstractCommand;
+import ca.eandb.util.UnexpectedException;
+import ca.eandb.util.args.AbstractCommand;
 
 /**
  * @author brad
@@ -21,7 +21,7 @@ import ca.eandb.util.util.args.AbstractCommand;
 public final class SynchronizeCommand extends AbstractCommand<Configuration> {
 
 	/* (non-Javadoc)
-	 * @see ca.eandb.util.util.args.AbstractCommand#run(java.lang.String[], java.lang.Object)
+	 * @see ca.eandb.util.args.AbstractCommand#run(java.lang.String[], java.lang.Object)
 	 */
 	@Override
 	protected void run(String[] args, Configuration conf) {

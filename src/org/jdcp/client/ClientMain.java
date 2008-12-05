@@ -3,10 +3,10 @@
  */
 package org.jdcp.client;
 
-import ca.eandb.util.util.args.ArgumentProcessor;
-import ca.eandb.util.util.args.BooleanFieldOption;
-import ca.eandb.util.util.args.StringFieldOption;
-import ca.eandb.util.util.args.UnrecognizedCommand;
+import ca.eandb.util.args.ArgumentProcessor;
+import ca.eandb.util.args.BooleanFieldOption;
+import ca.eandb.util.args.StringFieldOption;
+import ca.eandb.util.args.UnrecognizedCommand;
 
 /**
  * @author brad

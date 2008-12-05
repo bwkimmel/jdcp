@@ -19,8 +19,8 @@ import org.jdcp.job.TaskWorker;
 import org.jdcp.remote.JobService;
 import org.jdcp.security.JdcpPermission;
 
+import ca.eandb.util.UnexpectedException;
 import ca.eandb.util.rmi.Serialized;
-import ca.eandb.util.util.UnexpectedException;
 
 /**
  * @author brad

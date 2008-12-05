@@ -19,8 +19,8 @@ import javax.jnlp.UnavailableServiceException;
 
 import org.jdcp.remote.JobService;
 
-import ca.eandb.util.util.StringUtil;
-import ca.eandb.util.util.UnexpectedException;
+import ca.eandb.util.StringUtil;
+import ca.eandb.util.UnexpectedException;
 
 /**
  * @author brad

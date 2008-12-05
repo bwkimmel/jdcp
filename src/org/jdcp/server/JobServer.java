@@ -32,11 +32,11 @@ import org.jdcp.scheduling.TaskScheduler;
 import org.jdcp.server.classmanager.ClassManager;
 import org.jdcp.server.classmanager.ParentClassManager;
 
+import ca.eandb.util.UnexpectedException;
+import ca.eandb.util.classloader.StrategyClassLoader;
 import ca.eandb.util.io.FileUtil;
 import ca.eandb.util.progress.ProgressMonitor;
 import ca.eandb.util.rmi.Serialized;
-import ca.eandb.util.util.UnexpectedException;
-import ca.eandb.util.util.classloader.StrategyClassLoader;
 
 /**
  * @author brad
