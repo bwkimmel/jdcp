@@ -1,0 +1,62 @@
+grant CodeBase "file:jdcpserver.jar" {
+	permission java.awt.AWTPermission "accessEventQueue";
+	permission java.awt.AWTPermission "showWindowWithoutWarningBanner";
+	permission java.awt.AWTPermission "toolkitModality";
+	permission java.io.FilePermission "*", "read";
+	permission java.io.FilePermission "server/-", "read,write,delete";
+	permission java.lang.RuntimePermission "accessClassInPackage.sun.util.logging.resources";
+	permission java.lang.RuntimePermission "createClassLoader";
+	permission java.lang.RuntimePermission "exitVM.*";
+	permission java.lang.RuntimePermission "preferences";
+	permission java.lang.RuntimePermission "accessDeclaredMembers";
+	permission java.lang.RuntimePermission "modifyThreadGroup";
+	permission java.lang.RuntimePermission "loadLibrary.NTEventLogAppender";
+	permission java.net.SocketPermission "*:1024-", "accept,resolve,listen";
+	permission java.util.PropertyPermission "os.name", "read";
+	permission java.util.PropertyPermission "os.version", "read";
+	permission java.util.PropertyPermission "user.dir", "read";
+	permission java.util.PropertyPermission "log4j.*", "read";
+	permission java.util.PropertyPermission "swing.*", "read";
+	permission javax.security.auth.AuthPermission "createLoginContext.JobService";
+	permission javax.security.auth.AuthPermission "doAsPrivileged";
+	permission javax.security.auth.AuthPermission "modifyPrincipals";
+};
+
+grant CodeBase "file:lib/log4j-1.2.15.jar" {
+	permission java.util.PropertyPermission "log4j.*", "read";
+	permission java.io.FilePermission "log4j.win32.properties", "read";
+	permission java.lang.RuntimePermission "loadLibrary.NTEventLogAppender";
+	permission java.util.PropertyPermission "user.dir", "read";
+};
+
+grant CodeBase "file:lib/swingx.jar" {
+	permission java.util.PropertyPermission "swing.*", "read";
+	permission java.lang.RuntimePermission "accessDeclaredMembers";
+	permission java.lang.RuntimePermission "modifyThreadGroup";
+};
+
+grant Principal org.selfip.bkimmel.auth.RolePrincipal "jdcp.worker" {
+	permission org.jdcp.security.JdcpPermission "getJobClassDefinition";
+	permission org.jdcp.security.JdcpPermission "getJobClassDigest";
+	permission org.jdcp.security.JdcpPermission "getTaskWorker";
+	permission org.jdcp.security.JdcpPermission "requestTask";
+	permission org.jdcp.security.JdcpPermission "submitTaskResults";
+	permission org.jdcp.security.JdcpPermission "reportException";
+};
+
+grant Principal org.selfip.bkimmel.auth.RolePrincipal "jdcp.admin" {
+        permission org.jdcp.security.JdcpPermission "*";
+};
+
+grant Principal org.selfip.bkimmel.auth.RolePrincipal "jdcp.submitter.basic" {
+	permission org.jdcp.security.JdcpPermission "createJob";
+	permission org.jdcp.security.JdcpPermission "submitJob";
+	permission org.jdcp.security.JdcpPermission "getJobClassDigest";
+};
+
+grant Principal org.selfip.bkimmel.auth.RolePrincipal "jdcp.submitter.advanced" {
+	permission org.jdcp.security.JdcpPermission "createJob";
+	permission org.jdcp.security.JdcpPermission "submitJob";
+	permission org.jdcp.security.JdcpPermission "setJobClassDefinition";
+	permission org.jdcp.security.JdcpPermission "getJobClassDigest";
+};
