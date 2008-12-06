@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Bradley W. Kimmel
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -9,10 +9,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -55,7 +55,7 @@ public final class DummyParallelizableJob extends AbstractParallelizableJob
 	}
 
 	/* (non-Javadoc)
-	 * @see ca.eandb.jmist.framework.ParallelizableJob#getNextTask()
+	 * @see ca.eandb.jdcp.job.ParallelizableJob#getNextTask()
 	 */
 	public Object getNextTask() {
 
@@ -74,7 +74,7 @@ public final class DummyParallelizableJob extends AbstractParallelizableJob
 	}
 
 	/* (non-Javadoc)
-	 * @see ca.eandb.jmist.framework.ParallelizableJob#submitResults(java.lang.Object, java.lang.Object, ca.eandb.util.progress.ProgressMonitor)
+	 * @see ca.eandb.jdcp.job.ParallelizableJob#submitResults(java.lang.Object, java.lang.Object, ca.eandb.util.progress.ProgressMonitor)
 	 */
 	public void submitTaskResults(Object task, Object results, ProgressMonitor monitor) {
 
@@ -87,14 +87,14 @@ public final class DummyParallelizableJob extends AbstractParallelizableJob
 	}
 
 	/* (non-Javadoc)
-	 * @see ca.eandb.jmist.framework.ParallelizableJob#isComplete()
+	 * @see ca.eandb.jdcp.job.ParallelizableJob#isComplete()
 	 */
 	public boolean isComplete() {
 		return this.numResultsReceived >= this.tasks;
 	}
 
 	/* (non-Javadoc)
-	 * @see ca.eandb.jmist.framework.ParallelizableJob#finish()
+	 * @see ca.eandb.jdcp.job.ParallelizableJob#finish()
 	 */
 	public void finish() {
 
@@ -108,7 +108,7 @@ public final class DummyParallelizableJob extends AbstractParallelizableJob
 	}
 
 	/* (non-Javadoc)
-	 * @see ca.eandb.jmist.framework.ParallelizableJob#worker()
+	 * @see ca.eandb.jdcp.job.ParallelizableJob#worker()
 	 */
 	public TaskWorker worker() {
 		return this.worker;
@@ -147,7 +147,7 @@ public final class DummyParallelizableJob extends AbstractParallelizableJob
 
 		/*
 		 * (non-Javadoc)
-		 * @see ca.eandb.jmist.framework.TaskWorker#performTask(java.lang.Object, ca.eandb.jmist.framework.ProgressMonitor)
+		 * @see ca.eandb.jdcp.job.TaskWorker#performTask(java.lang.Object, ca.eandb.util.progress.ProgressMonitor)
 		 */
 		public Object performTask(Object task, ProgressMonitor monitor) {
 

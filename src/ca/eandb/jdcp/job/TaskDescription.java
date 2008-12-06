@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Bradley W. Kimmel
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -9,10 +9,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -45,7 +45,7 @@ public final class TaskDescription implements Serializable {
 	 * @param taskId The ID of the task to be performed.
 	 * @param task An <code>Object</code> describing the task to be performed.
 	 * 		This should be passed to <code>TaskWorker.performTask</code>.
-	 * @see {@link ca.eandb.jmist.framework.TaskWorker#performTask(Object, ca.eandb.jmist.framework.ProgressMonitor)}.
+	 * @see {@link #performTask(Object, ca.eandb.util.progress.ProgressMonitor)}.
 	 */
 	public TaskDescription(UUID jobId, int taskId, Object task) {
 		this.jobId = jobId;
@@ -61,7 +61,7 @@ public final class TaskDescription implements Serializable {
 	 * may be obtained by calling {@link JobService#getTaskWorker(UUID)}.
 	 * @return The <code>Object</code> describing the task to be performed.
 	 * @see {@link #getJobId()},
-	 * 		{@link ca.eandb.jmist.framework.TaskWorker#performTask(Object, ca.eandb.jmist.framework.ProgressMonitor)},
+	 * 		{@link #performTask(Object, ca.eandb.util.progress.ProgressMonitor)},
 	 * 		{@link JobService#getTaskWorker(UUID)}.
 	 */
 	public Serialized<Object> getTask() {
