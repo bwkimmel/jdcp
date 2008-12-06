@@ -357,13 +357,12 @@ public final class ThreadServiceWorkerJob implements Job {
 			 */
 			Serialized<TaskWorker> envelope = this.service.getTaskWorker(jobId);
 
-			// TODO replace hard coded class loader strategy.
 			ClassLoaderStrategy strategy;
 			try {
 				strategy = new PersistenceCachingJobServiceClassLoaderStrategy(service, jobId);
 			} catch (UnavailableServiceException e) {
-				strategy = new FileCachingJobServiceClassLoaderStrategy(service, jobId, "/Users/brad/jmist/worker");
-			} // new FileCachingJobServiceClassLoaderStrategy(service, jobId, "C:/test/worker");
+				strategy = new FileCachingJobServiceClassLoaderStrategy(service, jobId, "./worker");
+			}
 
 			ClassLoader loader = new StrategyClassLoader(strategy, ThreadServiceWorkerJob.class.getClassLoader());
 			TaskWorker worker = envelope.deserialize(loader);
