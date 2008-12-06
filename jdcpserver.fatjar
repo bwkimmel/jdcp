@@ -1,12 +1,12 @@
 #Fat Jar Configuration File
-#Thu Dec 04 16:00:50 EST 2008
+#Sat Dec 06 10:38:24 EST 2008
 onejar.license.required=false
 manifest.classpath=lib/swingx.jar lib/log4j-1.2.15.jar
 manifest.removesigners=true
 onejar.checkbox=false
 jarname=jdcpserver.jar
 manifest.mergeall=true
-manifest.mainclass=org.jdcp.server.JobServerMain
+manifest.mainclass=ca.eandb.jdcp.server.JobServerMain
 manifest.file=<createnew>
 jarname.isextern=false
 onejar.expand=
