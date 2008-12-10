@@ -25,6 +25,8 @@
 
 package ca.eandb.jdcp.worker;
 
+import java.awt.BorderLayout;
+import java.awt.Container;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.concurrent.Executor;
@@ -34,10 +36,9 @@ import javax.jnlp.BasicService;
 import javax.jnlp.ServiceManager;
 import javax.jnlp.UnavailableServiceException;
 import javax.swing.JDialog;
+import javax.swing.SwingUtilities;
 
 import ca.eandb.jdcp.concurrent.BackgroundThreadFactory;
-import ca.eandb.util.jobs.Job;
-import ca.eandb.util.progress.DummyProgressMonitor;
 import ca.eandb.util.progress.ProgressPanel;
 
 /**
@@ -50,13 +51,20 @@ public final class WorkerMain {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		final String host = getParentHost(args);
 
-		String host = getParentHost(args);
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				start(host);
+			}
+		});
+	}
+
+	private static void start(String host) {
+
 		int numberOfCpus = Runtime.getRuntime().availableProcessors();
 		Executor threadPool = Executors.newFixedThreadPool(numberOfCpus, new BackgroundThreadFactory());
 		ProgressPanel panel = new ProgressPanel();
-		Job workerJob = new ThreadServiceWorkerJob(host, 10, numberOfCpus, threadPool, panel);
-
 
 		final JDialog dialog = new JDialog();
 		dialog.addWindowListener(new WindowAdapter() {
@@ -72,11 +80,19 @@ public final class WorkerMain {
 
 		});
 
-		dialog.add(panel);
+		Container contentPane = dialog.getContentPane();
+		contentPane.setLayout(new BorderLayout());
+		contentPane.add(panel, BorderLayout.CENTER);
 		dialog.setBounds(0, 0, 400, 300);
+		dialog.pack();
+		dialog.validate();
+
 		dialog.setVisible(true);
 
-		workerJob.go(DummyProgressMonitor.getInstance());
+		Runnable worker = new ThreadServiceWorker(host, 10, numberOfCpus, threadPool, panel);
+		Thread thread = new Thread(worker);
+
+		thread.start();
 
 	}
 

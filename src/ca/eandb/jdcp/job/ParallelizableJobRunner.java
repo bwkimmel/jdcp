@@ -33,10 +33,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
-
 import ca.eandb.jdcp.concurrent.BackgroundThreadFactory;
 import ca.eandb.util.UnexpectedException;
-import ca.eandb.util.jobs.Job;
+import ca.eandb.util.progress.DummyProgressMonitor;
 import ca.eandb.util.progress.DummyProgressMonitorFactory;
 import ca.eandb.util.progress.ProgressMonitor;
 import ca.eandb.util.progress.ProgressMonitorFactory;
@@ -46,7 +45,7 @@ import ca.eandb.util.progress.ProgressMonitorFactory;
  * threads.
  * @author Brad Kimmel
  */
-public final class ParallelizableJobRunner implements Job {
+public final class ParallelizableJobRunner implements Runnable {
 
 	/**
 	 * Creates a new <code>ParallelizableJobRunner</code>.
@@ -57,14 +56,17 @@ public final class ParallelizableJobRunner implements Job {
 	 * 		process.
 	 * @param monitorFactory The <code>ProgressMonitorFactory</code> to use to
 	 * 		create <code>ProgressMonitor</code>s for worker tasks.
+	 * @param monitor The <code>ProgressMonitor</code> to report overall job
+	 * 		progress to.
 	 */
-	public ParallelizableJobRunner(ParallelizableJob job, File workingDirectory, Executor executor, int maxConcurrentWorkers, ProgressMonitorFactory monitorFactory) {
+	public ParallelizableJobRunner(ParallelizableJob job, File workingDirectory, Executor executor, int maxConcurrentWorkers, ProgressMonitorFactory monitorFactory, ProgressMonitor monitor) {
 		this.job = new JobExecutionWrapper(job);
 		this.workingDirectory = workingDirectory;
 		this.executor = executor;
 		this.workerSlot = new Semaphore(maxConcurrentWorkers);
 		this.maxConcurrentWorkers = maxConcurrentWorkers;
 		this.monitorFactory = monitorFactory;
+		this.monitor = monitor;
 	}
 
 	/**
@@ -76,7 +78,7 @@ public final class ParallelizableJobRunner implements Job {
 	 * 		process.
 	 */
 	public ParallelizableJobRunner(ParallelizableJob job, File workingDirectory, Executor executor, int maxConcurrentWorkers) {
-		this(job, workingDirectory, executor, maxConcurrentWorkers, DummyProgressMonitorFactory.getInstance());
+		this(job, workingDirectory, executor, maxConcurrentWorkers, DummyProgressMonitorFactory.getInstance(), DummyProgressMonitor.getInstance());
 	}
 
 	/**
@@ -114,17 +116,15 @@ public final class ParallelizableJobRunner implements Job {
 	}
 
 	/* (non-Javadoc)
-	 * @see ca.eandb.util.jobs.Job#go(ca.eandb.util.progress.ProgressMonitor)
+	 * @see java.lang.Runnable#run()
 	 */
-	public synchronized boolean go(final ProgressMonitor monitor) {
+	public synchronized void run() {
 
 		int taskNumber = 0;
 		boolean complete = false;
 
-
 		try {
 
-			this.monitor = monitor;
 			TaskWorker taskWorker = job.worker();
 			this.job.setHostService(host);
 			this.job.initialize();
@@ -164,7 +164,6 @@ public final class ParallelizableJobRunner implements Job {
 			}
 
 			this.job.finish();
-			this.monitor = null;
 
 		} catch (JobExecutionException e) {
 
@@ -177,8 +176,6 @@ public final class ParallelizableJobRunner implements Job {
 		} else {
 			monitor.notifyComplete();
 		}
-
-		return true;
 
 	}
 

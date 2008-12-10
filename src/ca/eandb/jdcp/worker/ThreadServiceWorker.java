@@ -40,6 +40,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.jnlp.UnavailableServiceException;
 
+import org.apache.log4j.Logger;
 
 import ca.eandb.jdcp.job.TaskDescription;
 import ca.eandb.jdcp.job.TaskWorker;
@@ -48,7 +49,6 @@ import ca.eandb.jdcp.remote.JobService;
 import ca.eandb.util.UnexpectedException;
 import ca.eandb.util.classloader.ClassLoaderStrategy;
 import ca.eandb.util.classloader.StrategyClassLoader;
-import ca.eandb.util.jobs.Job;
 import ca.eandb.util.progress.PermanentProgressMonitor;
 import ca.eandb.util.progress.ProgressMonitor;
 import ca.eandb.util.progress.ProgressMonitorFactory;
@@ -60,7 +60,7 @@ import ca.eandb.util.rmi.Serialized;
  * threads to process tasks.
  * @author Brad Kimmel
  */
-public final class ThreadServiceWorkerJob implements Job {
+public final class ThreadServiceWorker implements Runnable {
 
 	/**
 	 * Initializes the address of the master and the amount of time to idle
@@ -74,7 +74,7 @@ public final class ThreadServiceWorkerJob implements Job {
 	 * @param monitorFactory The <code>ProgressMonitorFactory</code> to use to
 	 * 		create <code>ProgressMonitor</code>s for worker tasks.
 	 */
-	public ThreadServiceWorkerJob(String masterHost, int idleTime, int maxConcurrentWorkers, Executor executor, ProgressMonitorFactory monitorFactory) {
+	public ThreadServiceWorker(String masterHost, int idleTime, int maxConcurrentWorkers, Executor executor, ProgressMonitorFactory monitorFactory) {
 
 		assert(maxConcurrentWorkers > 0);
 
@@ -87,44 +87,30 @@ public final class ThreadServiceWorkerJob implements Job {
 	}
 
 	/* (non-Javadoc)
-	 * @see ca.eandb.util.jobs.Job#go(ca.eandb.util.progress.ProgressMonitor)
+	 * @see java.lang.Runnable#run()
 	 */
-	public boolean go(ProgressMonitor monitor) {
+	public void run() {
 
 		try {
-
-			monitor.notifyIndeterminantProgress();
-			monitor.notifyStatusChanged("Looking up master...");
 
 			this.registry = LocateRegistry.getRegistry(this.masterHost);
 			this.initializeService();
 			this.initializeWorkers(maxConcurrentWorkers);
 
-			while (!monitor.isCancelPending()) {
-
+			while (true) {
 				Worker worker = this.workerQueue.take();
-
-				monitor.notifyStatusChanged("Queueing worker process...");
 				this.executor.execute(worker);
-
 			}
 
-			monitor.notifyStatusChanged("Cancelled.");
+		} catch (InterruptedException e) {
 
-		} catch (Exception e) {
+			logger.info("Thread was interrupted.", e);
 
-			monitor.notifyStatusChanged("Exception: " + e.toString());
+		} catch (RemoteException e) {
 
-			System.err.println("Client exception: " + e.toString());
-			e.printStackTrace();
-
-		} finally {
-
-			monitor.notifyCancelled();
+			logger.error("Could not obtain registry", e);
 
 		}
-
-		return false;
 
 	}
 
@@ -152,7 +138,7 @@ public final class ThreadServiceWorkerJob implements Job {
 			this.service = authService.authenticate("guest", "");
 			return true;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Could not connect to service.", e);
 			return false;
 		}
 	}
@@ -368,7 +354,7 @@ public final class ThreadServiceWorkerJob implements Job {
 				strategy = new FileCachingJobServiceClassLoaderStrategy(service, jobId, "./worker");
 			}
 
-			ClassLoader loader = new StrategyClassLoader(strategy, ThreadServiceWorkerJob.class.getClassLoader());
+			ClassLoader loader = new StrategyClassLoader(strategy, ThreadServiceWorker.class.getClassLoader());
 			TaskWorker worker = envelope.deserialize(loader);
 			entry.setWorker(worker);
 
@@ -476,7 +462,7 @@ public final class ThreadServiceWorkerJob implements Job {
 
 				} else {
 
-					this.monitor.notifyStatusChanged("No service at " + ThreadServiceWorkerJob.this.masterHost);
+					this.monitor.notifyStatusChanged("No service at " + ThreadServiceWorker.this.masterHost);
 					this.waitForService();
 					this.monitor.notifyCancelled();
 
@@ -484,8 +470,7 @@ public final class ThreadServiceWorkerJob implements Job {
 
 			} catch (RemoteException e) {
 
-				System.err.println("Remote exception: " + e.toString());
-				e.printStackTrace();
+				logger.error("Could not communicate with master.", e);
 
 				this.monitor.notifyStatusChanged("Failed to communicate with master.");
 				this.waitForService();
@@ -549,7 +534,7 @@ public final class ThreadServiceWorkerJob implements Job {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				logger.warn("Thread was interrupted", e);
 			}
 		}
 
@@ -559,6 +544,9 @@ public final class ThreadServiceWorkerJob implements Job {
 		private final ProgressMonitor monitor;
 
 	}
+
+	/** The <code>Logger</code> to write log messages to. */
+	private static final Logger logger = Logger.getLogger(ThreadServiceWorker.class);
 
 	/** The URL of the master. */
 	private final String masterHost;
