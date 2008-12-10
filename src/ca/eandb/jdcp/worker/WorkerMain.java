@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Bradley W. Kimmel
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -9,10 +9,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -38,7 +38,8 @@ import javax.swing.JDialog;
 
 import ca.eandb.jdcp.concurrent.BackgroundThreadFactory;
 import ca.eandb.util.jobs.Job;
-import ca.eandb.util.progress.ProgressPanel;
+import ca.eandb.util.progress.DummyProgressMonitor;
+import ca.eandb.util.progress.DummyProgressMonitorFactory;
 
 /**
  * @author Brad Kimmel
@@ -54,10 +55,12 @@ public final class WorkerMain {
 		String host = getParentHost(args);
 		int numberOfCpus = Runtime.getRuntime().availableProcessors();
 		Executor threadPool = Executors.newFixedThreadPool(numberOfCpus, new BackgroundThreadFactory());
-		Job workerJob = new ThreadServiceWorkerJob(host, 10, numberOfCpus, threadPool);
 
-		ProgressPanel monitor = new ProgressPanel();
-		monitor.setRootVisible(false);
+		// TODO reimplement ProgressPanel as a ProgressMonitorFactory and substitute
+		Job workerJob = new ThreadServiceWorkerJob(host, 10, numberOfCpus, threadPool, DummyProgressMonitorFactory.getInstance());
+
+//		ProgressPanel monitor = new ProgressPanel();
+//		monitor.setRootVisible(false);
 
 		final JDialog dialog = new JDialog();
 		dialog.addWindowListener(new WindowAdapter() {
@@ -73,11 +76,11 @@ public final class WorkerMain {
 
 		});
 
-		dialog.add(monitor);
+//		dialog.add(monitor);
 		dialog.setBounds(0, 0, 400, 300);
 		dialog.setVisible(true);
 
-		workerJob.go(monitor);
+		workerJob.go(DummyProgressMonitor.getInstance());
 
 	}
 

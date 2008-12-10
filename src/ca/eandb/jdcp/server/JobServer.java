@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Bradley W. Kimmel
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -9,10 +9,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -58,6 +58,7 @@ import ca.eandb.util.UnexpectedException;
 import ca.eandb.util.classloader.StrategyClassLoader;
 import ca.eandb.util.io.FileUtil;
 import ca.eandb.util.progress.ProgressMonitor;
+import ca.eandb.util.progress.ProgressMonitorFactory;
 import ca.eandb.util.rmi.Serialized;
 
 /**
@@ -70,7 +71,7 @@ public final class JobServer implements JobService {
 
 	private static final Logger logger = Logger.getLogger(JobServer.class);
 
-	private final ProgressMonitor monitor;
+	private final ProgressMonitorFactory monitorFactory;
 
 	private final TaskScheduler scheduler;
 
@@ -87,7 +88,8 @@ public final class JobServer implements JobService {
 	/**
 	 * Creates a new <code>JobServer</code>.
 	 * @param outputDirectory The directory to write job results to.
-	 * @param monitor The <code>ProgressMonitor</code> to report to.
+	 * @param monitorFactory The <code>ProgressMonitorFactory</code> to use to
+	 * 		create <code>ProgressMonitor</code>s for individual jobs.
 	 * @param scheduler The <code>TaskScheduler</code> to use to assign
 	 * 		tasks.
 	 * @param classManager The <code>ParentClassManager</code> to use to
@@ -95,12 +97,12 @@ public final class JobServer implements JobService {
 	 * @param executor The <code>Executor</code> to use to run bits of code
 	 * 		that should not hold up the remote caller.
 	 */
-	public JobServer(File outputDirectory, ProgressMonitor monitor, TaskScheduler scheduler, ParentClassManager classManager, Executor executor) throws IllegalArgumentException {
+	public JobServer(File outputDirectory, ProgressMonitorFactory monitorFactory, TaskScheduler scheduler, ParentClassManager classManager, Executor executor) throws IllegalArgumentException {
 		if (!outputDirectory.isDirectory()) {
 			throw new IllegalArgumentException("outputDirectory must be a directory.");
 		}
 		this.outputDirectory = outputDirectory;
-		this.monitor = monitor;
+		this.monitorFactory = monitorFactory;
 		this.scheduler = scheduler;
 		this.classManager = classManager;
 		this.executor = executor;
@@ -112,7 +114,7 @@ public final class JobServer implements JobService {
 	 * @see ca.eandb.jdcp.remote.JobService#createJob(java.lang.String)
 	 */
 	public UUID createJob(String description) throws SecurityException {
-		ScheduledJob sched = new ScheduledJob(description, monitor);
+		ScheduledJob sched = new ScheduledJob(description, monitorFactory.createProgressMonitor(description));
 		jobs.put(sched.id, sched);
 
 		if (logger.isInfoEnabled()) {
@@ -150,7 +152,7 @@ public final class JobServer implements JobService {
 	 */
 	public UUID submitJob(Serialized<ParallelizableJob> job, String description)
 			throws SecurityException, ClassNotFoundException, JobExecutionException {
-		ScheduledJob sched = new ScheduledJob(description, monitor);
+		ScheduledJob sched = new ScheduledJob(description, monitorFactory.createProgressMonitor(description));
 		jobs.put(sched.id, sched);
 
 		try {
@@ -391,9 +393,8 @@ public final class JobServer implements JobService {
 		/**
 		 * Initializes the scheduled job.
 		 * @param description A description of the job.
-		 * @param monitor The <code>ProgressMonitor</code> from which to create a child
-		 * 		monitor to use to monitor the progress of the
-		 * 		<code>ParallelizableJob</code>.
+		 * @param monitor The <code>ProgressMonitor</code> to use to monitor
+		 * 		the progress of the <code>ParallelizableJob</code>.
 		 */
 		public ScheduledJob(String description, ProgressMonitor monitor) {
 
@@ -401,7 +402,7 @@ public final class JobServer implements JobService {
 			this.description		= description;
 
 			//String title			= String.format("%s (%s)", this.job.getClass().getSimpleName(), this.id.toString());
-			this.monitor			= monitor.createChildProgressMonitor(description);
+			this.monitor			= monitor;
 			this.monitor.notifyStatusChanged("Awaiting job submission");
 
 			this.classManager		= JobServer.this.classManager.createChildClassManager();

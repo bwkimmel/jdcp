@@ -37,7 +37,9 @@ import java.util.concurrent.Semaphore;
 import ca.eandb.jdcp.concurrent.BackgroundThreadFactory;
 import ca.eandb.util.UnexpectedException;
 import ca.eandb.util.jobs.Job;
+import ca.eandb.util.progress.DummyProgressMonitorFactory;
 import ca.eandb.util.progress.ProgressMonitor;
+import ca.eandb.util.progress.ProgressMonitorFactory;
 
 /**
  * A <code>Job</code> that runs a <code>ParallelizableJob</code> using multiple
@@ -53,13 +55,28 @@ public final class ParallelizableJobRunner implements Job {
 	 * @param executor The <code>Executor</code> to use to run worker threads.
 	 * @param maxConcurrentWorkers The maximum number of concurrent tasks to
 	 * 		process.
+	 * @param monitorFactory The <code>ProgressMonitorFactory</code> to use to
+	 * 		create <code>ProgressMonitor</code>s for worker tasks.
 	 */
-	public ParallelizableJobRunner(ParallelizableJob job, File workingDirectory, Executor executor, int maxConcurrentWorkers) {
+	public ParallelizableJobRunner(ParallelizableJob job, File workingDirectory, Executor executor, int maxConcurrentWorkers, ProgressMonitorFactory monitorFactory) {
 		this.job = new JobExecutionWrapper(job);
 		this.workingDirectory = workingDirectory;
 		this.executor = executor;
 		this.workerSlot = new Semaphore(maxConcurrentWorkers);
 		this.maxConcurrentWorkers = maxConcurrentWorkers;
+		this.monitorFactory = monitorFactory;
+	}
+
+	/**
+	 * Creates a new <code>ParallelizableJobRunner</code>.
+	 * @param job The <code>ParallelizableJob</code> to run.
+	 * @param workingDirectory The working directory for the job.
+	 * @param executor The <code>Executor</code> to use to run worker threads.
+	 * @param maxConcurrentWorkers The maximum number of concurrent tasks to
+	 * 		process.
+	 */
+	public ParallelizableJobRunner(ParallelizableJob job, File workingDirectory, Executor executor, int maxConcurrentWorkers) {
+		this(job, workingDirectory, executor, maxConcurrentWorkers, DummyProgressMonitorFactory.getInstance());
 	}
 
 	/**
@@ -129,7 +146,7 @@ public final class ParallelizableJobRunner implements Job {
 
 					/* Create a worker and process the task. */
 					String workerTitle = String.format("Worker (%d)", taskNumber);
-					Worker worker = new Worker(taskWorker, task, monitor.createChildProgressMonitor(workerTitle));
+					Worker worker = new Worker(taskWorker, task, monitorFactory.createProgressMonitor(workerTitle));
 
 					/* Acquire one of the slots for processing a task -- this
 					 * limits the processing to the specified number of concurrent
@@ -259,8 +276,11 @@ public final class ParallelizableJobRunner implements Job {
 
 	};
 
-	/** The <code>ProgressMonitor</code> to report progress to. */
-	private ProgressMonitor monitor = null;
+	/**
+	 * The <code>ProgressMonitorFactory</code> to use to create
+	 * <code>ProgressMonitor</code>s for worker tasks.
+	 */
+	private final ProgressMonitorFactory monitorFactory;
 
 	/** The <code>ParallelizableJob</code> to be run. */
 	private final JobExecutionWrapper job;
@@ -279,5 +299,8 @@ public final class ParallelizableJobRunner implements Job {
 
 	/** The maximum number of concurrent tasks to process. */
 	private final int maxConcurrentWorkers;
+
+	/** The current <code>ProgressMonitor</code>. */
+	private ProgressMonitor monitor;
 
 }

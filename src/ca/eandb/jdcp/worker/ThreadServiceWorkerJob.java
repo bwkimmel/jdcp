@@ -51,6 +51,7 @@ import ca.eandb.util.classloader.StrategyClassLoader;
 import ca.eandb.util.jobs.Job;
 import ca.eandb.util.progress.PermanentProgressMonitor;
 import ca.eandb.util.progress.ProgressMonitor;
+import ca.eandb.util.progress.ProgressMonitorFactory;
 import ca.eandb.util.rmi.Serialized;
 
 /**
@@ -70,8 +71,10 @@ public final class ThreadServiceWorkerJob implements Job {
 	 * @param maxConcurrentWorkers The maximum number of concurrent worker
 	 * 		threads to allow.
 	 * @param executor The <code>Executor</code> to use to process tasks.
+	 * @param monitorFactory The <code>ProgressMonitorFactory</code> to use to
+	 * 		create <code>ProgressMonitor</code>s for worker tasks.
 	 */
-	public ThreadServiceWorkerJob(String masterHost, int idleTime, int maxConcurrentWorkers, Executor executor) {
+	public ThreadServiceWorkerJob(String masterHost, int idleTime, int maxConcurrentWorkers, Executor executor, ProgressMonitorFactory monitorFactory) {
 
 		assert(maxConcurrentWorkers > 0);
 
@@ -79,6 +82,7 @@ public final class ThreadServiceWorkerJob implements Job {
 		this.idleTime = idleTime;
 		this.executor = executor;
 		this.maxConcurrentWorkers = maxConcurrentWorkers;
+		this.monitorFactory = monitorFactory;
 
 	}
 
@@ -94,7 +98,7 @@ public final class ThreadServiceWorkerJob implements Job {
 
 			this.registry = LocateRegistry.getRegistry(this.masterHost);
 			this.initializeService();
-			this.initializeWorkers(maxConcurrentWorkers, monitor);
+			this.initializeWorkers(maxConcurrentWorkers);
 
 			while (!monitor.isCancelPending()) {
 
@@ -130,10 +134,10 @@ public final class ThreadServiceWorkerJob implements Job {
 	 * @param parentMonitor The <code>ProgressMonitor</code> to use to create
 	 * 		child <code>ProgressMonitor</code>s for each <code>Worker</code>.
 	 */
-	private void initializeWorkers(int numWorkers, ProgressMonitor parentMonitor) {
+	private void initializeWorkers(int numWorkers) {
 		for (int i = 0; i < numWorkers; i++) {
 			String title = String.format("Worker (%d)", i + 1);
-			ProgressMonitor monitor = new PermanentProgressMonitor(parentMonitor.createChildProgressMonitor(title));
+			ProgressMonitor monitor = new PermanentProgressMonitor(monitorFactory.createProgressMonitor(title));
 			workerQueue.add(new Worker(monitor));
 		}
 	}
@@ -566,6 +570,12 @@ public final class ThreadServiceWorkerJob implements Job {
 
 	/** The <code>Executor</code> to use to process tasks. */
 	private final Executor executor;
+
+	/**
+	 * The <code>ProgressMonitorFactory</code> to use to create
+	 * <code>ProgressMonitor</code>s for worker tasks.
+	 */
+	private final ProgressMonitorFactory monitorFactory;
 
 	/**
 	 * The <code>Registry</code> to obtain the service from.

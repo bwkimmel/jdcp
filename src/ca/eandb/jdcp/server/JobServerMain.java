@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Bradley W. Kimmel
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -9,10 +9,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -25,7 +25,6 @@
 
 package ca.eandb.jdcp.server;
 
-import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -37,12 +36,12 @@ import java.util.prefs.Preferences;
 
 import javax.swing.JFrame;
 
-
 import ca.eandb.jdcp.scheduling.PrioritySerialTaskScheduler;
 import ca.eandb.jdcp.scheduling.TaskScheduler;
 import ca.eandb.jdcp.server.classmanager.FileClassManager;
 import ca.eandb.jdcp.server.classmanager.ParentClassManager;
-import ca.eandb.util.progress.ProgressPanel;
+import ca.eandb.util.progress.DummyProgressMonitorFactory;
+import ca.eandb.util.progress.ProgressMonitorFactory;
 
 /**
  * @author Brad Kimmel
@@ -66,9 +65,11 @@ public final class JobServerMain {
 		try {
 
 			System.err.print("Initializing progress monitor...");
-			ProgressPanel monitor = new ProgressPanel();
-			monitor.setRootVisible(false);
-			monitor.setPreferredSize(new Dimension(500, 350));
+
+			// TODO recreate ProgressPanel as a ProgressMonitorFactory and substitute
+			ProgressMonitorFactory monitorFactory = DummyProgressMonitorFactory.getInstance();
+//			monitor.setRootVisible(false);
+//			monitor.setPreferredSize(new Dimension(500, 350));
 			System.err.println("OK");
 
 			System.err.print("Initializing folders...");
@@ -87,7 +88,7 @@ public final class JobServerMain {
 			ParentClassManager classManager = new FileClassManager(classesDirectory);
 			TaskScheduler scheduler = new PrioritySerialTaskScheduler();
 			Executor executor = Executors.newCachedThreadPool();
-			JobServer jobServer = new JobServer(jobsDirectory, monitor, scheduler, classManager, executor);
+			JobServer jobServer = new JobServer(jobsDirectory, monitorFactory, scheduler, classManager, executor);
 			AuthenticationServer authServer = new AuthenticationServer(jobServer);
 			System.err.println("OK");
 
@@ -105,7 +106,9 @@ public final class JobServerMain {
 
 			JFrame frame = new JFrame("JDCP Server");
 			frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-			frame.getContentPane().add(monitor);
+
+			// TODO recreate ProgressPanel as a ProgressMonitorFactory and substitute
+//			frame.getContentPane().add(monitor);
 			frame.pack();
 
 			frame.addWindowListener(new WindowAdapter() {
