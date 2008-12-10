@@ -35,11 +35,10 @@ import javax.jnlp.ServiceManager;
 import javax.jnlp.UnavailableServiceException;
 import javax.swing.JDialog;
 
-
 import ca.eandb.jdcp.concurrent.BackgroundThreadFactory;
 import ca.eandb.util.jobs.Job;
 import ca.eandb.util.progress.DummyProgressMonitor;
-import ca.eandb.util.progress.DummyProgressMonitorFactory;
+import ca.eandb.util.progress.ProgressPanel;
 
 /**
  * @author Brad Kimmel
@@ -55,12 +54,9 @@ public final class WorkerMain {
 		String host = getParentHost(args);
 		int numberOfCpus = Runtime.getRuntime().availableProcessors();
 		Executor threadPool = Executors.newFixedThreadPool(numberOfCpus, new BackgroundThreadFactory());
+		ProgressPanel panel = new ProgressPanel();
+		Job workerJob = new ThreadServiceWorkerJob(host, 10, numberOfCpus, threadPool, panel);
 
-		// TODO reimplement ProgressPanel as a ProgressMonitorFactory and substitute
-		Job workerJob = new ThreadServiceWorkerJob(host, 10, numberOfCpus, threadPool, DummyProgressMonitorFactory.getInstance());
-
-//		ProgressPanel monitor = new ProgressPanel();
-//		monitor.setRootVisible(false);
 
 		final JDialog dialog = new JDialog();
 		dialog.addWindowListener(new WindowAdapter() {
@@ -76,7 +72,7 @@ public final class WorkerMain {
 
 		});
 
-//		dialog.add(monitor);
+		dialog.add(panel);
 		dialog.setBounds(0, 0, 400, 300);
 		dialog.setVisible(true);
 

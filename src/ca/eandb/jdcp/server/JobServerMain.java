@@ -25,6 +25,7 @@
 
 package ca.eandb.jdcp.server;
 
+import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -40,8 +41,7 @@ import ca.eandb.jdcp.scheduling.PrioritySerialTaskScheduler;
 import ca.eandb.jdcp.scheduling.TaskScheduler;
 import ca.eandb.jdcp.server.classmanager.FileClassManager;
 import ca.eandb.jdcp.server.classmanager.ParentClassManager;
-import ca.eandb.util.progress.DummyProgressMonitorFactory;
-import ca.eandb.util.progress.ProgressMonitorFactory;
+import ca.eandb.util.progress.ProgressPanel;
 
 /**
  * @author Brad Kimmel
@@ -65,11 +65,8 @@ public final class JobServerMain {
 		try {
 
 			System.err.print("Initializing progress monitor...");
-
-			// TODO recreate ProgressPanel as a ProgressMonitorFactory and substitute
-			ProgressMonitorFactory monitorFactory = DummyProgressMonitorFactory.getInstance();
-//			monitor.setRootVisible(false);
-//			monitor.setPreferredSize(new Dimension(500, 350));
+			ProgressPanel panel = new ProgressPanel();
+			panel.setPreferredSize(new Dimension(500, 350));
 			System.err.println("OK");
 
 			System.err.print("Initializing folders...");
@@ -88,7 +85,7 @@ public final class JobServerMain {
 			ParentClassManager classManager = new FileClassManager(classesDirectory);
 			TaskScheduler scheduler = new PrioritySerialTaskScheduler();
 			Executor executor = Executors.newCachedThreadPool();
-			JobServer jobServer = new JobServer(jobsDirectory, monitorFactory, scheduler, classManager, executor);
+			JobServer jobServer = new JobServer(jobsDirectory, panel, scheduler, classManager, executor);
 			AuthenticationServer authServer = new AuthenticationServer(jobServer);
 			System.err.println("OK");
 
@@ -107,8 +104,7 @@ public final class JobServerMain {
 			JFrame frame = new JFrame("JDCP Server");
 			frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-			// TODO recreate ProgressPanel as a ProgressMonitorFactory and substitute
-//			frame.getContentPane().add(monitor);
+			frame.getContentPane().add(panel);
 			frame.pack();
 
 			frame.addWindowListener(new WindowAdapter() {
