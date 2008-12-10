@@ -31,7 +31,7 @@ import ca.eandb.util.progress.ProgressMonitor;
  * A <code>ParallelizableJob</code> decorator that wraps exceptions thrown by
  * the inner <code>ParallelizableJob</code> in a
  * <code>JobExecutionException</code>.
- * @author brad
+ * @author Brad Kimmel
  * @see ca.eandb.jdcp.job.ParallelizableJob
  * @see ca.eandb.jdcp.job.JobExecutionException
  */

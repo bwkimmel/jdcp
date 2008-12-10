@@ -40,7 +40,7 @@ import ca.eandb.jdcp.remote.JobService;
 import ca.eandb.util.auth.FixedCallbackHandler;
 
 /**
- * @author brad
+ * @author Brad Kimmel
  *
  */
 public final class AuthenticationServer extends UnicastRemoteObject implements

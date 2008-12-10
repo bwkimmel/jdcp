@@ -44,7 +44,7 @@ import ca.eandb.util.args.FileFieldOption;
 import ca.eandb.util.args.StringFieldOption;
 
 /**
- * @author brad
+ * @author Brad Kimmel
  *
  */
 public final class ScriptCommand implements Command<Configuration> {

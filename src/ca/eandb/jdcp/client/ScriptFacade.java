@@ -32,7 +32,7 @@ import ca.eandb.jdcp.job.ParallelizableJob;
 import ca.eandb.util.rmi.Serialized;
 
 /**
- * @author brad
+ * @author Brad Kimmel
  *
  */
 public final class ScriptFacade {

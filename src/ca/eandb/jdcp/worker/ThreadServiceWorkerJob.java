@@ -57,7 +57,7 @@ import ca.eandb.util.rmi.Serialized;
  * A job that processes tasks for a parallelizable job from a remote
  * <code>JobServiceMaster<code>.  This class may potentially use multiple
  * threads to process tasks.
- * @author bkimmel
+ * @author Brad Kimmel
  */
 public final class ThreadServiceWorkerJob implements Job {
 
@@ -155,7 +155,7 @@ public final class ThreadServiceWorkerJob implements Job {
 
 	/**
 	 * An entry in the <code>TaskWorker</code> cache.
-	 * @author bkimmel
+	 * @author Brad Kimmel
 	 */
 	private static class WorkerCacheEntry {
 
@@ -386,7 +386,7 @@ public final class ThreadServiceWorkerJob implements Job {
 
 	/**
 	 * Used to process tasks in threads.
-	 * @author bkimmel
+	 * @author Brad Kimmel
 	 */
 	private class Worker implements Runnable {
 

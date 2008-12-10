@@ -32,7 +32,7 @@ import javax.security.auth.login.LoginException;
 
 /**
  * A remote service for authenticating <code>JobService</code> users.
- * @author bwkimmel
+ * @author Brad Kimmel
  */
 public interface AuthenticationService extends Remote {
 

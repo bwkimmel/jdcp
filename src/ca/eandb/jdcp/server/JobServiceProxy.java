@@ -45,7 +45,7 @@ import ca.eandb.util.UnexpectedException;
 import ca.eandb.util.rmi.Serialized;
 
 /**
- * @author brad
+ * @author Brad Kimmel
  *
  */
 public final class JobServiceProxy extends UnicastRemoteObject implements JobService {

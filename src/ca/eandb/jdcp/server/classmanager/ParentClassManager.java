@@ -26,7 +26,7 @@
 package ca.eandb.jdcp.server.classmanager;
 
 /**
- * @author brad
+ * @author Brad Kimmel
  *
  */
 public interface ParentClassManager extends ClassManager {

@@ -40,7 +40,7 @@ import ca.eandb.util.rmi.Serialized;
  * A remote service for accepting <code>ParallelizableJob</code>s,
  * managing the distribution of tasks to workers, and aggregating the results
  * submitted by workers.
- * @author bkimmel
+ * @author Brad Kimmel
  */
 public interface JobService extends Remote {
 

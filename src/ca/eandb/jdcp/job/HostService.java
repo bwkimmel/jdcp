@@ -31,7 +31,7 @@ import java.io.RandomAccessFile;
 /**
  * Provides access to host services on the server for a
  * <code>ParallelizableJob</code> running in a secure sandbox.
- * @author brad
+ * @author Brad Kimmel
  * @see ca.eandb.jdcp.job.ParallelizableJob#initialize(Host)
  */
 public interface HostService {

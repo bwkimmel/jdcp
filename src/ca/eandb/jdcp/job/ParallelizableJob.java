@@ -30,7 +30,7 @@ import ca.eandb.util.progress.ProgressMonitor;
 
 /**
  * Represents a job that can be split into smaller chunks.
- * @author bkimmel
+ * @author Brad Kimmel
  */
 public interface ParallelizableJob extends Job {
 

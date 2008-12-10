@@ -31,7 +31,7 @@ import java.nio.ByteBuffer;
 import ca.eandb.util.StringUtil;
 
 /**
- * @author brad
+ * @author Brad Kimmel
  *
  */
 public final class TestFileClassManager {

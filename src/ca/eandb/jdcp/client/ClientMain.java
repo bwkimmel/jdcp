@@ -31,7 +31,7 @@ import ca.eandb.util.args.StringFieldOption;
 import ca.eandb.util.args.UnrecognizedCommand;
 
 /**
- * @author brad
+ * @author Brad Kimmel
  *
  */
 public final class ClientMain {

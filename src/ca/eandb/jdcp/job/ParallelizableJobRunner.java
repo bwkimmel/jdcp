@@ -42,7 +42,7 @@ import ca.eandb.util.progress.ProgressMonitor;
 /**
  * A <code>Job</code> that runs a <code>ParallelizableJob</code> using multiple
  * threads.
- * @author bkimmel
+ * @author Brad Kimmel
  */
 public final class ParallelizableJobRunner implements Job {
 
@@ -190,7 +190,7 @@ public final class ParallelizableJobRunner implements Job {
 
 	/**
 	 * Processes tasks for a <code>ParallelizableJob</code>.
-	 * @author bkimmel
+	 * @author Brad Kimmel
 	 */
 	private class Worker implements Runnable {
 

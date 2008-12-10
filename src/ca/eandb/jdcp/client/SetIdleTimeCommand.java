@@ -30,7 +30,7 @@ import java.rmi.RemoteException;
 import ca.eandb.util.args.AbstractCommand;
 
 /**
- * @author brad
+ * @author Brad Kimmel
  *
  */
 public class SetIdleTimeCommand extends AbstractCommand<Configuration> {

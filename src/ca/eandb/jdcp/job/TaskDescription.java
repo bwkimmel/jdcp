@@ -34,7 +34,7 @@ import ca.eandb.util.rmi.Serialized;
 
 /**
  * A description of a task assigned by a <code>JobMasterService</code>.
- * @author bkimmel
+ * @author Brad Kimmel
  * @see {@link JobService#requestTask()}.
  */
 public final class TaskDescription implements Serializable {

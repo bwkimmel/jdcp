@@ -36,7 +36,7 @@ import ca.eandb.jdcp.remote.JobService;
 import ca.eandb.util.StringUtil;
 
 /**
- * @author brad
+ * @author Brad Kimmel
  *
  */
 public final class FileCachingJobServiceClassLoaderStrategy extends

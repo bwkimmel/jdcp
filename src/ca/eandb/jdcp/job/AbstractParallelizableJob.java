@@ -33,7 +33,7 @@ import ca.eandb.util.progress.ProgressMonitor;
 /**
  * An abstract <code>ParallelizableJob</code> that provides a default
  * implementation for the <code>Job</code> interface.
- * @author bkimmel
+ * @author Brad Kimmel
  */
 public abstract class AbstractParallelizableJob implements ParallelizableJob {
 

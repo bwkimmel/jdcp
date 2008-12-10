@@ -29,7 +29,7 @@ import java.security.BasicPermission;
 
 /**
  * Represents a <code>Permission</code> for a JDCP-related action.
- * @author brad
+ * @author Brad Kimmel
  */
 public final class JdcpPermission extends BasicPermission {
 

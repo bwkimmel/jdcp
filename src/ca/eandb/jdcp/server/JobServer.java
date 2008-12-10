@@ -61,7 +61,7 @@ import ca.eandb.util.progress.ProgressMonitor;
 import ca.eandb.util.rmi.Serialized;
 
 /**
- * @author brad
+ * @author Brad Kimmel
  *
  */
 public final class JobServer implements JobService {
@@ -358,7 +358,7 @@ public final class JobServer implements JobService {
 	/**
 	 * Represents a <code>ParallelizableJob</code> that has been submitted
 	 * to this <code>JobMasterServer</code>.
-	 * @author bkimmel
+	 * @author Brad Kimmel
 	 */
 	private class ScheduledJob implements HostService {
 

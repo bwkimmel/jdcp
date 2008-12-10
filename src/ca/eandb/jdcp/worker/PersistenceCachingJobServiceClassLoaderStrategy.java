@@ -45,7 +45,7 @@ import ca.eandb.util.StringUtil;
 import ca.eandb.util.UnexpectedException;
 
 /**
- * @author brad
+ * @author Brad Kimmel
  *
  */
 public final class PersistenceCachingJobServiceClassLoaderStrategy extends

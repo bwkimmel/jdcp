@@ -34,7 +34,7 @@ import ca.eandb.jdcp.remote.JobService;
 import ca.eandb.util.classloader.ClassLoaderStrategy;
 
 /**
- * @author brad
+ * @author Brad Kimmel
  *
  */
 public final class JobServiceClassLoaderStrategy implements ClassLoaderStrategy {

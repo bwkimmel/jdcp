@@ -33,7 +33,7 @@ import ca.eandb.util.progress.ProgressMonitor;
 
 /**
  * A <code>ParallelizableJob</code> for diagnostic purposes.
- * @author brad
+ * @author Brad Kimmel
  */
 public final class DiagnosticJob extends AbstractParallelizableJob implements Serializable {
 
@@ -99,7 +99,7 @@ public final class DiagnosticJob extends AbstractParallelizableJob implements Se
 
 	/**
 	 * A <code>TaskWorker</code> for a <code>DiagnosticJob</code>.
-	 * @author brad
+	 * @author Brad Kimmel
 	 */
 	private static final class DiagnosticTaskWorker implements TaskWorker {
 

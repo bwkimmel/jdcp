@@ -41,7 +41,7 @@ import ca.eandb.util.jobs.Job;
 import ca.eandb.util.progress.ProgressPanel;
 
 /**
- * @author brad
+ * @author Brad Kimmel
  *
  */
 public final class WorkerMain {

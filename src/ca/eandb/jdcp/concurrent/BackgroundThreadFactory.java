@@ -30,7 +30,7 @@ import java.util.concurrent.ThreadFactory;
 
 /**
  * A <code>ThreadFactory</code> that creates daemon threads of low priority.
- * @author bkimmel
+ * @author Brad Kimmel
  */
 public final class BackgroundThreadFactory implements ThreadFactory {
 

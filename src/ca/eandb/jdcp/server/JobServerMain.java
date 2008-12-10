@@ -45,7 +45,7 @@ import ca.eandb.jdcp.server.classmanager.ParentClassManager;
 import ca.eandb.util.progress.ProgressPanel;
 
 /**
- * @author brad
+ * @author Brad Kimmel
  *
  */
 public final class JobServerMain {

@@ -28,7 +28,7 @@ package ca.eandb.jdcp.server.classmanager;
 import java.nio.ByteBuffer;
 
 /**
- * @author brad
+ * @author Brad Kimmel
  *
  */
 public abstract class AbstractClassManager implements ClassManager {

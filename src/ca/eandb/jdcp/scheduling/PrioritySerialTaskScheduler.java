@@ -40,7 +40,7 @@ import ca.eandb.jdcp.remote.JobService;
  * A <code>TaskScheduler</code> that serves tasks for the earliest scheduled
  * job having the highest priority in a round robin fashion.  That is, tasks
  * are scheduled so that each job completes before the next one starts.
- * @author brad
+ * @author Brad Kimmel
  */
 public final class PrioritySerialTaskScheduler implements TaskScheduler {
 
@@ -71,7 +71,7 @@ public final class PrioritySerialTaskScheduler implements TaskScheduler {
 	/**
 	 * Represents bookkeeping information about a
 	 * <code>ParallelizableJob</code>.
-	 * @author brad
+	 * @author Brad Kimmel
 	 */
 	private final class JobInfo implements Comparable<JobInfo> {
 
@@ -185,7 +185,7 @@ public final class PrioritySerialTaskScheduler implements TaskScheduler {
 	/**
 	 * Compares two <code>UUID</code>s representing jobs according to their
 	 * priority then according to the order in which they were first seen.
-	 * @author brad
+	 * @author Brad Kimmel
 	 */
 	private final class JobIdComparator implements Comparator<UUID> {
 

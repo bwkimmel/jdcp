@@ -33,7 +33,7 @@ import ca.eandb.util.progress.ProgressMonitor;
 
 /**
  * A dummy parallelizable job to test remote method invocation.
- * @author bkimmel
+ * @author Brad Kimmel
  */
 public final class DummyParallelizableJob extends AbstractParallelizableJob
 		implements Serializable {

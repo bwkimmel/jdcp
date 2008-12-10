@@ -37,7 +37,7 @@ import ca.eandb.util.UnexpectedException;
 import ca.eandb.util.args.AbstractCommand;
 
 /**
- * @author brad
+ * @author Brad Kimmel
  *
  */
 public final class SynchronizeCommand extends AbstractCommand<Configuration> {

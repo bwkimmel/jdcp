@@ -28,7 +28,7 @@ package ca.eandb.jdcp.job;
 /**
  * An <code>Exception</code> wrapper for exceptions thrown by a
  * <code>ParallelizableJob</code>.
- * @author brad
+ * @author Brad Kimmel
  * @see ca.eandb.jdcp.job.ParallelizableJob
  */
 public final class JobExecutionException extends Exception {

@@ -32,7 +32,7 @@ import ca.eandb.jdcp.job.TaskDescription;
 /**
  * Represents an object that is responsible for determine in what order to
  * serve tasks to worker clients.
- * @author brad
+ * @author Brad Kimmel
  */
 public interface TaskScheduler {
 

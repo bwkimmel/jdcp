@@ -30,7 +30,7 @@ import java.nio.ByteBuffer;
 import ca.eandb.util.classloader.ClassLoaderStrategy;
 
 /**
- * @author brad
+ * @author Brad Kimmel
  *
  */
 public interface ClassManager extends ClassLoaderStrategy {

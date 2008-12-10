@@ -36,7 +36,7 @@ import ca.eandb.jdcp.remote.AuthenticationService;
 import ca.eandb.jdcp.remote.JobService;
 
 /**
- * @author brad
+ * @author Brad Kimmel
  *
  */
 public final class Configuration {

@@ -43,7 +43,7 @@ import ca.eandb.util.UnexpectedException;
 import ca.eandb.util.io.FileUtil;
 
 /**
- * @author brad
+ * @author Brad Kimmel
  *
  */
 public final class FileClassManager extends AbstractClassManager implements
@@ -246,7 +246,7 @@ public final class FileClassManager extends AbstractClassManager implements
 	}
 
 	/**
-	 * @author brad
+	 * @author Brad Kimmel
 	 *
 	 */
 	private final class ChildClassManager extends AbstractClassManager {

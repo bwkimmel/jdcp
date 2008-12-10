@@ -31,7 +31,7 @@ import ca.eandb.util.progress.ProgressMonitor;
 
 /**
  * Processes a task that is part of a parallelizable job.
- * @author bkimmel
+ * @author Brad Kimmel
  */
 public interface TaskWorker extends Serializable {
 
