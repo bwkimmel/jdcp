@@ -45,7 +45,7 @@ grant Principal ca.eandb.util.auth.RolePrincipal "jdcp.worker" {
 };
 
 grant Principal ca.eandb.util.auth.RolePrincipal "jdcp.admin" {
-        permission ca.eandb.jdcp.security.JdcpPermission "*";
+    permission ca.eandb.jdcp.security.JdcpPermission "*";
 };
 
 grant Principal ca.eandb.util.auth.RolePrincipal "jdcp.submitter.basic" {
