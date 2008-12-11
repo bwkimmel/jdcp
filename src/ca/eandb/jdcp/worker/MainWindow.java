@@ -57,6 +57,7 @@ public final class MainWindow extends JFrame {
 	private ProgressPanel progressPanel = null;
 	private JEditorPane consolePane = null;
 	private JScrollPane consoleScrollPane = null;
+	private ConnectionDialog connectionDialog = null;
 
 	/**
 	 * This method initializes jSplitPane
@@ -157,7 +158,14 @@ public final class MainWindow extends JFrame {
 	 * Start the worker thread.
 	 */
 	private void startWorker() {
-		// TODO Auto-generated method stub
+		ConnectionDialog dialog = getConnectionDialog();
+		dialog.setVisible(true);
+
+		if (dialog.isCancelled()) {
+			setVisible(false);
+		} else {
+			// TODO set up connection
+		}
 	}
 
 	/**
@@ -172,6 +180,13 @@ public final class MainWindow extends JFrame {
 			jContentPane.add(getJSplitPane(), BorderLayout.CENTER);
 		}
 		return jContentPane;
+	}
+
+	private ConnectionDialog getConnectionDialog() {
+		if (connectionDialog == null) {
+			connectionDialog = new ConnectionDialog(this);
+		}
+		return connectionDialog;
 	}
 
 	public void connectConsole() {
