@@ -1,7 +1,7 @@
 #Fat Jar Configuration File
-#Sat Dec 06 10:38:24 EST 2008
+#Thu Dec 11 09:11:10 EST 2008
 onejar.license.required=false
-manifest.classpath=lib/swingx.jar lib/log4j-1.2.15.jar
+manifest.classpath=lib/log4j-1.2.15.jar
 manifest.removesigners=true
 onejar.checkbox=false
 jarname=jdcpserver.jar
@@ -10,5 +10,5 @@ manifest.mainclass=ca.eandb.jdcp.server.JobServerMain
 manifest.file=<createnew>
 jarname.isextern=false
 onejar.expand=
-excludes=<po|jdcp>~ca/~eandb/~jdcp/~client/;<po|jdcp>~ca/~eandb/~jdcp/~concurrent/;<po|jdcp>~ca/~eandb/~jdcp/~job/~AbstractParallelizableJob.class;<po|jdcp>~ca/~eandb/~jdcp/~job/~DiagnosticJob$DiagnosticTaskWorker.class;<po|jdcp>~ca/~eandb/~jdcp/~job/~DiagnosticJob.class;<po|jdcp>~ca/~eandb/~jdcp/~job/~DummyParallelizableJob$1.class;<po|jdcp>~ca/~eandb/~jdcp/~job/~DummyParallelizableJob.class;<po|jdcp>~ca/~eandb/~jdcp/~job/~ParallelizableJobRunner$1.class;<po|jdcp>~ca/~eandb/~jdcp/~job/~ParallelizableJobRunner$Worker.class;<po|jdcp>~ca/~eandb/~jdcp/~job/~ParallelizableJobRunner.class;<po|jdcp>~ca/~eandb/~jdcp/~worker/;<jar|junit.jar>;<jar|jnlp.jar>;<jar|log4j-1.2.15.jar>;<jar|swingx.jar>
+excludes=<po|jdcp>~ca/~eandb/~jdcp/~client/;<po|jdcp>~ca/~eandb/~jdcp/~concurrent/;<po|jdcp>~ca/~eandb/~jdcp/~job/~AbstractParallelizableJob.class;<po|jdcp>~ca/~eandb/~jdcp/~job/~DiagnosticJob$DiagnosticTaskWorker.class;<po|jdcp>~ca/~eandb/~jdcp/~job/~DiagnosticJob.class;<po|jdcp>~ca/~eandb/~jdcp/~job/~DummyParallelizableJob$1.class;<po|jdcp>~ca/~eandb/~jdcp/~job/~DummyParallelizableJob.class;<po|jdcp>~ca/~eandb/~jdcp/~job/~ParallelizableJobRunner$1.class;<po|jdcp>~ca/~eandb/~jdcp/~job/~ParallelizableJobRunner$Worker.class;<po|jdcp>~ca/~eandb/~jdcp/~job/~ParallelizableJobRunner.class;<po|jdcp>~ca/~eandb/~jdcp/~worker/;<jar|junit.jar>;<jar|jnlp.jar>;<jar|log4j-1.2.15.jar>
 includes=
