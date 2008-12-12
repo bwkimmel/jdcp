@@ -202,7 +202,6 @@ public final class MainWindow extends JFrame {
 		do {
 			dialog.setTimeout(timeout);
 			dialog.setVisible(true);
-			System.out.println("Connection dialog returned.");
 			if (dialog.isCancelled()) {
 				break;
 			}
