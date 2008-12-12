@@ -70,7 +70,7 @@ public final class MainWindow extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(MainWindow.class);  //  @jve:decl-index=0:
-	private static final int RECONNECT_TIMEOUT = 10;
+	private static final int RECONNECT_TIMEOUT = 60;
 	private JPanel jContentPane = null;
 	private JSplitPane jSplitPane = null;
 	private ProgressPanel progressPanel = null;
