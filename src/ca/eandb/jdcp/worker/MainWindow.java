@@ -83,8 +83,8 @@ public final class MainWindow extends JFrame {
 	private JScrollPane consoleScrollPane = null;
 	private ConnectionDialog connectionDialog = null;
 	private JLabel statusLabel = null;
+	private ThreadServiceWorker worker = null;
 	private Thread workerThread = null;
-	private ConnectionTask connectionTask = null;
 
 	/**
 	 * This method initializes jSplitPane
@@ -222,7 +222,7 @@ public final class MainWindow extends JFrame {
 	}
 
 	private void changeConnection() {
-
+		startWorker();
 	}
 
 	private void exit() {
@@ -283,9 +283,10 @@ public final class MainWindow extends JFrame {
 	private void startWorker() {
 		JobServiceFactory serviceFactory = new JobServiceFactory() {
 
+			private ConnectionTask task = new ConnectionTask();
+
 			@Override
 			public JobService connect() {
-				ConnectionTask task = getConnectionTask();
 				try {
 					SwingUtilities.invokeAndWait(task);
 				} catch (Exception e) {
@@ -303,7 +304,19 @@ public final class MainWindow extends JFrame {
 		int numberOfCpus = Runtime.getRuntime().availableProcessors();
 		Executor threadPool = Executors.newFixedThreadPool(numberOfCpus, new BackgroundThreadFactory());
 
-		Runnable worker = new ThreadServiceWorker(serviceFactory, numberOfCpus,
+		if (worker != null) {
+			setStatus("Shutting down worker...");
+			worker.shutdown();
+			try {
+				workerThread.join();
+			} catch (InterruptedException e) {
+			}
+			progressPanel.clear();
+		}
+
+		setStatus("Starting worker...");
+
+		worker = new ThreadServiceWorker(serviceFactory, numberOfCpus,
 				threadPool, getProgressPanel());
 
 		workerThread = new Thread(worker);
@@ -311,7 +324,7 @@ public final class MainWindow extends JFrame {
 
 	}
 
-	private void setStatus(String status) {
+	private void setStatus(final String status) {
 		statusLabel.setText(" " + status);
 	}
 
@@ -337,13 +350,6 @@ public final class MainWindow extends JFrame {
 			connectionDialog = new ConnectionDialog(this);
 		}
 		return connectionDialog;
-	}
-
-	private ConnectionTask getConnectionTask() {
-		if (connectionTask == null) {
-			connectionTask = new ConnectionTask();
-		}
-		return connectionTask;
 	}
 
 	public void connectConsole() {

@@ -46,15 +46,14 @@ import ca.eandb.jdcp.remote.JobService;
 import ca.eandb.util.UnexpectedException;
 import ca.eandb.util.classloader.ClassLoaderStrategy;
 import ca.eandb.util.classloader.StrategyClassLoader;
-import ca.eandb.util.progress.PermanentProgressMonitor;
 import ca.eandb.util.progress.ProgressMonitor;
 import ca.eandb.util.progress.ProgressMonitorFactory;
 import ca.eandb.util.rmi.Serialized;
 
 /**
- * A job that processes tasks for a parallelizable job from a remote
- * <code>JobServiceMaster<code>.  This class may potentially use multiple
- * threads to process tasks.
+ * A <code>Runnable</code> worker that processes tasks for a
+ * <code>ParallelizableJob</code> from a remote <code>JobServiceMaster<code>.
+ * This class may potentially use multiple threads to process tasks.
  * @author Brad Kimmel
  */
 public final class ThreadServiceWorker implements Runnable {
@@ -141,7 +140,7 @@ public final class ThreadServiceWorker implements Runnable {
 	private void initializeWorkers(int numWorkers) {
 		for (int i = 0; i < numWorkers; i++) {
 			String title = String.format("Worker (%d)", i + 1);
-			ProgressMonitor monitor = new PermanentProgressMonitor(monitorFactory.createProgressMonitor(title));
+			ProgressMonitor monitor = new ProgressMonitorWrapper(monitorFactory.createProgressMonitor(title));
 			workerQueue.add(new Worker(monitor));
 		}
 	}
@@ -519,6 +518,85 @@ public final class ThreadServiceWorker implements Runnable {
 		 * The <code>ProgressMonitor</code> to report to.
 		 */
 		private final ProgressMonitor monitor;
+
+	}
+
+	/**
+	 * A <code>ProgressMonitor</code> that wraps another to signal cancellation
+	 * when the <code>ThreadServiceWorker</code> is shutting down.
+	 * @author Brad Kimmel
+	 */
+	private class ProgressMonitorWrapper implements ProgressMonitor {
+
+		/** The <code>ProgressMonitor</code> to wrap. */
+		private final ProgressMonitor monitor;
+
+		/**
+		 * Creates a new <code>ProgressMonitorWrapper</code>.
+		 * @param monitor The <code>ProgressMonitor</code> to wrap.
+		 */
+		public ProgressMonitorWrapper(ProgressMonitor monitor) {
+			this.monitor = monitor;
+		}
+
+		/* (non-Javadoc)
+		 * @see ca.eandb.util.progress.ProgressMonitor#isCancelPending()
+		 */
+		@Override
+		public boolean isCancelPending() {
+			return shutdownPending;
+		}
+
+		/* (non-Javadoc)
+		 * @see ca.eandb.util.progress.ProgressMonitor#notifyCancelled()
+		 */
+		@Override
+		public void notifyCancelled() {
+			/* ignore. */
+		}
+
+		/* (non-Javadoc)
+		 * @see ca.eandb.util.progress.ProgressMonitor#notifyComplete()
+		 */
+		@Override
+		public void notifyComplete() {
+			/* ignore. */
+		}
+
+		/* (non-Javadoc)
+		 * @see ca.eandb.util.progress.ProgressMonitor#notifyIndeterminantProgress()
+		 */
+		@Override
+		public boolean notifyIndeterminantProgress() {
+			monitor.notifyIndeterminantProgress();
+			return !shutdownPending;
+		}
+
+		/* (non-Javadoc)
+		 * @see ca.eandb.util.progress.ProgressMonitor#notifyProgress(int, int)
+		 */
+		@Override
+		public boolean notifyProgress(int value, int maximum) {
+			monitor.notifyProgress(value, maximum);
+			return !shutdownPending;
+		}
+
+		/* (non-Javadoc)
+		 * @see ca.eandb.util.progress.ProgressMonitor#notifyProgress(double)
+		 */
+		@Override
+		public boolean notifyProgress(double progress) {
+			monitor.notifyProgress(progress);
+			return !shutdownPending;
+		}
+
+		/* (non-Javadoc)
+		 * @see ca.eandb.util.progress.ProgressMonitor#notifyStatusChanged(java.lang.String)
+		 */
+		@Override
+		public void notifyStatusChanged(String status) {
+			monitor.notifyStatusChanged(status);
+		}
 
 	}
 
