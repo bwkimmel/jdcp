@@ -27,6 +27,8 @@ package ca.eandb.jdcp.worker;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.PrintStream;
@@ -41,6 +43,9 @@ import javax.security.auth.login.LoginException;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -186,6 +191,43 @@ public final class MainWindow extends JFrame {
 				workerThread = null;
 			}
 		});
+
+		JMenuBar menuBar = new JMenuBar();
+		JMenu menu;
+		JMenuItem item;
+
+		menu = new JMenu("File");
+		menu.setMnemonic('F');
+		menuBar.add(menu);
+
+		item = new JMenuItem("Change connection", 'c');
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				changeConnection();
+			}
+		});
+		menu.add(item);
+
+		menu.addSeparator();
+
+		item = new JMenuItem("Exit", 'x');
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				exit();
+			}
+		});
+		menu.add(item);
+
+		this.setJMenuBar(menuBar);
+	}
+
+	private void changeConnection() {
+
+	}
+
+	private void exit() {
+		getConnectionDialog().dispose();
+		System.exit(0);
 	}
 
 	private JobService reconnect() {
