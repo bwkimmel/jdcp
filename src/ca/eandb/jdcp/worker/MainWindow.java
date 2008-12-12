@@ -34,10 +34,13 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import javax.security.auth.login.LoginException;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -53,6 +56,7 @@ import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
+import ca.eandb.jdcp.concurrent.BackgroundThreadFactory;
 import ca.eandb.jdcp.remote.AuthenticationService;
 import ca.eandb.jdcp.remote.JobService;
 import ca.eandb.util.io.DocumentOutputStream;
@@ -66,12 +70,16 @@ public final class MainWindow extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(MainWindow.class);  //  @jve:decl-index=0:
+	private static final int RECONNECT_TIMEOUT = 10;
 	private JPanel jContentPane = null;
 	private JSplitPane jSplitPane = null;
 	private ProgressPanel progressPanel = null;
 	private JEditorPane consolePane = null;
 	private JScrollPane consoleScrollPane = null;
 	private ConnectionDialog connectionDialog = null;
+	private JLabel statusLabel = null;
+	private Thread workerThread = null;
+	private ConnectionTask connectionTask = null;
 
 	/**
 	 * This method initializes jSplitPane
@@ -172,23 +180,41 @@ public final class MainWindow extends JFrame {
 				connectConsole();
 				startWorker();
 			}
+
+			public void windowClosed(WindowEvent e) {
+				workerThread.interrupt();
+				workerThread = null;
+			}
 		});
 	}
 
+	private JobService reconnect() {
+		return connect(RECONNECT_TIMEOUT);
+	}
+
 	private JobService connect() {
+		return connect(0);
+	}
+
+	private JobService connect(int timeout) {
+		ConnectionDialog dialog = getConnectionDialog();
 		JobService service = null;
 		do {
-			ConnectionDialog dialog = getConnectionDialog();
+			dialog.setTimeout(timeout);
 			dialog.setVisible(true);
+			System.out.println("Connection dialog returned.");
 			if (dialog.isCancelled()) {
 				break;
 			}
-			service = connect(dialog.getHost(), dialog.getUser(), dialog.getPassword());
+			service = connect(dialog.getHost(), dialog.getUser(), dialog.getPassword(), !dialog.isTimedOut());
+			if (!dialog.isTimedOut()) {
+				timeout = 0;
+			}
 		} while (service == null);
 		return service;
 	}
 
-	private JobService connect(String host, String user, String password) {
+	private JobService connect(String host, String user, String password, boolean showMessageDialog) {
 		try {
 			Registry registry = LocateRegistry.getRegistry(host);
 			AuthenticationService authService = (AuthenticationService) registry.lookup("AuthenticationService");
@@ -198,10 +224,14 @@ public final class MainWindow extends JFrame {
 			JOptionPane.showMessageDialog(this, "Authentication failed.  Please check your user name and password.", "Connection Failed", JOptionPane.WARNING_MESSAGE);
 		} catch (RemoteException e) {
 			logger.error("Could not connect to remote host.", e);
-			JOptionPane.showMessageDialog(this, "Could not connect to remote host.", "Connection Failed", JOptionPane.WARNING_MESSAGE);
+			if (showMessageDialog) {
+				JOptionPane.showMessageDialog(this, "Could not connect to remote host.", "Connection Failed", JOptionPane.WARNING_MESSAGE);
+			}
 		} catch (NotBoundException e) {
 			logger.error("Could not find AuthenticationService at remote host.", e);
-			JOptionPane.showMessageDialog(this, "Could find JDCP Server at remote host.", "Connection Failed", JOptionPane.WARNING_MESSAGE);
+			if (showMessageDialog) {
+				JOptionPane.showMessageDialog(this, "Could find JDCP Server at remote host.", "Connection Failed", JOptionPane.WARNING_MESSAGE);
+			}
 		}
 		return null;
 	}
@@ -210,12 +240,38 @@ public final class MainWindow extends JFrame {
 	 * Start the worker thread.
 	 */
 	private void startWorker() {
-		JobService service = connect();
-		if (service != null) {
-			// TODO start worker thread
-		} else {
-			setVisible(false);
-		}
+		JobServiceFactory serviceFactory = new JobServiceFactory() {
+
+			@Override
+			public JobService connect() {
+				ConnectionTask task = getConnectionTask();
+				try {
+					SwingUtilities.invokeAndWait(task);
+				} catch (Exception e) {
+					logger.warn("Exception thrown trying to reconnect", e);
+					throw new RuntimeException(e);
+				}
+				if (task.service == null) {
+					throw new RuntimeException("No service.");
+				}
+				return task.service;
+			}
+
+		};
+
+		int numberOfCpus = Runtime.getRuntime().availableProcessors();
+		Executor threadPool = Executors.newFixedThreadPool(numberOfCpus, new BackgroundThreadFactory());
+
+		Runnable worker = new ThreadServiceWorker(serviceFactory, numberOfCpus,
+				threadPool, getProgressPanel());
+
+		workerThread = new Thread(worker);
+		workerThread.start();
+
+	}
+
+	private void setStatus(String status) {
+		statusLabel.setText(" " + status);
 	}
 
 	/**
@@ -225,9 +281,12 @@ public final class MainWindow extends JFrame {
 	 */
 	private JPanel getJContentPane() {
 		if (jContentPane == null) {
+			statusLabel = new JLabel();
+			statusLabel.setText(" ");
 			jContentPane = new JPanel();
 			jContentPane.setLayout(new BorderLayout());
 			jContentPane.add(getJSplitPane(), BorderLayout.CENTER);
+			jContentPane.add(statusLabel, BorderLayout.SOUTH);
 		}
 		return jContentPane;
 	}
@@ -239,6 +298,13 @@ public final class MainWindow extends JFrame {
 		return connectionDialog;
 	}
 
+	private ConnectionTask getConnectionTask() {
+		if (connectionTask == null) {
+			connectionTask = new ConnectionTask();
+		}
+		return connectionTask;
+	}
+
 	public void connectConsole() {
 		Document document = getConsolePane().getDocument();
 
@@ -247,6 +313,25 @@ public final class MainWindow extends JFrame {
 		MutableAttributeSet attributes = new SimpleAttributeSet();
 		StyleConstants.setForeground(attributes, Color.RED);
 		System.setErr(new PrintStream(new DocumentOutputStream(document, attributes)));
+	}
+
+	private class ConnectionTask implements Runnable {
+
+		private boolean first = true;
+		private JobService service;
+
+		@Override
+		public void run() {
+			setStatus("Connecting...");
+			service = first ? MainWindow.this.connect() : reconnect();
+			if (service == null) {
+				setVisible(false);
+				throw new RuntimeException("Huh?");
+			}
+			setStatus("Connected");
+			first = false;
+		}
+
 	}
 
 }

@@ -26,8 +26,6 @@
 package ca.eandb.jdcp.worker;
 
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,7 +42,6 @@ import org.apache.log4j.Logger;
 
 import ca.eandb.jdcp.job.TaskDescription;
 import ca.eandb.jdcp.job.TaskWorker;
-import ca.eandb.jdcp.remote.AuthenticationService;
 import ca.eandb.jdcp.remote.JobService;
 import ca.eandb.util.UnexpectedException;
 import ca.eandb.util.classloader.ClassLoaderStrategy;
@@ -74,12 +71,11 @@ public final class ThreadServiceWorker implements Runnable {
 	 * @param monitorFactory The <code>ProgressMonitorFactory</code> to use to
 	 * 		create <code>ProgressMonitor</code>s for worker tasks.
 	 */
-	public ThreadServiceWorker(String masterHost, int idleTime, int maxConcurrentWorkers, Executor executor, ProgressMonitorFactory monitorFactory) {
+	public ThreadServiceWorker(JobServiceFactory serviceFactory, int maxConcurrentWorkers, Executor executor, ProgressMonitorFactory monitorFactory) {
 
 		assert(maxConcurrentWorkers > 0);
 
-		this.masterHost = masterHost;
-		this.idleTime = idleTime;
+		this.serviceFactory = serviceFactory;
 		this.executor = executor;
 		this.maxConcurrentWorkers = maxConcurrentWorkers;
 		this.monitorFactory = monitorFactory;
@@ -89,29 +85,51 @@ public final class ThreadServiceWorker implements Runnable {
 	/* (non-Javadoc)
 	 * @see java.lang.Runnable#run()
 	 */
-	public void run() {
+	public synchronized void run() {
 
-		try {
+		runThread = Thread.currentThread();
+		reconnectPending = true;
 
-			this.registry = LocateRegistry.getRegistry(this.masterHost);
-			this.initializeService();
-			this.initializeWorkers(maxConcurrentWorkers);
+		this.initializeWorkers(maxConcurrentWorkers);
 
-			while (true) {
-				Worker worker = this.workerQueue.take();
-				this.executor.execute(worker);
+		while (!shutdownPending) {
+
+			try {
+				while (!Thread.interrupted()) {
+					Worker worker = this.workerQueue.take();
+					if (reconnectPending) {
+						this.initializeService();
+						reconnectPending = false;
+					}
+					this.executor.execute(worker);
+				}
+			} catch (InterruptedException e) {
+				/* nothing to do. */
 			}
-
-		} catch (InterruptedException e) {
-
-			logger.info("Thread was interrupted.", e);
-
-		} catch (RemoteException e) {
-
-			logger.error("Could not obtain registry", e);
 
 		}
 
+		runThread = null;
+
+	}
+
+	/**
+	 * Shuts down the <code>Thread</code> currently processing this worker.
+	 */
+	public void shutdown() {
+		synchronized (runThread) {
+			if (runThread != null && !shutdownPending) {
+				shutdownPending = true;
+				runThread.interrupt();
+			}
+		}
+	}
+
+	/**
+	 * Schedules a reconnection to the <code>JobService</code>.
+	 */
+	private void reconnect() {
+		reconnectPending = true;
 	}
 
 	/**
@@ -132,15 +150,8 @@ public final class ThreadServiceWorker implements Runnable {
 	 * Attempt to initialize a connection to the master service.
 	 * @return A value indicating whether the operation succeeded.
 	 */
-	private boolean initializeService() {
-		try {
-			AuthenticationService authService = (AuthenticationService) this.registry.lookup("AuthenticationService");
-			this.service = authService.authenticate("guest", "");
-			return true;
-		} catch (Exception e) {
-			logger.error("Could not connect to service.", e);
-			return false;
-		}
+	private void initializeService() {
+		this.service = serviceFactory.connect();
 	}
 
 	/**
@@ -402,69 +413,54 @@ public final class ThreadServiceWorker implements Runnable {
 				if (service != null) {
 
 					TaskDescription taskDesc = service.requestTask();
+					UUID jobId = taskDesc.getJobId();
 
-					if (taskDesc != null) {
+					if (jobId != null) {
 
-						UUID jobId = taskDesc.getJobId();
+						this.monitor.notifyStatusChanged("Obtaining task worker...");
+						TaskWorker worker;
+						try {
+							worker = getTaskWorker(jobId);
+						} catch (ClassNotFoundException e) {
+							service.reportException(jobId, 0, e);
+							worker = null;
+						}
 
-						if (jobId != null) {
+						if (worker == null) {
+							this.monitor.notifyStatusChanged("Could not obtain worker...");
+							this.monitor.notifyCancelled();
+							return;
+						}
 
-							this.monitor.notifyStatusChanged("Obtaining task worker...");
-							TaskWorker worker;
-							try {
-								worker = getTaskWorker(jobId);
-							} catch (ClassNotFoundException e) {
-								service.reportException(jobId, 0, e);
-								worker = null;
-							}
+						this.monitor.notifyStatusChanged("Performing task...");
+						ClassLoader loader = worker.getClass().getClassLoader();
+						Object results;
 
-							if (worker == null) {
-								this.monitor.notifyStatusChanged("Could not obtain worker...");
-								this.monitor.notifyCancelled();
-								return;
-							}
+						try {
+							Object task = taskDesc.getTask().deserialize(loader);
+							results = worker.performTask(task, monitor);
+						} catch (Exception e) {
+							service.reportException(jobId, taskDesc.getTaskId(), e);
+							results = null;
+						}
 
-							this.monitor.notifyStatusChanged("Performing task...");
-							ClassLoader loader = worker.getClass().getClassLoader();
-							Object results;
-
-							try {
-								Object task = taskDesc.getTask().deserialize(loader);
-								results = worker.performTask(task, monitor);
-							} catch (Exception e) {
-								service.reportException(jobId, taskDesc.getTaskId(), e);
-								results = null;
-							}
-
-							this.monitor.notifyStatusChanged("Submitting task results...");
-							if (results != null) {
-								service.submitTaskResults(jobId, taskDesc.getTaskId(), new Serialized<Object>(results));
-							}
-
-						} else {
-
-							try {
-								int seconds = (Integer) taskDesc.getTask().deserialize();
-								this.idle(seconds);
-							} catch (ClassNotFoundException e) {
-								throw new UnexpectedException(e);
-							}
-
+						this.monitor.notifyStatusChanged("Submitting task results...");
+						if (results != null) {
+							service.submitTaskResults(jobId, taskDesc.getTaskId(), new Serialized<Object>(results));
 						}
 
 					} else {
 
-						this.idle();
+						try {
+							int seconds = (Integer) taskDesc.getTask().deserialize();
+							this.idle(seconds);
+						} catch (ClassNotFoundException e) {
+							throw new UnexpectedException(e);
+						}
 
 					}
 
 					this.monitor.notifyComplete();
-
-				} else {
-
-					this.monitor.notifyStatusChanged("No service at " + ThreadServiceWorker.this.masterHost);
-					this.waitForService();
-					this.monitor.notifyCancelled();
 
 				}
 
@@ -473,7 +469,7 @@ public final class ThreadServiceWorker implements Runnable {
 				logger.error("Could not communicate with master.", e);
 
 				this.monitor.notifyStatusChanged("Failed to communicate with master.");
-				this.waitForService();
+				reconnect();
 
 				this.monitor.notifyCancelled();
 
@@ -483,25 +479,6 @@ public final class ThreadServiceWorker implements Runnable {
 
 			}
 
-		}
-
-		/**
-		 * Blocks until a successful attempt is made to reconnect to the
-		 * service.  This method will idle for some time between attempts.
-		 */
-		private void waitForService() {
-			synchronized (registry) {
-				while (!initializeService()) {
-					this.idle();
-				}
-			}
-		}
-
-		/**
-		 * Idles for a period of time before finishing the task.
-		 */
-		private void idle() {
-			idle(idleTime);
 		}
 
 		/**
@@ -548,13 +525,7 @@ public final class ThreadServiceWorker implements Runnable {
 	/** The <code>Logger</code> to write log messages to. */
 	private static final Logger logger = Logger.getLogger(ThreadServiceWorker.class);
 
-	/** The URL of the master. */
-	private final String masterHost;
-
-	/**
-	 * The amount of time (in seconds) to idle when no task is available.
-	 */
-	private final int idleTime;
+	private final JobServiceFactory serviceFactory;
 
 	/** The <code>Executor</code> to use to process tasks. */
 	private final Executor executor;
@@ -566,15 +537,22 @@ public final class ThreadServiceWorker implements Runnable {
 	private final ProgressMonitorFactory monitorFactory;
 
 	/**
-	 * The <code>Registry</code> to obtain the service from.
-	 */
-	private Registry registry = null;
-
-	/**
 	 * The <code>JobService</code> to obtain tasks from and submit
 	 * results to.
 	 */
 	private JobService service = null;
+
+	/**
+	 * The <code>Thread</code> that is currently executing the {@link #run()}
+	 * method.
+	 */
+	private Thread runThread = null;
+
+	/** A value indicating if thread is about to be shut down. */
+	private boolean shutdownPending = false;
+
+	/** A value indicating if the worker should reconnect. */
+	private boolean reconnectPending;
 
 	/** The maximum number of workers that may be executing simultaneously. */
 	private final int maxConcurrentWorkers;

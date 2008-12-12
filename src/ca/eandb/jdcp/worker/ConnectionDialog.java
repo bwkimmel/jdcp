@@ -25,11 +25,19 @@
 
 package ca.eandb.jdcp.worker;
 
+import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Toolkit;
+import java.awt.event.AWTEventListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -37,6 +45,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 /**
  * A <code>JDialog</code> for prompting the user for connection information.
@@ -58,12 +67,15 @@ public class ConnectionDialog extends JDialog {
 	private JTextField userField = null;
 	private JPasswordField passwordField = null;
 	private boolean cancelled = false;
+	private boolean timedOut = false;
+	private int timeout = 0;
+	private Thread timeoutThread = null;
 
 	/**
 	 * @param owner
 	 */
 	public ConnectionDialog(Frame owner) {
-		super(owner);
+		super(owner, true);
 		initialize();
 	}
 
@@ -77,7 +89,40 @@ public class ConnectionDialog extends JDialog {
 		this.setTitle("Connect");
 		this.setContentPane(getJContentPane());
 		this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-		this.setModalityType(ModalityType.APPLICATION_MODAL);
+		this.addWindowListener(new WindowAdapter() {
+			public void windowActivated(WindowEvent e) {
+				cancelled = false;
+				timedOut = false;
+				getOkButton().setText("OK");
+				if (timeout > 0) {
+					timeoutThread = new Thread(new TimeoutTask(timeout));
+					timeoutThread.start();
+				}
+			}
+
+			public void windowClosed(WindowEvent e) {
+				cancelTimeout();
+			}
+		});
+
+		Toolkit.getDefaultToolkit().addAWTEventListener(new AWTEventListener() {
+			public void eventDispatched(AWTEvent e) {
+				if ((e instanceof KeyEvent && ((KeyEvent) e).getID() == KeyEvent.KEY_PRESSED)
+						|| (e instanceof MouseEvent && ((MouseEvent) e).getID() == MouseEvent.MOUSE_PRESSED)) {
+					if (ConnectionDialog.this.isAncestorOf(((ComponentEvent) e).getComponent())) {
+						cancelTimeout();
+					}
+				}
+			}
+		}, AWTEvent.KEY_EVENT_MASK | AWTEvent.MOUSE_EVENT_MASK);
+	}
+
+	private void cancelTimeout() {
+		if (timeoutThread != null) {
+			timeoutThread.interrupt();
+			timeoutThread = null;
+		}
+		getOkButton().setText("OK");
 	}
 
 	/**
@@ -186,6 +231,8 @@ public class ConnectionDialog extends JDialog {
 			okButton.setMnemonic('O');
 			okButton.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
+					cancelled = false;
+					timedOut = false;
 					setVisible(false);
 				}
 			});
@@ -206,6 +253,7 @@ public class ConnectionDialog extends JDialog {
 			cancelButton.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
 					cancelled = true;
+					timedOut = false;
 					setVisible(false);
 				}
 			});
@@ -260,6 +308,14 @@ public class ConnectionDialog extends JDialog {
 	}
 
 	/**
+	 * Gets a value indicating whether the dialog timed out.
+	 * @return A value indicating whether the dialog timed out.
+	 */
+	public boolean isTimedOut() {
+		return timedOut;
+	}
+
+	/**
 	 * Gets the host name entered by the user.
 	 * @return The host name.
 	 */
@@ -281,6 +337,82 @@ public class ConnectionDialog extends JDialog {
 	 */
 	public String getPassword() {
 		return new String(getPasswordField().getPassword());
+	}
+
+	/**
+	 * Sets the amount of time (in seconds) to wait for user input before
+	 * accepting the default values.
+	 * @param seconds The amount of time (in seconds) to wait for user input
+	 * 		before accepting the default values, or 0 for no timeout.
+	 */
+	public void setTimeout(int seconds) {
+		this.timeout = seconds;
+	}
+
+	/**
+	 * Displays the amount of time remaining before the dialog times out.
+	 * @param seconds The amount of time (in seconds) remaining before the
+	 * 		dialog times out.
+	 */
+	private void setTimeoutRemaining(int seconds) {
+		getOkButton().setText("OK (" + Integer.toString(seconds) + ")");
+	}
+
+	/**
+	 * Times out this dialog.
+	 */
+	private void fireTimeout() {
+		cancelled = false;
+		timedOut = true;
+		setVisible(false);
+	}
+
+	/**
+	 * A <code>Runnable</code> task that updates the timeout display every
+	 * second and causes the dialog to timeout when the timer reaches zero.
+	 * @author Brad Kimmel
+	 */
+	private class TimeoutTask implements Runnable {
+
+		/** The number of seconds remaining. */
+		private int remaining = 0;
+
+		/**
+		 * Creates a new <code>TimeoutTask</code>.
+		 * @param seconds The number of seconds until the dialog should time
+		 * 		out.
+		 */
+		public TimeoutTask(int seconds) {
+			this.remaining = seconds;
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Runnable#run()
+		 */
+		@Override
+		public void run() {
+			try {
+				while (remaining > 0 && !Thread.interrupted()) {
+					SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+							setTimeoutRemaining(remaining);
+						}
+					});
+					Thread.sleep(1000);
+					remaining--;
+				}
+				if (remaining <= 0) {
+					SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+							fireTimeout();
+						}
+					});
+				}
+			} catch (InterruptedException e) {
+				/* nothing to do. */
+			}
+		}
+
 	}
 
 }
