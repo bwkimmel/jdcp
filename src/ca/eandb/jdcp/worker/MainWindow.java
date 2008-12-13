@@ -25,10 +25,20 @@
 
 package ca.eandb.jdcp.worker;
 
+import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Image;
+import java.awt.MenuItem;
+import java.awt.MenuShortcut;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.Toolkit;
+import java.awt.TrayIcon;
+import java.awt.TrayIcon.MessageType;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.PrintStream;
@@ -157,7 +167,6 @@ public final class MainWindow extends JFrame {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				MainWindow thisClass = new MainWindow();
-				thisClass.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				thisClass.setVisible(true);
 			}
 		});
@@ -184,11 +193,6 @@ public final class MainWindow extends JFrame {
 			public void windowOpened(WindowEvent e) {
 				connectConsole();
 				startWorker();
-			}
-
-			public void windowClosed(WindowEvent e) {
-				workerThread.interrupt();
-				workerThread = null;
 			}
 		});
 
@@ -219,6 +223,65 @@ public final class MainWindow extends JFrame {
 		menu.add(item);
 
 		this.setJMenuBar(menuBar);
+
+		if (SystemTray.isSupported()) {
+
+			Image image = Toolkit.getDefaultToolkit().getImage("jdcp-32.png");
+			final TrayIcon icon = new TrayIcon(image, "JDCP Worker");
+			icon.setImageAutoSize(true);
+
+			PopupMenu popup = new PopupMenu();
+			MenuItem popupItem = new MenuItem("Open JDCP Worker");
+			popupItem.setShortcut(new MenuShortcut(KeyEvent.VK_O));
+			popupItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					MainWindow.this.setVisible(true);
+					MainWindow.this.setState(JFrame.NORMAL);
+					MainWindow.this.toFront();
+				}
+			});
+			popup.add(popupItem);
+
+			popupItem = new MenuItem("Exit");
+			popupItem.setShortcut(new MenuShortcut(KeyEvent.VK_X));
+			popupItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					exit();
+				}
+			});
+			popup.add(popupItem);
+
+			icon.setPopupMenu(popup);
+			icon.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					MainWindow.this.setVisible(true);
+					MainWindow.this.setState(JFrame.NORMAL);
+					MainWindow.this.toFront();
+				}
+			});
+
+			setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+			addWindowListener(new WindowAdapter() {
+				private boolean first = true;
+				public void windowClosing(WindowEvent e) {
+					MainWindow.this.setVisible(false);
+					if (first) {
+						icon.displayMessage(
+								"JDCP Worker",
+								"JDCP Worker is still running.  To exit, right click this icon and click 'exit'.",
+								MessageType.INFO);
+						first = false;
+					}
+				}
+			});
+
+			try {
+				SystemTray.getSystemTray().add(icon);
+			} catch (AWTException e) {
+				logger.error("Could not add system tray icon.", e);
+			}
+
+		}
 	}
 
 	private void changeConnection() {
