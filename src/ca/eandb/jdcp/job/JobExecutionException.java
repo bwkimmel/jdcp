@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Bradley W. Kimmel
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -9,10 +9,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -34,20 +34,22 @@ package ca.eandb.jdcp.job;
 public final class JobExecutionException extends Exception {
 
 	/**
-	 *
+	 * Serialization Version ID.
 	 */
 	private static final long serialVersionUID = -8692323071682734864L;
 
 	/**
-	 * @param cause
+	 * Creates a new <code>JobExecutionException</code>.
+	 * @param cause The cause of this exception.
 	 */
 	public JobExecutionException(Throwable cause) {
 		super(cause);
 	}
 
 	/**
-	 * @param message
-	 * @param cause
+	 * Creates a new <code>JobExecutionException</code>.
+	 * @param message A message describing the exceptional condition.
+	 * @param cause The cause of this exception.
 	 */
 	public JobExecutionException(String message, Throwable cause) {
 		super(message, cause);

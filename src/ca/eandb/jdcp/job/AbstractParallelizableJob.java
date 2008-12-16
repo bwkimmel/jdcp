@@ -35,8 +35,15 @@ import java.io.RandomAccessFile;
  */
 public abstract class AbstractParallelizableJob implements ParallelizableJob {
 
+	/**
+	 * A <code>HostService</code> object for providing secure access to the
+	 * file system on the machine hosting this <code>ParallelizableJob</code>.
+	 */
 	private transient HostService host = null;
 
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.job.ParallelizableJob#setHostService(ca.eandb.jdcp.job.HostService)
+	 */
 	public final void setHostService(HostService host) {
 		this.host = host;
 	}
@@ -70,8 +77,10 @@ public abstract class AbstractParallelizableJob implements ParallelizableJob {
 	}
 
 	/**
-	 * @param name
-	 * @return
+	 * Creates a <code>FileOutputStream</code> for a file in this job's
+	 * working directory.
+	 * @param name The relative path to the file.
+	 * @return The new <code>FileOutputStream</code>.
 	 * @see ca.eandb.jdcp.job.HostService#createFileOutputStream(java.lang.String)
 	 */
 	protected FileOutputStream createFileOutputStream(String name) {
@@ -79,8 +88,10 @@ public abstract class AbstractParallelizableJob implements ParallelizableJob {
 	}
 
 	/**
-	 * @param name
-	 * @return
+	 * Creates a new <code>RandomAccessFile</code> in this job's working
+	 * directory.
+	 * @param name The relative path to the new file.
+	 * @return The new <code>RandomAccessFile</code>.
 	 * @see ca.eandb.jdcp.job.HostService#createRandomAccessFile(java.lang.String)
 	 */
 	protected RandomAccessFile createRandomAccessFile(String name) {

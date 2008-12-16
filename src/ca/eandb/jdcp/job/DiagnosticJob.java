@@ -120,11 +120,9 @@ public final class DiagnosticJob extends AbstractParallelizableJob implements Se
 		}
 
 		/**
-		 *
+		 * Serialization Version ID.
 		 */
 		private static final long serialVersionUID = -7475685356387392964L;
-
-		//private static final long serialVersionUID = -5412216755033059283L;
 
 	}
 
