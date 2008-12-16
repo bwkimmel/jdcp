@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Bradley W. Kimmel
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -9,10 +9,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -44,21 +44,30 @@ import ca.eandb.util.args.FileFieldOption;
 import ca.eandb.util.args.StringFieldOption;
 
 /**
+ * A <code>Command</code> that runs a specified script.
  * @author Brad Kimmel
- *
  */
 public final class ScriptCommand implements Command<Configuration> {
 
 	private static final String DEFAULT_LANGUAGE = "JavaScript";
 
+	/**
+	 * Command line options specific to the <code>ScriptCommand</code>.
+	 * @author Brad Kimmel
+	 */
 	public static class Options {
 
+		/** The <code>File</code> from which to read the script. */
 		public File file;
 
+		/** The language in which the script was written. */
 		public String language = null;
 
 	}
 
+	/* (non-Javadoc)
+	 * @see ca.eandb.util.args.Command#process(java.util.Queue, java.lang.Object)
+	 */
 	public void process(Queue<String> argq, final Configuration conf) {
 
 		ArgumentProcessor<Options> argProcessor = new ArgumentProcessor<Options>();

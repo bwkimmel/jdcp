@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Bradley W. Kimmel
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -9,10 +9,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -26,7 +26,6 @@
 package ca.eandb.jdcp.client;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.MessageDigest;
@@ -35,10 +34,12 @@ import java.util.Arrays;
 
 import ca.eandb.util.UnexpectedException;
 import ca.eandb.util.args.AbstractCommand;
+import ca.eandb.util.io.FileUtil;
 
 /**
+ * A <code>Command</code> that reports differences between the classes on the
+ * server and the classes in the specified directory tree.
  * @author Brad Kimmel
- *
  */
 public final class VerifyCommand extends AbstractCommand<Configuration> {
 
@@ -52,6 +53,15 @@ public final class VerifyCommand extends AbstractCommand<Configuration> {
 		}
 	}
 
+	/**
+	 * Reports classes in the specified directory tree which differ from those
+	 * on the server or which do not exist on the server.
+	 * @param pkg The package name associated with the root of the directory
+	 * 		tree.
+	 * @param path The <code>File</code> indicating the root of the directory
+	 * 		tree.
+	 * @param conf The application command line options.
+	 */
 	public void verify(String pkg, File path, Configuration conf) {
 		if (!path.isDirectory()) {
 			throw new IllegalArgumentException(path.getAbsolutePath().concat(" is not a directory."));
@@ -89,20 +99,31 @@ public final class VerifyCommand extends AbstractCommand<Configuration> {
 				}
 			}
 		}
-
 	}
 
+	/**
+	 * Determines whether the digest of the specified file matches the given
+	 * digest.
+	 * @param file The <code>File</code> to check.
+	 * @param digest The digest to compare against.
+	 * @param conf The application command line options.
+	 * @return A value indicating whether the digest of the specified file
+	 * 		matches the given digest.
+	 * @throws IOException If an error occurs while trying to read the file.
+	 */
 	private boolean matches(File file, byte[] digest, Configuration conf) throws IOException {
 		byte[] fileDigest = getDigest(file, conf);
 		return Arrays.equals(fileDigest, digest);
 	}
 
+	/**
+	 * Gets the digest of the specified class definition.
+	 * @param def The class definition.
+	 * @param conf The application command line options.
+	 * @return The digest of the class definition.
+	 */
 	private byte[] getDigest(File file, Configuration conf) throws IOException {
-		FileInputStream stream = new FileInputStream(file);
-		byte[] def = new byte[(int) file.length()];
-		stream.read(def);
-		stream.close();
-
+		byte[] def = FileUtil.getFileContents(file);
 		MessageDigest alg;
 		try {
 			alg = MessageDigest.getInstance(conf.digestAlgorithm);
@@ -112,6 +133,12 @@ public final class VerifyCommand extends AbstractCommand<Configuration> {
 		return alg.digest(def);
 	}
 
+	/**
+	 * Combines package path.
+	 * @param parent The parent package.
+	 * @param child The name of the child package.
+	 * @return The combined package name.
+	 */
 	private String combine(String parent, String child) {
 		if (parent.length() > 0) {
 			return parent.concat(".").concat(child);

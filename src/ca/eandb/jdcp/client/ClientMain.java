@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Bradley W. Kimmel
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -9,10 +9,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -31,13 +31,16 @@ import ca.eandb.util.args.StringFieldOption;
 import ca.eandb.util.args.UnrecognizedCommand;
 
 /**
+ * The main class for the JDCP client application.  This application
+ * communicates with the JDCP server to manipulate it and to submit jobs to the
+ * server.
  * @author Brad Kimmel
- *
  */
 public final class ClientMain {
 
 	/**
-	 * @param args
+	 * Application entry point.
+	 * @param args Command line arguments.
 	 */
 	public static void main(String[] args) {
 
