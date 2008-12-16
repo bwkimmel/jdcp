@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Bradley W. Kimmel
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -9,10 +9,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -34,14 +34,29 @@ import ca.eandb.jdcp.remote.JobService;
 import ca.eandb.util.classloader.ClassLoaderStrategy;
 
 /**
+ * A <code>ClassLoaderStrategy</code> that obtains class definitions from
+ * a <code>JobService</code>
+ * @see ca.eandb.jdcp.remote.JobService
  * @author Brad Kimmel
- *
  */
 public final class JobServiceClassLoaderStrategy implements ClassLoaderStrategy {
 
+	/** The <code>JobService</code> to obtain class definitions from. */
 	private final JobService service;
+
+	/**
+	 * The <code>UUID</code> identifying the job for which to obtain the
+	 * associated class definitions.
+	 */
 	private final UUID jobId;
 
+	/**
+	 * Creates a new <code>JobServiceClassLoaderStrategy</code>.
+	 * @param service The <code>JobService</code> to obtain class definitions
+	 * 		from.
+	 * @param jobId The <code>UUID</code> identifying the job for which to
+	 * 		obtain the associated class definitions.
+	 */
 	public JobServiceClassLoaderStrategy(JobService service, UUID jobId) {
 		this.service = service;
 		this.jobId = jobId;

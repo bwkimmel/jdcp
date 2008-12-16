@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Bradley W. Kimmel
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -9,10 +9,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -45,19 +45,35 @@ import ca.eandb.util.StringUtil;
 import ca.eandb.util.UnexpectedException;
 
 /**
+ * A <code>CachingJobServiceClassLoaderStrategy</code> that uses the JNLP
+ * <code>PersistenceService</code> to store class definitions.
  * @author Brad Kimmel
- *
  */
 public final class PersistenceCachingJobServiceClassLoaderStrategy extends
 		CachingJobServiceClassLoaderStrategy {
 
+	/** The base <code>URL</code> to use for storing class definitions. */
 	private final URL baseUrl;
+
+	/**
+	 * The <code>PersistenceService</code> to use for storing class
+	 * definitions.
+	 */
 	private final PersistenceService persistenceService;
 
 	/**
-	 * @param service
-	 * @param jobId
-	 * @throws UnavailableServiceException
+	 * Creates a new
+	 * <code>PersistenceCachingJobServiceClassLoaderStrategy</code>.  The
+	 * <code>BasicService</code> is used to determine the code base
+	 * <code>URL</code>.
+	 * @param service The <code>JobService</code> from which to obtain class
+	 * 		definitions.
+	 * @param jobId The <code>UUID</code> identifying the job for which to
+	 * 		obtain class definitions.
+	 * @throws UnavailableServiceException If <code>PersistenceService</code>
+	 * 		or <code>BasicService</code> is unavailable.
+	 * @see javax.jnlp.PersistenceService
+	 * @see javax.jnlp.BasicService
 	 */
 	public PersistenceCachingJobServiceClassLoaderStrategy(JobService service,
 			UUID jobId) throws UnavailableServiceException {
@@ -68,10 +84,17 @@ public final class PersistenceCachingJobServiceClassLoaderStrategy extends
 	}
 
 	/**
-	 * @param service
-	 * @param jobId
-	 * @param baseUrl
-	 * @throws UnavailableServiceException
+	 * Creates a new
+	 * <code>PersistenceCachingJobServiceClassLoaderStrategy</code>.
+	 * @param service The <code>JobService</code> from which to obtain class
+	 * 		definitions.
+	 * @param jobId The <code>UUID</code> identifying the job for which to
+	 * 		obtain class definitions.
+	 * @param baseUrl The base <code>URL</code> to use for storing class
+	 * 		definitions.
+	 * @throws UnavailableServiceException If <code>PersistenceService</code>
+	 * 		is unavailable.
+	 * @see javax.jnlp.PersistenceService
 	 */
 	public PersistenceCachingJobServiceClassLoaderStrategy(JobService service,
 			UUID jobId, URL baseUrl) throws UnavailableServiceException {
@@ -133,6 +156,12 @@ public final class PersistenceCachingJobServiceClassLoaderStrategy extends
 		write(url, def);
 	}
 
+	/**
+	 * Gets the <code>URL</code> for storing the specified class definition.
+	 * @param name The fully qualified name of the class.
+	 * @param digest The MD5 digest of the class definition.
+	 * @return The <code>URL</code> to use.
+	 */
 	private URL getUrlForCacheEntry(String name, byte[] digest) {
 		try {
 			return new URL(baseUrl, name.replace('.', '/') + StringUtil.toHex(digest));

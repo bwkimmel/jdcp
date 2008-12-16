@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Bradley W. Kimmel
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -9,10 +9,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -36,18 +36,26 @@ import ca.eandb.jdcp.remote.JobService;
 import ca.eandb.util.StringUtil;
 
 /**
+ * A <code>CachingJobServiceClassLoaderStrategy</code> that stores class
+ * definitions on the file system.
  * @author Brad Kimmel
- *
  */
 public final class FileCachingJobServiceClassLoaderStrategy extends
 		CachingJobServiceClassLoaderStrategy {
 
+	/** The root directory in which to store cached class definitions. */
 	private final File directory;
 
 	/**
-	 * @param service
-	 * @param jobId
-	 * @param directory
+	 * Creates a new <code>FileCachingJobServiceClassLoaderStrategy</code>.
+	 * @param service The <code>JobService</code> from which to obtain class
+	 * 		definitions.
+	 * @param jobId The <code>UUID</code> identifying the job for which to
+	 * 		obtain class definitions.
+	 * @param directory The root directory in which to store cached class
+	 * 		definitions.
+	 * @throws IllegalArgumentException if <code>directory</code> does not
+	 * 		refer to an existing directory.
 	 */
 	public FileCachingJobServiceClassLoaderStrategy(JobService service,
 			UUID jobId, File directory) {
@@ -59,9 +67,15 @@ public final class FileCachingJobServiceClassLoaderStrategy extends
 	}
 
 	/**
-	 * @param service
-	 * @param jobId
-	 * @param directory
+	 * Creates a new <code>FileCachingJobServiceClassLoaderStrategy</code>.
+	 * @param service The <code>JobService</code> from which to obtain class
+	 * 		definitions.
+	 * @param jobId The <code>UUID</code> identifying the job for which to
+	 * 		obtain class definitions.
+	 * @param directory The root directory in which to store cached class
+	 * 		definitions.
+	 * @throws IllegalArgumentException if <code>directory</code> does not
+	 * 		refer to an existing directory.
 	 */
 	public FileCachingJobServiceClassLoaderStrategy(JobService service,
 			UUID jobId, String directory) {
@@ -106,6 +120,15 @@ public final class FileCachingJobServiceClassLoaderStrategy extends
 		}
 	}
 
+	/**
+	 * Gets the <code>File</code> in which to store the given class definition.
+	 * @param name The fully qualified name of the class.
+	 * @param digest The MD5 digest of the class definition.
+	 * @param createDirectory A value indicating whether the directory
+	 * 		containing the file should be created if it does not yet exist.
+	 * @return The <code>File</code> to use for storing the cached class
+	 * 		definition.
+	 */
 	private File getCacheEntryFile(String name, byte[] digest, boolean createDirectory) {
 		File entryDirectory = new File(directory, name.replace('.', '/'));
 		if (createDirectory && !entryDirectory.isDirectory()) {
