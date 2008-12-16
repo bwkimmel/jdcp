@@ -26,14 +26,14 @@
 package ca.eandb.jdcp.worker;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.UUID;
 
+import org.apache.log4j.Logger;
 
 import ca.eandb.jdcp.remote.JobService;
 import ca.eandb.util.StringUtil;
+import ca.eandb.util.io.FileUtil;
 
 /**
  * A <code>CachingJobServiceClassLoaderStrategy</code> that stores class
@@ -42,6 +42,9 @@ import ca.eandb.util.StringUtil;
  */
 public final class FileCachingJobServiceClassLoaderStrategy extends
 		CachingJobServiceClassLoaderStrategy {
+
+	/** The <code>Logger</code> for this class. */
+	private static final Logger logger = Logger.getLogger(FileCachingJobServiceClassLoaderStrategy.class);
 
 	/** The root directory in which to store cached class definitions. */
 	private final File directory;
@@ -92,12 +95,9 @@ public final class FileCachingJobServiceClassLoaderStrategy extends
 
 		if (file.exists()) {
 			try {
-				FileInputStream stream = new FileInputStream(file);
-				def = new byte[(int) file.length()];
-				stream.read(def);
-				stream.close();
+				def = FileUtil.getFileContents(file);
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.error("Could not read class definition file", e);
 				def = null;
 			}
 		}
@@ -112,11 +112,9 @@ public final class FileCachingJobServiceClassLoaderStrategy extends
 	protected void cacheStore(String name, byte[] digest, byte[] def) {
 		File file = getCacheEntryFile(name, digest, true);
 		try {
-			FileOutputStream stream = new FileOutputStream(file);
-			stream.write(def);
-			stream.close();
+			FileUtil.setFileContents(file, def);
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error("Could not write class definition file", e);
 		}
 	}
 
