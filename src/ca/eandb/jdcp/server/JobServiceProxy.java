@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Bradley W. Kimmel
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -9,10 +9,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -45,22 +45,27 @@ import ca.eandb.util.UnexpectedException;
 import ca.eandb.util.rmi.Serialized;
 
 /**
+ * A proxy <code>JobService</code> object used by clients of a remote
+ * <code>JobService</code>.
  * @author Brad Kimmel
- *
  */
 public final class JobServiceProxy extends UnicastRemoteObject implements JobService {
 
 	/**
-	 *
+	 * Serialization version ID.
 	 */
 	private static final long serialVersionUID = -3663995122172056330L;
 
+	/** The <code>Subject</code> that the user has authenticated as. */
 	private final Subject user;
+
+	/** The underlying <code>JobService</code>. */
 	private final JobService service;
 
 	/**
-	 * @param user
-	 * @param server
+	 * Creates a new <code>JobServiceProxy</code>.
+	 * @param user The <code>Subject</code> that the user has authenticated as.
+	 * @param server The underlying <code>JobService</code>.
 	 */
 	public JobServiceProxy(Subject user, JobService service) throws RemoteException {
 		this.user = user;

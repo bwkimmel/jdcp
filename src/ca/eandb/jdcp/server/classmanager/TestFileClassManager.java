@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Bradley W. Kimmel
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -9,10 +9,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -31,13 +31,15 @@ import java.nio.ByteBuffer;
 import ca.eandb.util.StringUtil;
 
 /**
+ * A main class for testing the <code>FileClassManager</code> class.
+ * @see ca.eandb.jdcp.server.classmanager.FileClassManager.
  * @author Brad Kimmel
- *
  */
 public final class TestFileClassManager {
 
 	/**
-	 * @param args
+	 * Runs the tests.
+	 * @param args Command line arguments.
 	 */
 	public static void main(String[] args) {
 
@@ -65,10 +67,19 @@ public final class TestFileClassManager {
 
 	}
 
+	/**
+	 * Prints the specified array of bytes as a hex string.
+	 * @param bytes The array of bytes to print.
+	 */
 	private static void printBytes(byte[] bytes) {
 		System.out.println(StringUtil.toHex(bytes));
 	}
 
+	/**
+	 * Prints the contents of the specified <code>ByteBuffer</code> as a hex
+	 * string.
+	 * @param bytes The <code>ByteBuffer</code> containing the bytes to print.
+	 */
 	private static void printBytes(ByteBuffer bytes) {
 		byte[] array = new byte[bytes.remaining()];
 		bytes.get(array);

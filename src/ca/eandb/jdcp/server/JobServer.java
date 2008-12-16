@@ -62,27 +62,60 @@ import ca.eandb.util.progress.ProgressMonitorFactory;
 import ca.eandb.util.rmi.Serialized;
 
 /**
+ * A <code>JobService</code> implementation.
  * @author Brad Kimmel
- *
  */
 public final class JobServer implements JobService {
 
+	/**
+	 * The default amount of time (in seconds) to instruct workers to idle for
+	 * if there are no tasks to be processed.
+	 */
 	private static final int DEFAULT_IDLE_SECONDS = 10;
 
+	/** The <code>Logger</code> for this class. */
 	private static final Logger logger = Logger.getLogger(JobServer.class);
 
+	/**
+	 * The <code>ProgressMonitorFactory</code> to use to create
+	 * <code>ProgressMonitor</code>s for reporting overall progress of
+	 * individual jobs.
+	 * @see ca.eandb.util.progress.ProgressMonitor
+	 */
 	private final ProgressMonitorFactory monitorFactory;
 
+	/**
+	 * The <code>TaskScheduler</code> to use to select from multiple tasks to
+	 * assign to workers.
+	 */
 	private final TaskScheduler scheduler;
 
+	/**
+	 * The <code>ParentClassManager</code> to use for managing class
+	 * definitions supplied by clients.
+	 */
 	private final ParentClassManager classManager;
 
+	/**
+	 * The directory under which to provide working directories for individual
+	 * jobs.
+	 */
 	private final File outputDirectory;
 
+	/**
+	 * A <code>Map</code> for looking up <code>ScheduledJob</code> structures
+	 * by the corresponding job ID.
+	 * @see ca.eandb.jdcp.server.JobServer.ScheduledJob
+	 */
 	private final Map<UUID, ScheduledJob> jobs = new HashMap<UUID, ScheduledJob>();
 
+	/** An <code>Executor</code> to use to run asynchronous tasks. */
 	private final Executor executor;
 
+	/**
+	 * The <code>TaskDescription</code> to use to notify workers that no tasks
+	 * are available to be performed.
+	 */
 	private TaskDescription idleTask = new TaskDescription(null, 0, DEFAULT_IDLE_SECONDS);
 
 	/**
@@ -332,11 +365,24 @@ public final class JobServer implements JobService {
 		}
 	}
 
+	/**
+	 * Handles a <code>JobExcecutionException</code> thrown by a job managed
+	 * by this server.
+	 * @param e The <code>JobExecutionException</code> that was thrown by the
+	 * 		job.
+	 * @param jobId The <code>UUID</code> identifying the job that threw the
+	 * 		exception.
+	 */
 	private void handleJobExecutionException(JobExecutionException e, UUID jobId) {
 		logger.error("Exception thrown from job " + jobId.toString(), e);
 		removeScheduledJob(jobId, false);
 	}
 
+	/**
+	 * Removes a job.
+	 * @param jobId The <code>UUID</code> identifying the job to be removed.
+	 * @param complete A value indicating whether the job has been completed.
+	 */
 	private void removeScheduledJob(UUID jobId, boolean complete) {
 		ScheduledJob sched = jobs.remove(jobId);
 		if (sched != null) {
@@ -388,6 +434,7 @@ public final class JobServer implements JobService {
 		 */
 		public final ClassManager				classManager;
 
+		/** The working directory for this job. */
 		private final File						workingDirectory;
 
 		/**
@@ -411,6 +458,14 @@ public final class JobServer implements JobService {
 
 		}
 
+		/**
+		 * Deserializes the job and prepares it to be managed by the host
+		 * machine.
+		 * @param job The serialized job.
+		 * @throws ClassNotFoundException If a class required by the job is
+		 * 		missing.
+		 * @throws JobExecutionException If the job throws an exception.
+		 */
 		public void initializeJob(Serialized<ParallelizableJob> job) throws ClassNotFoundException, JobExecutionException {
 			ClassLoader loader	= new StrategyClassLoader(classManager, JobServer.class.getClassLoader());
 			this.job			= new JobExecutionWrapper(job.deserialize(loader));
@@ -422,6 +477,11 @@ public final class JobServer implements JobService {
 			this.job.initialize();
 		}
 
+		/**
+		 * Submits the results for a task associated with this job.
+		 * @param taskId The ID of the task whose results are being submitted.
+		 * @param results The serialized results.
+		 */
 		public void submitTaskResults(int taskId, Serialized<Object> results) {
 			Object task = scheduler.remove(id, taskId);
 			Runnable command = new TaskResultSubmitter(this, task, results, monitor);
@@ -432,9 +492,13 @@ public final class JobServer implements JobService {
 			}
 		}
 
-		public synchronized void reportException(int taskId, Exception ex)
-				throws SecurityException, RemoteException {
-
+		/**
+		 * Reports an exception thrown by a worker while processing a task for
+		 * this job.
+		 * @param taskId The ID of the task that was being processed.
+		 * @param ex The exception that was thrown.
+		 */
+		public synchronized void reportException(int taskId, Exception ex) {
 			PrintStream log = null;
 
 			try {
@@ -456,6 +520,11 @@ public final class JobServer implements JobService {
 
 		}
 
+		/**
+		 * Obtains and schedules the next task for this job.
+		 * @throws JobExecutionException If the job throws an exception while
+		 * 		attempting to obtain the next task.
+		 */
 		public void scheduleNextTask() throws JobExecutionException {
 			Object task = job.getNextTask();
 			if (task != null) {
@@ -467,7 +536,7 @@ public final class JobServer implements JobService {
 		 * Writes the results of a <code>ScheduledJob</code> to the output
 		 * directory.
 		 * @param sched The <code>ScheduledJob</code> to write results for.
-		 * @throws JobExecutionException
+		 * @throws JobExecutionException If the job throws an exception.
 		 */
 		private synchronized void finalizeJob() throws JobExecutionException {
 
@@ -497,6 +566,14 @@ public final class JobServer implements JobService {
 
 		}
 
+		/**
+		 * Gets the <code>File</code> associated with the specified path which
+		 * is relative to this jobs working directory.
+		 * @param path The relative path.
+		 * @return The <code>File</code> associated with the specified path.
+		 * @throws IllegalArgumentException If the path is not a relative path
+		 * 		or references the parent directory (..).
+		 */
 		private File getWorkingFile(String path) {
 			File file = new File(workingDirectory, path).getAbsoluteFile();
 			try {
@@ -509,6 +586,9 @@ public final class JobServer implements JobService {
 			return file;
 		}
 
+		/* (non-Javadoc)
+		 * @see ca.eandb.jdcp.job.HostService#createFileOutputStream(java.lang.String)
+		 */
 		@Override
 		public FileOutputStream createFileOutputStream(final String path) {
 			return AccessController.doPrivileged(new PrivilegedAction<FileOutputStream>() {
@@ -525,6 +605,9 @@ public final class JobServer implements JobService {
 			});
 		}
 
+		/* (non-Javadoc)
+		 * @see ca.eandb.jdcp.job.HostService#createRandomAccessFile(java.lang.String)
+		 */
 		@Override
 		public RandomAccessFile createRandomAccessFile(final String path) {
 			return AccessController.doPrivileged(new PrivilegedAction<RandomAccessFile>() {
@@ -543,18 +626,39 @@ public final class JobServer implements JobService {
 
 	}
 
+	/**
+	 * A <code>Runnable</code> task for submitting task results asynchronously.
+	 * @author Brad Kimmel
+	 */
 	private class TaskResultSubmitter implements Runnable {
 
+		/**
+		 * The <code>ScheduledJob</code> associated with the task whose results
+		 * are being submitted.
+		 */
 		private final ScheduledJob sched;
+
+		/**
+		 * The <code>Object</code> describing the task whose results are being
+		 * submitted.
+		 */
 		private final Object task;
+
+		/** The serialized task results. */
 		private final Serialized<Object> results;
+
+		/** The <code>ProgressMonitor</code> to report job progress to. */
 		private final ProgressMonitor monitor;
 
 		/**
-		 * @param sched
-		 * @param task
-		 * @param results
-		 * @param monitor
+		 * Creates a new <code>TaskResultSubmitter</code>.
+		 * @param sched The <code>ScheduledJob</code> associated with the task
+		 * 		whose results are being submitted.
+		 * @param task The <code>Object</code> describing the task whose
+		 * 		results are being submitted.
+		 * @param results The serialized task results.
+		 * @param monitor The <code>ProgressMonitor</code> to report job
+		 * 		progress to.
 		 */
 		public TaskResultSubmitter(ScheduledJob sched, Object task,
 				Serialized<Object> results, ProgressMonitor monitor) {

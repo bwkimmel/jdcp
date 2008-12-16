@@ -44,13 +44,14 @@ import ca.eandb.jdcp.server.classmanager.ParentClassManager;
 import ca.eandb.util.progress.ProgressPanel;
 
 /**
+ * The main class for the JDCP server application.
  * @author Brad Kimmel
- *
  */
 public final class JobServerMain {
 
 	/**
-	 * @param args
+	 * Runs the JDCP server application.
+	 * @param args Command line arguments.
 	 */
 	public static void main(String[] args) {
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -60,6 +61,9 @@ public final class JobServerMain {
 		});
 	}
 
+	/**
+	 * Starts the JDCP server.
+	 */
 	private static void startServer() {
 
 		try {
