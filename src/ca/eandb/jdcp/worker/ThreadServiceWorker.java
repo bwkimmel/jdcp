@@ -603,6 +603,10 @@ public final class ThreadServiceWorker implements Runnable {
 	/** The <code>Logger</code> to write log messages to. */
 	private static final Logger logger = Logger.getLogger(ThreadServiceWorker.class);
 
+	/**
+	 * The <code>JobServiceFactory</code> to use to connect to a
+	 * <code>JobService</code>.
+	 */
 	private final JobServiceFactory serviceFactory;
 
 	/** The <code>Executor</code> to use to process tasks. */
