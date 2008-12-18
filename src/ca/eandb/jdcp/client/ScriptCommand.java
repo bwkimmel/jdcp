@@ -109,6 +109,14 @@ public final class ScriptCommand implements Command<Configuration> {
 
 	}
 
+	/**
+	 * Gets the <code>ScriptEngine</code> to use for interpreting the script.
+	 * @param factory The <code>ScriptEngineManager</code> to use to create the
+	 * 		<code>ScriptEngine</code>.
+	 * @param options The command line options for this
+	 * 		<code>ScriptCommand</code>.
+	 * @return The <code>ScriptEngine</code> to use.
+	 */
 	private ScriptEngine getScriptEngine(ScriptEngineManager factory, Options options) {
 		if (options.language != null) {
 			return factory.getEngineByName(options.language);
