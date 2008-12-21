@@ -184,6 +184,39 @@
         </java>
     </target>
 
+    <target name="tar-server" depends="dist-server">
+        <tar destfile="${dist.dir}/${ant.project.name}-server.tar.bz2" basedir="${dist.dir}/server" compression="bzip2"/>
+    </target>
+
+    <target name="tar-worker" depends="dist-worker">
+        <tar destfile="${dist.dir}/${ant.project.name}-worker.tar.bz2" basedir="${dist.dir}/worker" compression="bzip2"/>
+    </target>
+
+    <target name="tar-client" depends="dist-client">
+        <tar destfile="${dist.dir}/${ant.project.name}-client.tar.bz2" basedir="${dist.dir}/client" compression="bzip2"/>
+    </target>
+
+	<target name="tar" depends="tar-server,tar-worker,tar-client">
+	</target>
+
+    <target name="zip-server" depends="dist-server">
+        <zip destfile="${dist.dir}/${ant.project.name}-server.zip" basedir="${dist.dir}/server"/>
+    </target>
+
+    <target name="zip-worker" depends="dist-worker">
+        <zip destfile="${dist.dir}/${ant.project.name}-worker.zip" basedir="${dist.dir}/worker"/>
+    </target>
+
+    <target name="zip-client" depends="dist-client">
+        <zip destfile="${dist.dir}/${ant.project.name}-client.zip" basedir="${dist.dir}/client"/>
+    </target>
+
+    <target name="zip" depends="zip-server,zip-worker,zip-client">
+    </target>
+
+	<target name="archive" depends="tar,zip">
+	</target>
+
 	<!--
 	java -Djava.library.path=lib -Djava.security.manager -Djava.security.auth.login.config=login.config -Djava.security.policy=policy -Dlog4j.configuration=file:./log4j.properties -jar jdcpserver.jar
 	-->
@@ -234,6 +267,6 @@
             <javaproperty name="apple.awt.textantialiasing" value="on"/>
 	    </jarbundler>
 	</target>
-	
+
 	<target name="macosx-bundle" depends="macosx-bundle-server,macosx-bundle-worker"/>
 </project>
