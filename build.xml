@@ -102,7 +102,7 @@
 		<copy file="${jar.dir}/${ant.project.name}-server.jar" todir="${dist.dir}/server" />
 		<copy todir="${dist.dir}/server">
 			<fileset dir="${basedir}">
-				<include name="lib/**/*.jar"/>
+				<include name="lib/log4j-*.jar"/>
 				<include name="etc/**"/>
 			</fileset>
 		</copy>
