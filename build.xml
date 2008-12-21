@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ======================================================================
+     Dec 20, 2008 2:48:09 AM
+
+     jdcp
+     Java Distributed Computing Platform
+
+     Brad Kimmel
+     ====================================================================== -->
+<project name="jdcp" default="default">
+	<description>
+            Java Distributed Computing Platform
+    </description>
+
+	<property name="src.dir" value="src"/>
+	<property name="lib.dir" value="lib"/>
+	<property name="build.dir" value="build"/>
+	<property name="classes.dir" value="${build.dir}/classes"/>
+	<property name="jar.dir" value="${build.dir}/jar"/>
+	<property name="dist.dir" value="${build.dir}/dist"/>
+
+	<property name="eandb.util.dir" value="${basedir}/../util"/>
+	<property name="eandb.util.build.dir" value="${eandb.util.dir}/build"/>
+	<property name="eandb.util.jar.dir" value="${eandb.util.build.dir}/jar"/>
+	<property name="eandb.util.jar.file" value="${eandb.util.jar.dir}/eandb.jar"/>
+
+	<property name="server.main" value="ca.eandb.jdcp.server.JobServerMain"/>
+	<property name="worker.main" value="ca.eandb.jdcp.worker.MainWindow"/>
+	<property name="client.main" value="ca.eandb.jdcp.client.ClientMain"/>
+
+	<property name="macosx.javastub.file" value="/System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub"/>
+
+	<path id="classpath">
+		<fileset dir="${lib.dir}" includes="**/*.jar"/>
+	</path>
+
+	<!-- =================================
+          target: default
+         ================================= -->
+	<target name="default" depends="jar" description="--> Java Distributed Computing Platform">
+
+	</target>
+
+	<target name="clean">
+		<delete dir="${build.dir}"/>
+	</target>
+
+	<target name="init">
+		<mkdir dir="${build.dir}"/>
+		<mkdir dir="${classes.dir}"/>
+		<mkdir dir="${jar.dir}"/>
+	</target>
+
+	<target name="jar-eandb-util" depends="init">
+		<ant dir="${eandb.util.dir}" target="jar"/>
+	</target>
+
+	<target name="compile" depends="jar-eandb-util">
+		<javac srcdir="${src.dir}" destdir="${classes.dir}" >
+			<classpath>
+				<path refid="classpath"/>
+				<path location="${eandb.util.jar.file}"/>
+			</classpath>
+		</javac>
+	</target>
+
+	<target name="jar-server" depends="compile">
+		<jar destfile="${jar.dir}/${ant.project.name}-server.jar">
+			<fileset dir="${classes.dir}">
+			    <exclude name="ca/eandb/jdcp/worker/**"/>
+                <exclude name="ca/eandb/jdcp/client/**"/>
+			</fileset>
+		</jar>
+	</target>
+
+	<target name="jar-worker" depends="compile">
+        <jar destfile="${jar.dir}/${ant.project.name}-worker.jar">
+            <fileset dir="${classes.dir}">
+                <exclude name="ca/eandb/jdcp/server/**"/>
+                <exclude name="ca/eandb/jdcp/client/**"/>
+            </fileset>
+        </jar>
+	</target>
+
+	<target name="jar-client" depends="compile">
+        <jar destfile="${jar.dir}/${ant.project.name}-client.jar">
+            <fileset dir="${classes.dir}">
+                <exclude name="ca/eandb/jdcp/server/**"/>
+                <exclude name="ca/eandb/jdcp/worker/**"/>
+            </fileset>
+        </jar>
+	</target>
+
+	<target name="jar" depends="jar-server,jar-worker,jar-client">
+	</target>
+
+	<target name="dist-server" depends="jar-server,jar-eandb-util">
+		<mkdir dir="${dist.dir}"/>
+		<mkdir dir="${dist.dir}/server"/>
+		<mkdir dir="${dist.dir}/server/lib"/>
+		<mkdir dir="${dist.dir}/server/etc"/>
+		<copy file="${jar.dir}/${ant.project.name}-server.jar" todir="${dist.dir}/server" />
+		<copy todir="${dist.dir}/server">
+			<fileset dir="${basedir}">
+				<include name="lib/**/*.jar"/>
+				<include name="etc/**"/>
+			</fileset>
+		</copy>
+        <copy file="${eandb.util.jar.file}" todir="${dist.dir}/server/lib"/>
+	</target>
+
+    <target name="dist-worker" depends="jar-worker,jar-eandb-util">
+        <mkdir dir="${dist.dir}"/>
+        <mkdir dir="${dist.dir}/worker"/>
+        <mkdir dir="${dist.dir}/worker/lib"/>
+        <mkdir dir="${dist.dir}/worker/etc"/>
+        <copy file="${jar.dir}/${ant.project.name}-worker.jar" todir="${dist.dir}/worker" />
+        <copy todir="${dist.dir}/worker">
+            <fileset dir="${basedir}">
+                <include name="lib/**/*.jar"/>
+                <include name="etc/log4j.properties"/>
+            </fileset>
+        </copy>
+        <copy file="${eandb.util.jar.file}" todir="${dist.dir}/worker/lib"/>
+    </target>
+
+	<target name="run-server" depends="dist-server">
+		<java spawn="true" fork="true" dir="${dist.dir}/server" classname="${server.main}">
+			<classpath>
+				<path location="${dist.dir}/server/${ant.project.name}-server.jar"/>
+				<path>
+					<fileset dir="${dist.dir}/server/lib" includes="**/*.jar"/>
+			    </path>
+			</classpath>
+			<jvmarg value="-Djava.security.manager"/>
+			<sysproperty key="java.library.path" value="lib"/>
+			<sysproperty key="java.security.auth.login.config" value="etc/login.config"/>
+			<sysproperty key="java.security.policy" value="etc/policy"/>
+			<sysproperty key="log4j.configuration" value="file:./etc/log4j.properties"/>
+		</java>
+	</target>
+
+    <target name="run-worker" depends="dist-worker">
+        <java spawn="true" fork="true" dir="${dist.dir}/worker" classname="${worker.main}">
+            <classpath>
+                <path location="${dist.dir}/worker/${ant.project.name}-worker.jar"/>
+                <path>
+                    <fileset dir="${dist.dir}/worker/lib" includes="**/*.jar"/>
+                </path>
+            </classpath>
+        	<!--
+            <jvmarg value="-Djava.security.manager"/>
+            <sysproperty key="java.library.path" value="lib"/>
+            <sysproperty key="java.security.auth.login.config" value="etc/login.config"/>
+            <sysproperty key="java.security.policy" value="etc/policy"/>
+            <sysproperty key="log4j.configuration" value="file:./etc/log4j.properties"/>
+            -->
+        </java>
+    </target>
+
+	<!--
+	java -Djava.library.path=lib -Djava.security.manager -Djava.security.auth.login.config=login.config -Djava.security.policy=policy -Dlog4j.configuration=file:./log4j.properties -jar jdcpserver.jar
+	<target name="macosx">
+		<copy
+            todir="${dist.dir}/macosx/JDCP Worker.app/Content/MacOS"
+            file="${macosx.javastub.file}"/>
+	</target>
+
+	<macrodef name="macosx-bundle">
+		<attribute name="dir"/>
+		<attribute name="name"/>
+		<attribute name="icon"/>
+		<attribute name="resources"/>
+		<sequential>
+	        <mkdir dir="@{dir}/@{name}.app"/>
+	        <mkdir dir="@{dir}/@{name}.app/Contents"/>
+	        <mkdir dir="@{dir}/@{name}.app/Contents/MacOS"/>
+	        <mkdir dir="@{dir}/@{name}.app/Contents/Resources"/>
+	        <mkdir dir="@{dir}/@{name}.app/Contents/Resources/Java"/>
+			<copy file="@{icon}" todir="@{dir}/@{name}.app/Contents/Resources"/>
+			<copy file="@{resources}" todir="@{dir}/@{name}.app/Contents/Resources/Java"/>
+	        <copy file="${macosx.javastub.file}" todir="@{dir}/@{name}.app/Contents/MacOS"/>
+			<echo message="APPL????" file="@{dir}/@{name}.app/Contents/PkgInfo"/>
+
+		</sequential>
+	</macrodef>
+    -->
+</project>

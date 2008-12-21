@@ -81,6 +81,7 @@ public final class JobServerMain {
 			File classesDirectory = new File(rootDirectory, "classes");
 			File jobsDirectory = new File(rootDirectory, "jobs");
 
+			rootDirectory.mkdir();
 			classesDirectory.mkdir();
 			jobsDirectory.mkdir();
 			System.err.println("OK");
