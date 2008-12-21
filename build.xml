@@ -102,6 +102,8 @@
 		<copy file="${jar.dir}/${ant.project.name}-server.jar" todir="${dist.dir}/server" />
 		<copy todir="${dist.dir}/server">
 			<fileset dir="${basedir}">
+                <include name="jdcp.ico"/>
+                <include name="jdcp-*.png"/>
 				<include name="lib/log4j-*.jar"/>
 				<include name="etc/**"/>
 			</fileset>
@@ -117,6 +119,8 @@
         <copy file="${jar.dir}/${ant.project.name}-worker.jar" todir="${dist.dir}/worker" />
         <copy todir="${dist.dir}/worker">
             <fileset dir="${basedir}">
+                <include name="jdcp.ico"/>
+                <include name="jdcp-*.png"/>
                 <include name="lib/**/*.jar"/>
                 <include name="etc/log4j.properties"/>
             </fileset>
@@ -132,6 +136,8 @@
         <copy file="${jar.dir}/${ant.project.name}-client.jar" todir="${dist.dir}/client" />
         <copy todir="${dist.dir}/client">
             <fileset dir="${basedir}">
+            	<include name="jdcp.ico"/>
+            	<include name="jdcp-*.png"/>
                 <include name="lib/log4j-*.jar"/>
                 <include name="etc/log4j.properties"/>
             </fileset>
