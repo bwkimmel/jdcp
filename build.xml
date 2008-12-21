@@ -234,30 +234,6 @@
             <javaproperty name="apple.awt.textantialiasing" value="on"/>
 	    </jarbundler>
 	</target>
-	<!--
-	<target name="macosx">
-		<copy
-            todir="${dist.dir}/macosx/JDCP Worker.app/Content/MacOS"
-            file="${macosx.javastub.file}"/>
-	</target>
-
-	<macrodef name="macosx-bundle">
-		<attribute name="dir"/>
-		<attribute name="name"/>
-		<attribute name="icon"/>
-		<attribute name="resources"/>
-		<sequential>
-	        <mkdir dir="@{dir}/@{name}.app"/>
-	        <mkdir dir="@{dir}/@{name}.app/Contents"/>
-	        <mkdir dir="@{dir}/@{name}.app/Contents/MacOS"/>
-	        <mkdir dir="@{dir}/@{name}.app/Contents/Resources"/>
-	        <mkdir dir="@{dir}/@{name}.app/Contents/Resources/Java"/>
-			<copy file="@{icon}" todir="@{dir}/@{name}.app/Contents/Resources"/>
-			<copy file="@{resources}" todir="@{dir}/@{name}.app/Contents/Resources/Java"/>
-	        <copy file="${macosx.javastub.file}" todir="@{dir}/@{name}.app/Contents/MacOS"/>
-			<echo message="APPL????" file="@{dir}/@{name}.app/Contents/PkgInfo"/>
-
-		</sequential>
-	</macrodef>
-    -->
+	
+	<target name="macosx-bundle" depends="macosx-bundle-server,macosx-bundle-worker"/>
 </project>
