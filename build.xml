@@ -80,6 +80,10 @@
 			    <exclude name="ca/eandb/jdcp/worker/**"/>
                 <exclude name="ca/eandb/jdcp/client/**"/>
 			</fileset>
+			<manifest>
+				<attribute name="Main-Class" value="${server.main}"/>
+				<attribute name="Class-Path" value="lib/eandb.jar lib/jnlp.jar lib/log4j-1.2.15.jar"/>
+			</manifest>
 		</jar>
 	</target>
 
@@ -89,6 +93,10 @@
                 <exclude name="ca/eandb/jdcp/server/**"/>
                 <exclude name="ca/eandb/jdcp/client/**"/>
             </fileset>
+            <manifest>
+                <attribute name="Main-Class" value="${worker.main}"/>
+                <attribute name="Class-Path" value="lib/eandb.jar lib/jnlp.jar lib/log4j-1.2.15.jar"/>
+            </manifest>
         </jar>
 	</target>
 
@@ -98,6 +106,10 @@
                 <exclude name="ca/eandb/jdcp/server/**"/>
                 <exclude name="ca/eandb/jdcp/worker/**"/>
             </fileset>
+            <manifest>
+                <attribute name="Main-Class" value="${client.main}"/>
+                <attribute name="Class-Path" value="lib/eandb.jar lib/log4j-1.2.15.jar"/>
+            </manifest>
         </jar>
 	</target>
 
@@ -114,6 +126,8 @@
 			<fileset dir="${basedir}">
                 <include name="jdcp.ico"/>
                 <include name="jdcp-*.png"/>
+				<include name="jdcp-server.bat"/>
+				<include name="jdcp-server.sh"/>
 				<include name="lib/log4j-*.jar"/>
 				<include name="etc/**"/>
 			</fileset>
