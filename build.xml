@@ -21,6 +21,14 @@
 	<property name="jar.dir" value="${build.dir}/jar"/>
 	<property name="dist.dir" value="${build.dir}/dist"/>
 
+    <property name="server.label" value="${ant.project.name}-server-${version}"/>
+    <property name="worker.label" value="${ant.project.name}-worker-${version}"/>
+    <property name="client.label" value="${ant.project.name}-client-${version}"/>
+
+	<property name="server.dist.dir" value="${dist.dir}/${server.label}"/>
+	<property name="worker.dist.dir" value="${dist.dir}/${worker.label}"/>
+	<property name="client.dist.dir" value="${dist.dir}/${client.label}"/>
+
 	<property name="eandb.util.dir" value="${basedir}/../util"/>
 	<property name="eandb.util.build.dir" value="${eandb.util.dir}/build"/>
 	<property name="eandb.util.jar.dir" value="${eandb.util.build.dir}/jar"/>
@@ -98,11 +106,11 @@
 
 	<target name="dist-server" depends="jar-server,jar-eandb-util">
 		<mkdir dir="${dist.dir}"/>
-		<mkdir dir="${dist.dir}/server"/>
-		<mkdir dir="${dist.dir}/server/lib"/>
-		<mkdir dir="${dist.dir}/server/etc"/>
-		<copy file="${jar.dir}/${ant.project.name}-server.jar" todir="${dist.dir}/server" />
-		<copy todir="${dist.dir}/server">
+		<mkdir dir="${server.dist.dir}"/>
+		<mkdir dir="${server.dist.dir}/lib"/>
+		<mkdir dir="${server.dist.dir}/etc"/>
+		<copy file="${jar.dir}/${ant.project.name}-server.jar" todir="${server.dist.dir}" />
+		<copy todir="${server.dist.dir}">
 			<fileset dir="${basedir}">
                 <include name="jdcp.ico"/>
                 <include name="jdcp-*.png"/>
@@ -110,16 +118,16 @@
 				<include name="etc/**"/>
 			</fileset>
 		</copy>
-        <copy file="${eandb.util.jar.file}" todir="${dist.dir}/server/lib"/>
+        <copy file="${eandb.util.jar.file}" todir="${server.dist.dir}/lib"/>
 	</target>
 
     <target name="dist-worker" depends="jar-worker,jar-eandb-util">
         <mkdir dir="${dist.dir}"/>
-        <mkdir dir="${dist.dir}/worker"/>
-        <mkdir dir="${dist.dir}/worker/lib"/>
-        <mkdir dir="${dist.dir}/worker/etc"/>
-        <copy file="${jar.dir}/${ant.project.name}-worker.jar" todir="${dist.dir}/worker" />
-        <copy todir="${dist.dir}/worker">
+        <mkdir dir="${worker.dist.dir}"/>
+        <mkdir dir="${worker.dist.dir}/lib"/>
+        <mkdir dir="${worker.dist.dir}/etc"/>
+        <copy file="${jar.dir}/${ant.project.name}-worker.jar" todir="${worker.dist.dir}" />
+        <copy todir="${worker.dist.dir}">
             <fileset dir="${basedir}">
                 <include name="jdcp.ico"/>
                 <include name="jdcp-*.png"/>
@@ -127,16 +135,16 @@
                 <include name="etc/log4j.properties"/>
             </fileset>
         </copy>
-        <copy file="${eandb.util.jar.file}" todir="${dist.dir}/worker/lib"/>
+        <copy file="${eandb.util.jar.file}" todir="${worker.dist.dir}/lib"/>
     </target>
 
     <target name="dist-client" depends="jar-client,jar-eandb-util">
         <mkdir dir="${dist.dir}"/>
-        <mkdir dir="${dist.dir}/client"/>
-        <mkdir dir="${dist.dir}/client/lib"/>
-        <mkdir dir="${dist.dir}/client/etc"/>
-        <copy file="${jar.dir}/${ant.project.name}-client.jar" todir="${dist.dir}/client" />
-        <copy todir="${dist.dir}/client">
+        <mkdir dir="${client.dist.dir}"/>
+        <mkdir dir="${client.dist.dir}/lib"/>
+        <mkdir dir="${client.dist.dir}/etc"/>
+        <copy file="${jar.dir}/${ant.project.name}-client.jar" todir="${client.dist.dir}" />
+        <copy todir="${client.dist.dir}">
             <fileset dir="${basedir}">
             	<include name="jdcp.ico"/>
             	<include name="jdcp-*.png"/>
@@ -144,18 +152,18 @@
                 <include name="etc/log4j.properties"/>
             </fileset>
         </copy>
-        <copy file="${eandb.util.jar.file}" todir="${dist.dir}/client/lib"/>
+        <copy file="${eandb.util.jar.file}" todir="${client.dist.dir}/lib"/>
     </target>
 
 	<target name="dist" depends="dist-server,dist-worker,dist-client">
 	</target>
 
 	<target name="run-server" depends="dist-server">
-		<java spawn="true" fork="true" dir="${dist.dir}/server" classname="${server.main}">
+		<java spawn="true" fork="true" dir="${server.dist.dir}" classname="${server.main}">
 			<classpath>
-				<path location="${dist.dir}/server/${ant.project.name}-server.jar"/>
+				<path location="${server.dist.dir}/${ant.project.name}-server.jar"/>
 				<path>
-					<fileset dir="${dist.dir}/server/lib" includes="**/*.jar"/>
+					<fileset dir="${server.dist.dir}/lib" includes="**/*.jar"/>
 			    </path>
 			</classpath>
 			<jvmarg value="-Djava.security.manager"/>
@@ -167,11 +175,11 @@
 	</target>
 
     <target name="run-worker" depends="dist-worker">
-        <java spawn="true" fork="true" dir="${dist.dir}/worker" classname="${worker.main}">
+        <java spawn="true" fork="true" dir="${worker.dist.dir}" classname="${worker.main}">
             <classpath>
-                <path location="${dist.dir}/worker/${ant.project.name}-worker.jar"/>
+                <path location="${worker.dist.dir}/${ant.project.name}-worker.jar"/>
                 <path>
-                    <fileset dir="${dist.dir}/worker/lib" includes="**/*.jar"/>
+                    <fileset dir="${worker.dist.dir}/lib" includes="**/*.jar"/>
                 </path>
             </classpath>
         	<!--
@@ -185,30 +193,30 @@
     </target>
 
     <target name="tar-server" depends="dist-server">
-        <tar destfile="${dist.dir}/${ant.project.name}-server.tar.bz2" basedir="${dist.dir}/server" compression="bzip2"/>
+        <tar destfile="${dist.dir}/${server.label}.tar.bz2" basedir="${dist.dir}" includes="${server.label}/**" compression="bzip2"/>
     </target>
 
     <target name="tar-worker" depends="dist-worker">
-        <tar destfile="${dist.dir}/${ant.project.name}-worker.tar.bz2" basedir="${dist.dir}/worker" compression="bzip2"/>
+        <tar destfile="${dist.dir}/${worker.label}.tar.bz2" basedir="${dist.dir}" includes="${worker.label}/**" compression="bzip2"/>
     </target>
 
     <target name="tar-client" depends="dist-client">
-        <tar destfile="${dist.dir}/${ant.project.name}-client.tar.bz2" basedir="${dist.dir}/client" compression="bzip2"/>
+        <tar destfile="${dist.dir}/${client.label}.tar.bz2" basedir="${dist.dir}" includes="${client.label}/**" compression="bzip2"/>
     </target>
 
 	<target name="tar" depends="tar-server,tar-worker,tar-client">
 	</target>
 
     <target name="zip-server" depends="dist-server">
-        <zip destfile="${dist.dir}/${ant.project.name}-server.zip" basedir="${dist.dir}/server"/>
+        <zip destfile="${dist.dir}/${server.label}.zip" basedir="${dist.dir}" includes="${server.label}/**"/>
     </target>
 
     <target name="zip-worker" depends="dist-worker">
-        <zip destfile="${dist.dir}/${ant.project.name}-worker.zip" basedir="${dist.dir}/worker"/>
+        <zip destfile="${dist.dir}/${worker.label}.zip" basedir="${dist.dir}" includes="${worker.label}/**"/>
     </target>
 
     <target name="zip-client" depends="dist-client">
-        <zip destfile="${dist.dir}/${ant.project.name}-client.zip" basedir="${dist.dir}/client"/>
+        <zip destfile="${dist.dir}/${client.label}.zip" basedir="${dist.dir}" includes="${client.label}/**"/>
     </target>
 
     <target name="zip" depends="zip-server,zip-worker,zip-client">
@@ -235,8 +243,8 @@
             jvmversion="1.6+"
             vmoptions="-Djava.security.manager"
             workingDirectory="$APP_PACKAGE/Contents/Resources/Java">
-            <jarfileset dir="${dist.dir}/server" includes="**/*.jar"/>
-            <javafileset dir="${dist.dir}/server" excludes="**/*.jar"/>
+            <jarfileset dir="${server.dist.dir}" includes="**/*.jar"/>
+            <javafileset dir="${server.dist.dir}" excludes="**/*.jar"/>
             <javaproperty name="java.library.path" value="lib"/>
             <javaproperty name="java.security.auth.login.config" value="etc/login.config"/>
             <javaproperty name="java.security.policy" value="etc/policy"/>
@@ -257,8 +265,8 @@
 	    	bundleid="ca.eandb.jdcp.worker"
 	    	jvmversion="1.6+"
 	    	workingDirectory="$APP_PACKAGE/Contents/Resources/Java">
-	    	<jarfileset dir="${dist.dir}/server" includes="**/*.jar"/>
-            <javafileset dir="${dist.dir}/server" excludes="**/*.jar"/>
+	    	<jarfileset dir="${server.dist.dir}" includes="**/*.jar"/>
+            <javafileset dir="${server.dist.dir}" excludes="**/*.jar"/>
 	    	<javaproperty name="java.library.path" value="lib"/>
 	    	<!-- <javaproperty name="java.security.policy" value="etc/policy"/> -->
             <javaproperty name="log4j.configuration" value="file:./etc/log4j.properties"/>
