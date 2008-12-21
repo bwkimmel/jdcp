@@ -542,7 +542,6 @@ public final class ThreadServiceWorker implements Runnable {
 		/* (non-Javadoc)
 		 * @see ca.eandb.util.progress.ProgressMonitor#isCancelPending()
 		 */
-		@Override
 		public boolean isCancelPending() {
 			return shutdownPending;
 		}
@@ -550,7 +549,6 @@ public final class ThreadServiceWorker implements Runnable {
 		/* (non-Javadoc)
 		 * @see ca.eandb.util.progress.ProgressMonitor#notifyCancelled()
 		 */
-		@Override
 		public void notifyCancelled() {
 			/* ignore. */
 		}
@@ -558,7 +556,6 @@ public final class ThreadServiceWorker implements Runnable {
 		/* (non-Javadoc)
 		 * @see ca.eandb.util.progress.ProgressMonitor#notifyComplete()
 		 */
-		@Override
 		public void notifyComplete() {
 			/* ignore. */
 		}
@@ -566,7 +563,6 @@ public final class ThreadServiceWorker implements Runnable {
 		/* (non-Javadoc)
 		 * @see ca.eandb.util.progress.ProgressMonitor#notifyIndeterminantProgress()
 		 */
-		@Override
 		public boolean notifyIndeterminantProgress() {
 			monitor.notifyIndeterminantProgress();
 			return !shutdownPending;
@@ -575,7 +571,6 @@ public final class ThreadServiceWorker implements Runnable {
 		/* (non-Javadoc)
 		 * @see ca.eandb.util.progress.ProgressMonitor#notifyProgress(int, int)
 		 */
-		@Override
 		public boolean notifyProgress(int value, int maximum) {
 			monitor.notifyProgress(value, maximum);
 			return !shutdownPending;
@@ -584,7 +579,6 @@ public final class ThreadServiceWorker implements Runnable {
 		/* (non-Javadoc)
 		 * @see ca.eandb.util.progress.ProgressMonitor#notifyProgress(double)
 		 */
-		@Override
 		public boolean notifyProgress(double progress) {
 			monitor.notifyProgress(progress);
 			return !shutdownPending;
@@ -593,7 +587,6 @@ public final class ThreadServiceWorker implements Runnable {
 		/* (non-Javadoc)
 		 * @see ca.eandb.util.progress.ProgressMonitor#notifyStatusChanged(java.lang.String)
 		 */
-		@Override
 		public void notifyStatusChanged(String status) {
 			monitor.notifyStatusChanged(status);
 		}

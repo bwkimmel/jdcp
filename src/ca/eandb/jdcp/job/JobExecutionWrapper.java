@@ -51,7 +51,6 @@ public final class JobExecutionWrapper implements ParallelizableJob {
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.job.ParallelizableJob#setHostService(ca.eandb.jdcp.job.HostService)
 	 */
-	@Override
 	public void setHostService(HostService host) {
 		job.setHostService(host);
 	}
@@ -59,7 +58,6 @@ public final class JobExecutionWrapper implements ParallelizableJob {
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.job.ParallelizableJob#finish()
 	 */
-	@Override
 	public void finish() throws JobExecutionException {
 		try {
 			job.finish();
@@ -71,7 +69,6 @@ public final class JobExecutionWrapper implements ParallelizableJob {
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.job.ParallelizableJob#getNextTask()
 	 */
-	@Override
 	public Object getNextTask() throws JobExecutionException {
 		try {
 			return job.getNextTask();
@@ -83,7 +80,6 @@ public final class JobExecutionWrapper implements ParallelizableJob {
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.job.ParallelizableJob#initialize(ca.eandb.jdcp.job.Host)
 	 */
-	@Override
 	public void initialize() throws JobExecutionException {
 		try {
 			job.initialize();
@@ -95,7 +91,6 @@ public final class JobExecutionWrapper implements ParallelizableJob {
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.job.ParallelizableJob#suspend()
 	 */
-	@Override
 	public void suspend() throws JobExecutionException {
 		try {
 			job.suspend();
@@ -107,7 +102,6 @@ public final class JobExecutionWrapper implements ParallelizableJob {
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.job.ParallelizableJob#resume()
 	 */
-	@Override
 	public void resume() throws JobExecutionException {
 		try {
 			job.resume();
@@ -119,7 +113,6 @@ public final class JobExecutionWrapper implements ParallelizableJob {
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.job.ParallelizableJob#isComplete()
 	 */
-	@Override
 	public boolean isComplete() throws JobExecutionException {
 		try {
 			return job.isComplete();
@@ -131,7 +124,6 @@ public final class JobExecutionWrapper implements ParallelizableJob {
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.job.ParallelizableJob#submitTaskResults(java.lang.Object, java.lang.Object, ca.eandb.util.progress.ProgressMonitor)
 	 */
-	@Override
 	public void submitTaskResults(Object task, Object results,
 			ProgressMonitor monitor) throws JobExecutionException {
 		try {
@@ -144,7 +136,6 @@ public final class JobExecutionWrapper implements ParallelizableJob {
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.job.ParallelizableJob#worker()
 	 */
-	@Override
 	public TaskWorker worker() throws JobExecutionException {
 		try {
 			return job.worker();

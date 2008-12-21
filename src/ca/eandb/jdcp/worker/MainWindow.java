@@ -348,7 +348,6 @@ public final class MainWindow extends JFrame {
 
 			private ConnectionTask task = new ConnectionTask();
 
-			@Override
 			public JobService connect() {
 				try {
 					SwingUtilities.invokeAndWait(task);
@@ -430,7 +429,6 @@ public final class MainWindow extends JFrame {
 		private boolean first = true;
 		private JobService service;
 
-		@Override
 		public void run() {
 			setStatus("Connecting...");
 			service = first ? MainWindow.this.connect() : reconnect();
