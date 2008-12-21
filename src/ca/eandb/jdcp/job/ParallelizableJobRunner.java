@@ -33,8 +33,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
-import ca.eandb.jdcp.concurrent.BackgroundThreadFactory;
 import ca.eandb.util.UnexpectedException;
+import ca.eandb.util.concurrent.BackgroundThreadFactory;
 import ca.eandb.util.progress.DummyProgressMonitor;
 import ca.eandb.util.progress.DummyProgressMonitorFactory;
 import ca.eandb.util.progress.ProgressMonitor;

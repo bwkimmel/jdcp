@@ -71,9 +71,9 @@ import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
-import ca.eandb.jdcp.concurrent.BackgroundThreadFactory;
 import ca.eandb.jdcp.remote.AuthenticationService;
 import ca.eandb.jdcp.remote.JobService;
+import ca.eandb.util.concurrent.BackgroundThreadFactory;
 import ca.eandb.util.io.DocumentOutputStream;
 import ca.eandb.util.progress.ProgressPanel;
 
