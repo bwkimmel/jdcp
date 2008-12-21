@@ -124,6 +124,24 @@
         <copy file="${eandb.util.jar.file}" todir="${dist.dir}/worker/lib"/>
     </target>
 
+    <target name="dist-client" depends="jar-client,jar-eandb-util">
+        <mkdir dir="${dist.dir}"/>
+        <mkdir dir="${dist.dir}/client"/>
+        <mkdir dir="${dist.dir}/client/lib"/>
+        <mkdir dir="${dist.dir}/client/etc"/>
+        <copy file="${jar.dir}/${ant.project.name}-client.jar" todir="${dist.dir}/client" />
+        <copy todir="${dist.dir}/client">
+            <fileset dir="${basedir}">
+                <include name="lib/log4j-*.jar"/>
+                <include name="etc/log4j.properties"/>
+            </fileset>
+        </copy>
+        <copy file="${eandb.util.jar.file}" todir="${dist.dir}/client/lib"/>
+    </target>
+
+	<target name="dist" depends="dist-server,dist-worker,dist-client">
+	</target>
+
 	<target name="run-server" depends="dist-server">
 		<java spawn="true" fork="true" dir="${dist.dir}/server" classname="${server.main}">
 			<classpath>
