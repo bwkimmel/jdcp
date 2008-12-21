@@ -23,7 +23,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package ca.eandb.jdcp.scheduling;
+package ca.eandb.jdcp.server.scheduling;
 
 import java.util.UUID;
 

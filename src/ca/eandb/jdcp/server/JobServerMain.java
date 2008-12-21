@@ -37,10 +37,10 @@ import java.util.prefs.Preferences;
 
 import javax.swing.JFrame;
 
-import ca.eandb.jdcp.scheduling.PrioritySerialTaskScheduler;
-import ca.eandb.jdcp.scheduling.TaskScheduler;
 import ca.eandb.jdcp.server.classmanager.FileClassManager;
 import ca.eandb.jdcp.server.classmanager.ParentClassManager;
+import ca.eandb.jdcp.server.scheduling.PrioritySerialTaskScheduler;
+import ca.eandb.jdcp.server.scheduling.TaskScheduler;
 import ca.eandb.util.progress.ProgressPanel;
 
 /**
