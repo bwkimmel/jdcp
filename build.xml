@@ -293,4 +293,25 @@
 	</target>
 
 	<target name="macosx-bundle" depends="macosx-bundle-server,macosx-bundle-worker"/>
+
+	<target name="dmg-server" depends="macosx-bundle-server">
+		<exec dir="${dist.dir}" executable="hdiutil">
+			<arg value="create"/>
+			<arg value="${server.label}.dmg"/>
+			<arg value="-srcfolder"/>
+			<arg value="macosx/JDCP Server.app"/>
+		</exec>
+	</target>
+
+	<target name="dmg-worker" depends="macosx-bundle-worker">
+		<exec dir="${dist.dir}" executable="hdiutil">
+			<arg value="create"/>
+			<arg value="${worker.label}.dmg"/>
+			<arg value="-srcfolder"/>
+			<arg value="macosx/JDCP Worker.app"/>
+		</exec>
+	</target>
+
+	<target name="dmg" depends="dmg-server,dmg-worker"/>
+
 </project>
