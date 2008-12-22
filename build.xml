@@ -251,6 +251,7 @@
         <jarbundler
             dir="${dist.dir}/macosx"
             name="JDCP Server"
+        	icon="jdcp.icns"
             mainclass="${server.main}"
             version="${version}"
             bundleid="ca.eandb.jdcp.server"
@@ -274,13 +275,14 @@
 	    <jarbundler
 	    	dir="${dist.dir}/macosx"
 	    	name="JDCP Worker"
+	    	icon="jdcp.icns"
 	    	mainclass="${worker.main}"
 	    	version="${version}"
 	    	bundleid="ca.eandb.jdcp.worker"
 	    	jvmversion="1.6+"
 	    	workingDirectory="$APP_PACKAGE/Contents/Resources/Java">
-	    	<jarfileset dir="${server.dist.dir}" includes="**/*.jar"/>
-            <javafileset dir="${server.dist.dir}" excludes="**/*.jar"/>
+	    	<jarfileset dir="${worker.dist.dir}" includes="**/*.jar"/>
+            <javafileset dir="${worker.dist.dir}" excludes="**/*.jar"/>
 	    	<javaproperty name="java.library.path" value="lib"/>
 	    	<!-- <javaproperty name="java.security.policy" value="etc/policy"/> -->
             <javaproperty name="log4j.configuration" value="file:./etc/log4j.properties"/>
