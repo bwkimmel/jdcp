@@ -74,41 +74,48 @@
 		</javac>
 	</target>
 
-	<target name="jar-server" depends="compile">
+	<target name="jar-common" depends="compile">
+		<jar destfile="${jar.dir}/${ant.project.name}-common.jar">
+			<fileset dir="${classes.dir}">
+                <exclude name="ca/eandb/jdcp/server/**"/>
+                <exclude name="ca/eandb/jdcp/worker/**"/>
+			    <exclude name="ca/eandb/jdcp/client/**"/>
+			</fileset>
+		</jar>
+	</target>
+
+	<target name="jar-server" depends="compile,jar-common">
 		<jar destfile="${jar.dir}/${ant.project.name}-server.jar">
 			<fileset dir="${classes.dir}">
-			    <exclude name="ca/eandb/jdcp/worker/**"/>
-                <exclude name="ca/eandb/jdcp/client/**"/>
+			    <include name="ca/eandb/jdcp/server/**"/>
 			</fileset>
 			<manifest>
 				<attribute name="Main-Class" value="${server.main}"/>
-				<attribute name="Class-Path" value="lib/eandb.jar lib/jnlp.jar lib/log4j-1.2.15.jar"/>
+				<attribute name="Class-Path" value="jdcp-common.jar lib/eandb.jar lib/jnlp.jar lib/log4j-1.2.15.jar"/>
 			</manifest>
 		</jar>
 	</target>
 
-	<target name="jar-worker" depends="compile">
+	<target name="jar-worker" depends="compile,jar-common">
         <jar destfile="${jar.dir}/${ant.project.name}-worker.jar">
             <fileset dir="${classes.dir}">
-                <exclude name="ca/eandb/jdcp/server/**"/>
-                <exclude name="ca/eandb/jdcp/client/**"/>
+                <include name="ca/eandb/jdcp/worker/**"/>
             </fileset>
             <manifest>
                 <attribute name="Main-Class" value="${worker.main}"/>
-                <attribute name="Class-Path" value="lib/eandb.jar lib/jnlp.jar lib/log4j-1.2.15.jar"/>
+                <attribute name="Class-Path" value="jdcp-common.jar lib/eandb.jar lib/jnlp.jar lib/log4j-1.2.15.jar"/>
             </manifest>
         </jar>
 	</target>
 
-	<target name="jar-client" depends="compile">
+	<target name="jar-client" depends="compile,jar-common">
         <jar destfile="${jar.dir}/${ant.project.name}-client.jar">
             <fileset dir="${classes.dir}">
-                <exclude name="ca/eandb/jdcp/server/**"/>
-                <exclude name="ca/eandb/jdcp/worker/**"/>
+                <include name="ca/eandb/jdcp/client/**"/>
             </fileset>
             <manifest>
                 <attribute name="Main-Class" value="${client.main}"/>
-                <attribute name="Class-Path" value="lib/eandb.jar lib/log4j-1.2.15.jar"/>
+                <attribute name="Class-Path" value="jdcp-common.jar lib/eandb.jar lib/log4j-1.2.15.jar"/>
             </manifest>
         </jar>
 	</target>
@@ -121,7 +128,8 @@
 		<mkdir dir="${server.dist.dir}"/>
 		<mkdir dir="${server.dist.dir}/lib"/>
 		<mkdir dir="${server.dist.dir}/etc"/>
-		<copy file="${jar.dir}/${ant.project.name}-server.jar" todir="${server.dist.dir}" />
+        <copy file="${jar.dir}/${ant.project.name}-common.jar" todir="${server.dist.dir}" />
+        <copy file="${jar.dir}/${ant.project.name}-server.jar" todir="${server.dist.dir}" />
 		<copy todir="${server.dist.dir}">
 			<fileset dir="${basedir}">
                 <include name="jdcp.ico"/>
@@ -140,6 +148,7 @@
         <mkdir dir="${worker.dist.dir}"/>
         <mkdir dir="${worker.dist.dir}/lib"/>
         <mkdir dir="${worker.dist.dir}/etc"/>
+        <copy file="${jar.dir}/${ant.project.name}-common.jar" todir="${worker.dist.dir}" />
         <copy file="${jar.dir}/${ant.project.name}-worker.jar" todir="${worker.dist.dir}" />
         <copy todir="${worker.dist.dir}">
             <fileset dir="${basedir}">
@@ -157,6 +166,7 @@
         <mkdir dir="${client.dist.dir}"/>
         <mkdir dir="${client.dist.dir}/lib"/>
         <mkdir dir="${client.dist.dir}/etc"/>
+        <copy file="${jar.dir}/${ant.project.name}-common.jar" todir="${client.dist.dir}" />
         <copy file="${jar.dir}/${ant.project.name}-client.jar" todir="${client.dist.dir}" />
         <copy todir="${client.dist.dir}">
             <fileset dir="${basedir}">

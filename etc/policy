@@ -25,6 +25,33 @@ grant CodeBase "file:jdcp-server.jar" {
 	permission javax.security.auth.AuthPermission "modifyPrincipals";
 };
 
+grant CodeBase "file:jdcp-common.jar" {
+    permission java.awt.AWTPermission "accessEventQueue";
+    permission java.awt.AWTPermission "showWindowWithoutWarningBanner";
+    permission java.awt.AWTPermission "toolkitModality";
+    permission java.io.FilePermission "-", "read";
+    permission java.io.FilePermission "server", "read,write,delete";
+    permission java.io.FilePermission "server/-", "read,write,delete";
+    permission java.lang.RuntimePermission "accessClassInPackage.sun.util.logging.resources";
+    permission java.lang.RuntimePermission "createClassLoader";
+    permission java.lang.RuntimePermission "exitVM.*";
+    permission java.lang.RuntimePermission "preferences";
+    permission java.lang.RuntimePermission "accessDeclaredMembers";
+    permission java.lang.RuntimePermission "modifyThreadGroup";
+    permission java.lang.RuntimePermission "loadLibrary.NTEventLogAppender";
+    permission java.lang.RuntimePermission "shutdownHooks";
+    permission java.net.SocketPermission "*:1024-", "accept,resolve,listen";
+    permission java.util.PropertyPermission "os.name", "read";
+    permission java.util.PropertyPermission "os.version", "read";
+    permission java.util.PropertyPermission "user.dir", "read";
+    permission java.util.PropertyPermission "log4j.*", "read";
+    permission java.util.PropertyPermission "swing.*", "read";
+    permission java.util.PropertyPermission "java.*", "read";
+    permission javax.security.auth.AuthPermission "createLoginContext.JobService";
+    permission javax.security.auth.AuthPermission "doAsPrivileged";
+    permission javax.security.auth.AuthPermission "modifyPrincipals";
+};
+
 grant CodeBase "file:lib/eandb.jar" {
     permission java.awt.AWTPermission "accessEventQueue";
     permission java.awt.AWTPermission "showWindowWithoutWarningBanner";
