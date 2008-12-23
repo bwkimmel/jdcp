@@ -24,10 +24,12 @@
     <property name="server.label" value="${ant.project.name}-server-${version}"/>
     <property name="worker.label" value="${ant.project.name}-worker-${version}"/>
     <property name="client.label" value="${ant.project.name}-client-${version}"/>
+    <property name="full.label" value="${ant.project.name}-${version}"/>
 
 	<property name="server.dist.dir" value="${dist.dir}/${server.label}"/>
 	<property name="worker.dist.dir" value="${dist.dir}/${worker.label}"/>
 	<property name="client.dist.dir" value="${dist.dir}/${client.label}"/>
+	<property name="full.dist.dir" value="${dist.dir}/${full.label}"/>
 
 	<property name="eandb.util.dir" value="${basedir}/../util"/>
 	<property name="eandb.util.build.dir" value="${eandb.util.dir}/build"/>
@@ -179,7 +181,20 @@
         <copy file="${eandb.util.jar.file}" todir="${client.dist.dir}/lib"/>
     </target>
 
-	<target name="dist" depends="dist-server,dist-worker,dist-client">
+	<target name="dist-full" depends="dist-server,dist-worker,dist-client">
+		<mkdir dir="${full.dist.dir}"/>
+        <copy todir="${full.dist.dir}">
+            <fileset dir="${server.dist.dir}" includes="**"/>
+        </copy>
+        <copy todir="${full.dist.dir}">
+            <fileset dir="${worker.dist.dir}" includes="**"/>
+        </copy>
+        <copy todir="${full.dist.dir}">
+            <fileset dir="${client.dist.dir}" includes="**"/>
+        </copy>
+	</target>
+
+	<target name="dist" depends="dist-server,dist-worker,dist-client,dist-full">
 	</target>
 
 	<target name="run-server" depends="dist-server">
@@ -228,7 +243,11 @@
         <tar destfile="${dist.dir}/${client.label}.tar.bz2" basedir="${dist.dir}" includes="${client.label}/**" compression="bzip2"/>
     </target>
 
-	<target name="tar" depends="tar-server,tar-worker,tar-client">
+    <target name="tar-full" depends="dist-full">
+    	<tar destfile="${dist.dir}/${full.label}.tar.bz2" basedir="${dist.dir}" includes="${full.label}/**" compression="bzip2"/>
+    </target>
+
+	<target name="tar" depends="tar-server,tar-worker,tar-client,tar-full">
 	</target>
 
     <target name="zip-server" depends="dist-server">
@@ -243,7 +262,11 @@
         <zip destfile="${dist.dir}/${client.label}.zip" basedir="${dist.dir}" includes="${client.label}/**"/>
     </target>
 
-    <target name="zip" depends="zip-server,zip-worker,zip-client">
+	<target name="zip-full" depends="dist-full">
+		<zip destfile="${dist.dir}/${full.label}.zip" basedir="${dist.dir}" includes="${full.label}/**"/>
+	</target>
+
+    <target name="zip" depends="zip-server,zip-worker,zip-client,zip-full">
     </target>
 
 	<target name="archive" depends="tar,zip">
