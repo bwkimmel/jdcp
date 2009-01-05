@@ -76,6 +76,14 @@ grant CodeBase "file:lib/eandb.jar" {
     permission javax.security.auth.AuthPermission "modifyPrincipals";
 };
 
+grant CodeBase "file:lib/derby.jar" {
+	permission java.security.AllPermission;
+};
+
+grant CodeBase "file:lib/derbyclient.jar" {
+	permission java.security.AllPermission;
+};
+
 grant CodeBase "file:lib/log4j-1.2.15.jar" {
 	permission java.util.PropertyPermission "log4j.*", "read";
 	permission java.io.FilePermission "etc/log4j.properties", "read";

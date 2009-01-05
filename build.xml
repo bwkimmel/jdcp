@@ -93,7 +93,7 @@
 			</fileset>
 			<manifest>
 				<attribute name="Main-Class" value="${server.main}"/>
-				<attribute name="Class-Path" value="jdcp-common.jar lib/eandb.jar lib/jnlp.jar lib/log4j-1.2.15.jar"/>
+				<attribute name="Class-Path" value="jdcp-common.jar lib/eandb.jar lib/jnlp.jar lib/log4j-1.2.15.jar lib/derby.jar lib/derbyclient.jar"/>
 			</manifest>
 		</jar>
 	</target>
@@ -139,6 +139,7 @@
 				<include name="jdcp-server.bat"/>
 				<include name="jdcp-server.sh"/>
 				<include name="lib/log4j-*.jar"/>
+				<include name="lib/derby*.jar"/>
 				<include name="etc/**"/>
 			</fileset>
 		</copy>
@@ -201,6 +202,7 @@
 		<java spawn="true" fork="true" dir="${server.dist.dir}" classname="${server.main}">
 			<classpath>
 				<path location="${server.dist.dir}/${ant.project.name}-server.jar"/>
+				<path location="${server.dist.dir}/${ant.project.name}-common.jar"/>
 				<path>
 					<fileset dir="${server.dist.dir}/lib" includes="**/*.jar"/>
 			    </path>
@@ -217,6 +219,7 @@
         <java spawn="true" fork="true" dir="${worker.dist.dir}" classname="${worker.main}">
             <classpath>
                 <path location="${worker.dist.dir}/${ant.project.name}-worker.jar"/>
+				<path location="${server.dist.dir}/${ant.project.name}-common.jar"/>
                 <path>
                     <fileset dir="${worker.dist.dir}/lib" includes="**/*.jar"/>
                 </path>
