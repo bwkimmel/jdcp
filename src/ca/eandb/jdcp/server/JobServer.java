@@ -25,10 +25,16 @@
 
 package ca.eandb.jdcp.server;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -38,6 +44,7 @@ import java.security.PrivilegedAction;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
@@ -76,6 +83,9 @@ public final class JobServer implements JobService {
 	/** The <code>Logger</code> for this class. */
 	private static final Logger logger = Logger.getLogger(JobServer.class);
 
+	/** The <code>Random</code> number generator (for generating task IDs. */
+	private static final Random rand = new Random();
+
 	/**
 	 * The <code>ProgressMonitorFactory</code> to use to create
 	 * <code>ProgressMonitor</code>s for reporting overall progress of
@@ -101,6 +111,12 @@ public final class JobServer implements JobService {
 	 * jobs.
 	 */
 	private final File outputDirectory;
+
+	/** The directory in which to store saved jobs. */
+	private final File savedJobsDirectory;
+
+	/** The <code>File</code> used to log the creation of new tasks. */
+	private final File taskLogFile;
 
 	/**
 	 * A <code>Map</code> for looking up <code>ScheduledJob</code> structures
@@ -130,7 +146,7 @@ public final class JobServer implements JobService {
 	 * @param executor The <code>Executor</code> to use to run bits of code
 	 * 		that should not hold up the remote caller.
 	 */
-	public JobServer(File outputDirectory, ProgressMonitorFactory monitorFactory, TaskScheduler scheduler, ParentClassManager classManager, Executor executor) throws IllegalArgumentException {
+	public JobServer(File outputDirectory, ProgressMonitorFactory monitorFactory, TaskScheduler scheduler, ParentClassManager classManager, Executor executor, boolean resume) throws IllegalArgumentException {
 		if (!outputDirectory.isDirectory()) {
 			throw new IllegalArgumentException("outputDirectory must be a directory.");
 		}
@@ -140,7 +156,104 @@ public final class JobServer implements JobService {
 		this.classManager = classManager;
 		this.executor = executor;
 
+		this.taskLogFile = new File(outputDirectory, "tasks.log");
+		this.savedJobsDirectory = new File(outputDirectory, "saved");
+
 		logger.info("JobServer created");
+
+		if (resume) {
+			this.resume();
+		}
+	}
+
+	private void resume() {
+		restoreJobs();
+		restoreTasks();
+	}
+
+	private void restoreTasks() {
+		synchronized (taskLogFile) {
+			if (taskLogFile.exists()) {
+				try {
+					FileInputStream fs = new FileInputStream(taskLogFile);
+					DataInputStream ds = new DataInputStream(fs);
+
+					while (true) {
+						long msb, lsb;
+						int taskId;
+
+						try {
+							msb = ds.readLong();
+							lsb = ds.readLong();
+							taskId = ds.readInt();
+						} catch (EOFException e) {
+							break;
+						}
+
+						UUID jobId = new UUID(msb, lsb);
+						restoreTask(jobId, taskId);
+					}
+					ds.close();
+				} catch (IOException e) {
+					logger.error("I/O error occurred while reading the task log file.", e);
+					throw new UnexpectedException(e);
+				}
+			}
+		}
+	}
+
+	private void restoreTask(UUID jobId, int taskId) {
+		ScheduledJob sched = jobs.get(jobId);
+		if (sched != null) {
+			File file = getTaskFile(jobId, taskId);
+			if (file.exists()) {
+				try {
+					TaskDescription task = (TaskDescription) FileUtil.readObjectFromFile(file);
+					ClassLoader loader = sched.worker.get().getClass().getClassLoader();
+					task.getTask().deserialize(loader);
+					scheduler.add(task);
+				} catch (IOException e) {
+					logger.error("I/O error occurred while restoring task "
+							+ Integer.toString(taskId) + " for job "
+							+ jobId.toString() + ".", e);
+				} catch (ClassNotFoundException e) {
+					logger.error("Failed to deserialize task "
+							+ Integer.toString(taskId) + " for job "
+							+ jobId.toString() + ".", e);
+				}
+			}
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void restoreJobs() {
+		for (File file : savedJobsDirectory.listFiles()) {
+			try {
+				FileInputStream fs = new FileInputStream(file);
+				ObjectInputStream os = new ObjectInputStream(fs);
+				UUID jobId;
+				try {
+					jobId = (UUID) os.readObject();
+				} catch (ClassNotFoundException e) {
+					throw new UnexpectedException(e);
+				}
+				String description = os.readUTF();
+				Serialized<ParallelizableJob> job = (Serialized<ParallelizableJob>) os.readObject();
+				ProgressMonitor monitor = monitorFactory.createProgressMonitor(description);
+				ScheduledJob sched = new ScheduledJob(jobId, description, monitor);
+				sched.restoreJob(job);
+				jobs.put(jobId, sched);
+			} catch (IOException e) {
+				logger.error("Failed to restore job from file "
+						+ file.toString(), e);
+			} catch (ClassNotFoundException e) {
+				logger.error("Failed to deserialize job from file "
+						+ file.toString(), e);
+			} catch (JobExecutionException e) {
+				logger.error("Failed to restore job state from file "
+						+ file.toString(), e);
+			}
+		}
 	}
 
 	/* (non-Javadoc)
@@ -166,6 +279,7 @@ public final class JobServer implements JobService {
 		if (sched == null || sched.job != null) {
 			throw new IllegalArgumentException("No pending job with provided Job ID");
 		}
+		writeJobFile(sched.id, sched.description, job);
 
 		try {
 			sched.initializeJob(job);
@@ -187,6 +301,7 @@ public final class JobServer implements JobService {
 			throws SecurityException, ClassNotFoundException, JobExecutionException {
 		ScheduledJob sched = new ScheduledJob(description, monitorFactory.createProgressMonitor(description));
 		jobs.put(sched.id, sched);
+		writeJobFile(sched.id, description, job);
 
 		try {
 			sched.initializeJob(job);
@@ -202,6 +317,73 @@ public final class JobServer implements JobService {
 		}
 
 		return sched.id;
+	}
+
+	private void writeJobFile(UUID id, String description, Serialized<ParallelizableJob> job) {
+		File jobFile = new File(savedJobsDirectory, id.toString());
+		try {
+			FileOutputStream fs = new FileOutputStream(jobFile);
+			ObjectOutputStream os = new ObjectOutputStream(fs);
+			os.writeObject(id);
+			os.writeUTF(description);
+			os.writeObject(job);
+			os.close();
+		} catch (IOException e) {
+			throw new UnexpectedException(e);
+		}
+	}
+
+	private void removeJobFiles(UUID id) {
+		File jobFile = new File(savedJobsDirectory, id.toString());
+		jobFile.delete();
+
+		File tasksDirectory = getTaskDirectory(id);
+		FileUtil.deleteRecursive(tasksDirectory);
+	}
+
+	private File getTaskDirectory(UUID jobId) {
+		return new File(outputDirectory + "tasks/" + jobId.toString());
+	}
+
+	private File getTaskFile(TaskDescription task) {
+		UUID jobId = task.getJobId();
+		int taskId = task.getTaskId();
+		return getTaskFile(jobId, taskId);
+	}
+
+	private File getTaskFile(UUID jobId, int taskId) {
+		File tasksDirectory = getTaskDirectory(jobId);
+		tasksDirectory.mkdirs();
+
+		return new File(tasksDirectory, Integer.toString(taskId));
+	}
+
+	private void logTask(TaskDescription task) throws IOException {
+		synchronized (taskLogFile) {
+			FileOutputStream fs = new FileOutputStream(taskLogFile, true);
+			DataOutputStream ds = new DataOutputStream(fs);
+			UUID jobId = task.getJobId();
+			int taskId = task.getTaskId();
+			ds.writeLong(jobId.getMostSignificantBits());
+			ds.writeLong(jobId.getLeastSignificantBits());
+			ds.writeInt(taskId);
+			ds.close();
+		}
+	}
+
+	private void writeTaskFile(TaskDescription task) {
+		try {
+			File file = getTaskFile(task);
+			FileUtil.writeObjectToFile(file, task);
+			logTask(task);
+		} catch (IOException e) {
+			throw new UnexpectedException(e);
+		}
+	}
+
+	private void removeTaskFile(TaskDescription task) {
+		File file = getTaskFile(task);
+		file.delete();
 	}
 
 	/* (non-Javadoc)
@@ -400,6 +582,7 @@ public final class JobServer implements JobService {
 			jobs.remove(jobId);
 			scheduler.removeJob(jobId);
 			classManager.releaseChildClassManager(sched.classManager);
+			removeJobFiles(jobId);
 		}
 	}
 
@@ -437,15 +620,22 @@ public final class JobServer implements JobService {
 		/** The working directory for this job. */
 		private final File						workingDirectory;
 
+		/** The <code>File</code> that stores the saved state for this job. */
+		private final File						stateFile;
+
+		public ScheduledJob(String description, ProgressMonitor monitor) {
+			this(UUID.randomUUID(), description, monitor);
+		}
+
 		/**
 		 * Initializes the scheduled job.
 		 * @param description A description of the job.
 		 * @param monitor The <code>ProgressMonitor</code> to use to monitor
 		 * 		the progress of the <code>ParallelizableJob</code>.
 		 */
-		public ScheduledJob(String description, ProgressMonitor monitor) {
+		public ScheduledJob(UUID jobId, String description, ProgressMonitor monitor) {
 
-			this.id					= UUID.randomUUID();
+			this.id					= jobId;
 			this.description		= description;
 
 			//String title			= String.format("%s (%s)", this.job.getClass().getSimpleName(), this.id.toString());
@@ -455,6 +645,7 @@ public final class JobServer implements JobService {
 			this.classManager		= JobServer.this.classManager.createChildClassManager();
 
 			this.workingDirectory	= new File(outputDirectory, id.toString());
+			this.stateFile			= new File(outputDirectory, id.toString() + ".state");
 
 		}
 
@@ -467,6 +658,14 @@ public final class JobServer implements JobService {
 		 * @throws JobExecutionException If the job throws an exception.
 		 */
 		public void initializeJob(Serialized<ParallelizableJob> job) throws ClassNotFoundException, JobExecutionException {
+			initializeJob(job, false);
+		}
+
+		public void restoreJob(Serialized<ParallelizableJob> job) throws ClassNotFoundException, JobExecutionException {
+			initializeJob(job, true);
+		}
+
+		private void initializeJob(Serialized<ParallelizableJob> job, boolean restore) throws ClassNotFoundException, JobExecutionException {
 			ClassLoader loader	= new StrategyClassLoader(classManager, JobServer.class.getClassLoader());
 			this.job			= new JobExecutionWrapper(job.deserialize(loader));
 			this.worker			= new Serialized<TaskWorker>(this.job.worker());
@@ -474,7 +673,52 @@ public final class JobServer implements JobService {
 
 			this.workingDirectory.mkdir();
 			this.job.setHostService(this);
-			this.job.initialize();
+
+			if (restore) {
+				this.restoreState();
+			} else {
+				this.job.initialize();
+				this.saveState();
+			}
+		}
+
+		private void restoreState() {
+			synchronized (stateFile) {
+				try {
+					FileInputStream fs = new FileInputStream(stateFile);
+					ObjectInputStream os = new ObjectInputStream(fs);
+					job.restoreState(os);
+					os.close();
+				} catch (IOException e) {
+					logger.error("Could not read state file for job "
+							+ id.toString(), e);
+					throw new UnexpectedException(e);
+				} catch (JobExecutionException e) {
+					handleJobExecutionException(e, id);
+				}
+			}
+		}
+
+		private void saveState() {
+			synchronized (stateFile) {
+				try {
+					FileOutputStream fs = new FileOutputStream(stateFile);
+					ObjectOutputStream os = new ObjectOutputStream(fs);
+					job.saveState(os);
+					os.close();
+				} catch (IOException e) {
+					logger.error("Could not write state file for job " + id.toString(), e);
+					throw new UnexpectedException(e);
+				} catch (JobExecutionException e) {
+					handleJobExecutionException(e, id);
+				}
+			}
+		}
+
+		private void removeStateFile() {
+			synchronized (stateFile) {
+				stateFile.delete();
+			}
 		}
 
 		/**
@@ -483,7 +727,10 @@ public final class JobServer implements JobService {
 		 * @param results The serialized results.
 		 */
 		public void submitTaskResults(int taskId, Serialized<Object> results) {
-			Object task = scheduler.remove(id, taskId);
+			TaskDescription desc = scheduler.remove(id, taskId);
+			removeTaskFile(desc);
+
+			Object task = desc.getTask().get();
 			Runnable command = new TaskResultSubmitter(this, task, results, monitor);
 			try {
 				executor.execute(command);
@@ -521,6 +768,18 @@ public final class JobServer implements JobService {
 		}
 
 		/**
+		 * Generates a unique task identifier.
+		 * @return The generated task ID.
+		 */
+		private int generateTaskId() {
+			int taskId;
+			do {
+				taskId = rand.nextInt();
+			} while (scheduler.contains(id, taskId));
+			return taskId;
+		}
+
+		/**
 		 * Obtains and schedules the next task for this job.
 		 * @throws JobExecutionException If the job throws an exception while
 		 * 		attempting to obtain the next task.
@@ -528,7 +787,11 @@ public final class JobServer implements JobService {
 		public void scheduleNextTask() throws JobExecutionException {
 			Object task = job.getNextTask();
 			if (task != null) {
-				scheduler.add(id, task);
+				int taskId = generateTaskId();
+				TaskDescription desc = new TaskDescription(id, taskId, task);
+				writeTaskFile(desc);
+				saveState();
+				scheduler.add(desc);
 			}
 		}
 
@@ -559,6 +822,8 @@ public final class JobServer implements JobService {
 
 				FileUtil.zip(outputFile, workingDirectory);
 				FileUtil.deleteRecursive(workingDirectory);
+
+				removeStateFile();
 
 			} catch (IOException e) {
 				logger.error("Exception caught while finalizing job " + id.toString(), e);
@@ -679,6 +944,8 @@ public final class JobServer implements JobService {
 					if (sched.job.isComplete()) {
 						sched.finalizeJob();
 						removeScheduledJob(sched.id, true);
+					} else {
+						sched.saveState();
 					}
 				} catch (JobExecutionException e) {
 					handleJobExecutionException(e, sched.id);

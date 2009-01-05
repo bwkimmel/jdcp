@@ -25,6 +25,9 @@
 
 package ca.eandb.jdcp.job;
 
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 import ca.eandb.util.progress.ProgressMonitor;
 
 /**
@@ -89,22 +92,22 @@ public final class JobExecutionWrapper implements ParallelizableJob {
 	}
 
 	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.job.ParallelizableJob#suspend()
+	 * @see ca.eandb.jdcp.job.ParallelizableJob#save(java.io.ObjectOutput)
 	 */
-	public void suspend() throws JobExecutionException {
+	public void saveState(ObjectOutput output) throws JobExecutionException {
 		try {
-			job.suspend();
+			job.saveState(output);
 		} catch (Exception e) {
 			throw new JobExecutionException(e);
 		}
 	}
 
 	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.job.ParallelizableJob#resume()
+	 * @see ca.eandb.jdcp.job.ParallelizableJob#restore(java.io.ObjectInput)
 	 */
-	public void resume() throws JobExecutionException {
+	public void restoreState(ObjectInput input) throws JobExecutionException {
 		try {
-			job.resume();
+			job.restoreState(input);
 		} catch (Exception e) {
 			throw new JobExecutionException(e);
 		}

@@ -90,7 +90,8 @@ public final class JobServerMain {
 			ParentClassManager classManager = new FileClassManager(classesDirectory);
 			TaskScheduler scheduler = new PrioritySerialTaskScheduler();
 			Executor executor = Executors.newCachedThreadPool();
-			JobServer jobServer = new JobServer(jobsDirectory, panel, scheduler, classManager, executor);
+			JobServer jobServer = new JobServer(jobsDirectory, panel,
+					scheduler, classManager, executor, true);
 			AuthenticationServer authServer = new AuthenticationServer(jobServer);
 			System.err.println("OK");
 

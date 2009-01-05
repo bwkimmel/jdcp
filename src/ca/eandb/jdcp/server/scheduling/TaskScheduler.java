@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Bradley W. Kimmel
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -9,10 +9,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -47,26 +47,38 @@ public interface TaskScheduler {
 
 	/**
 	 * Adds a task to be scheduled.
-	 * @param jobId The <code>UUID</code> identifying the job associated with
-	 * 		the provided task.
-	 * @param task An <code>Object</code> describing the task to be performed.
-	 * 		This should have been obtained via a call to
-	 * 		{@link ca.eandb.jdcp.job.ParallelizableJob#getNextTask()}.
-	 * @return An identifier for the newly scheduled task.
-	 * @see ca.eandb.jdcp.job.ParallelizableJob#getNextTask()
+	 * @param task An <code>TaskDescription</code> describing the task to be
+	 * 		performed.
 	 */
-	int add(UUID jobId, Object task);
+	void add(TaskDescription task);
 
 	/**
 	 * Removes a task from the schedule.
 	 * @param jobId The <code>UUID</code> identifying the job associated with
 	 * 		the task to be removed.
-	 * @param taskId The identifier for the task to be removed, which was
-	 * 		obtained when the task was added ({@link #add(UUID, Object)}.
-	 * @return The <code>Object</code> describing the specified task.
-	 * @see #add(UUID, Object)
+	 * @param taskId The identifier for the task to be removed.
+	 * @return The <code>TaskDescription</code> describing the specified task.
 	 */
-	Object remove(UUID jobId, int taskId);
+	TaskDescription remove(UUID jobId, int taskId);
+
+	/**
+	 * Retrieves the specified task.
+	 * @param jobId The <code>UUID</code> identifying the job associated with
+	 * 		the task to retrieve.
+	 * @param taskId The identifier for the task to be retrieved.
+	 * @return The <code>TaskDescription</code> describing the specified task,
+	 * 		or <code>null</code> if no such task exists.
+	 */
+	TaskDescription get(UUID jobId, int taskId);
+
+	/**
+	 * Determines if the specified task exists.
+	 * @param jobId The <code>UUID</code> identifying the job associated with
+	 * 		the task to retrieve.
+	 * @param taskId The identifier for the task to be retrieved.
+	 * @return A value indicating if the specified task exists.
+	 */
+	boolean contains(UUID jobId, int taskId);
 
 	/**
 	 * Gets the next task to be served.
