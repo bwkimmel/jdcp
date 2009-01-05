@@ -26,7 +26,13 @@
 package ca.eandb.jdcp.job;
 
 import java.io.FileOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.RandomAccessFile;
+
+import ca.eandb.util.io.Archive;
+import ca.eandb.util.io.InputArchive;
+import ca.eandb.util.io.OutputArchive;
 
 /**
  * An abstract <code>ParallelizableJob</code> that provides a default
@@ -63,17 +69,26 @@ public abstract class AbstractParallelizableJob implements ParallelizableJob {
 	}
 
 	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.job.ParallelizableJob#suspend()
+	 * @see ca.eandb.jdcp.job.ParallelizableJob#restoreState(java.io.ObjectInput)
 	 */
-	public void suspend() throws Exception {
-		/* nothing to do. */
+	public void restoreState(ObjectInput input) throws Exception {
+		archiveState(new InputArchive(input));
 	}
 
 	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.job.ParallelizableJob#resume()
+	 * @see ca.eandb.jdcp.job.ParallelizableJob#saveState(java.io.ObjectOutput)
 	 */
-	public void resume() throws Exception {
-		/* nothing to do. */
+	public void saveState(ObjectOutput output) throws Exception {
+		archiveState(new OutputArchive(output));
+	}
+
+	/**
+	 * Saves or restores the state of this job from an archive.
+	 * @param ar The <code>Archive</code> to read from or write to.
+	 * @throws Exception If the operation fails.
+	 */
+	protected void archiveState(Archive ar) throws Exception {
+		throw new UnsupportedOperationException();
 	}
 
 	/**

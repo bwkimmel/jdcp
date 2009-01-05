@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Bradley W. Kimmel
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -9,10 +9,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.Random;
 import java.util.UUID;
 
 import ca.eandb.jdcp.job.TaskDescription;
@@ -64,9 +63,6 @@ public final class PrioritySerialTaskScheduler implements TaskScheduler {
 	 * is added.
 	 */
 	private int nextOrder = 0;
-
-	/** A random number generator used to assign task IDs. */
-	private final Random rand = new Random();
 
 	/**
 	 * Represents bookkeeping information about a
@@ -122,29 +118,36 @@ public final class PrioritySerialTaskScheduler implements TaskScheduler {
 		}
 
 		/**
-		 * Generates a unique task identifier.
-		 * @return The generated task ID.
-		 */
-		private int generateTaskId() {
-			int taskId;
-			do {
-				taskId = rand.nextInt();
-			} while (tasks.containsKey(taskId));
-			return taskId;
-		}
-
-		/**
 		 * Adds a task to the queue for this job.
 		 * @param task The <code>Object</code> describing the task to be
 		 * 		scheduled.
 		 * @return The task ID for the newly scheduled task.
 		 */
-		public int addTask(Object task) {
-			int taskId = generateTaskId();
-			TaskDescription desc = new TaskDescription(id, taskId, task);
-			tasks.put(taskId, desc);
+		public void addTask(TaskDescription task) {
+			int taskId = task.getTaskId();
+			tasks.put(taskId, task);
 			taskQueue.addFirst(taskId);
-			return taskId;
+		}
+
+		/**
+		 * Gets the specified task.
+		 * @param taskId The identifier for the task to retrieve.
+		 * @return The <code>TaskDescription</code> having the specified
+		 * 		<code>taskId</code>, or <code>null</code> if no such task is
+		 * 		found.
+		 */
+		public TaskDescription getTask(int taskId) {
+			return tasks.get(taskId);
+		}
+
+		/**
+		 * Determines whether the specified task exists.
+		 * @param taskId The identifier for the task to look up.
+		 * @return A value indicating whether a task exists with the given
+		 * 		<code>taskId</code>.
+		 */
+		public boolean contains(int taskId) {
+			return tasks.containsKey(taskId);
 		}
 
 		/**
@@ -166,10 +169,9 @@ public final class PrioritySerialTaskScheduler implements TaskScheduler {
 		 * @param taskId The task ID of the task to be removed.
 		 * @return The <code>Object</code> describing the removed task.
 		 */
-		public Object removeTask(int taskId) {
+		public TaskDescription removeTask(int taskId) {
 			taskQueue.remove((Object) new Integer(taskId));
-			TaskDescription desc = tasks.remove(taskId);
-			return (desc != null) ? desc.getTask().get() : null;
+			return tasks.remove(taskId);
 		}
 
 		/**
@@ -221,15 +223,31 @@ public final class PrioritySerialTaskScheduler implements TaskScheduler {
 	}
 
 	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.scheduling.TaskScheduler#add(java.util.UUID, java.lang.Object)
+	 * @see ca.eandb.jdcp.server.scheduling.TaskScheduler#add(ca.eandb.jdcp.job.TaskDescription)
 	 */
-	public int add(UUID jobId, Object task) {
+	public void add(TaskDescription task) {
+		UUID jobId = task.getJobId();
 		JobInfo job = getJob(jobId);
 		if (!jobQueue.contains(jobId)) {
 			jobQueue.add(jobId);
 		}
+		job.addTask(task);
+	}
 
-		return job.addTask(task);
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.server.scheduling.TaskScheduler#get(java.util.UUID, int)
+	 */
+	public TaskDescription get(UUID jobId, int taskId) {
+		JobInfo job = getJob(jobId);
+		return (job != null) ? job.getTask(taskId) : null;
+	}
+
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.server.scheduling.TaskScheduler#contains(java.util.UUID, int)
+	 */
+	public boolean contains(UUID jobId, int taskId) {
+		JobInfo job = getJob(jobId);
+		return (job != null) ? job.contains(taskId) : false;
 	}
 
 	/* (non-Javadoc)
@@ -259,7 +277,7 @@ public final class PrioritySerialTaskScheduler implements TaskScheduler {
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.scheduling.TaskScheduler#remove(java.util.UUID, int)
 	 */
-	public Object remove(UUID jobId, int taskId) {
+	public TaskDescription remove(UUID jobId, int taskId) {
 		JobInfo job = jobs.get(jobId);
 		return (job != null) ? job.removeTask(taskId) : null;
 	}

@@ -38,6 +38,7 @@ import java.security.PrivilegedAction;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
@@ -51,7 +52,7 @@ import ca.eandb.jdcp.job.ParallelizableJob;
 import ca.eandb.jdcp.job.TaskDescription;
 import ca.eandb.jdcp.job.TaskWorker;
 import ca.eandb.jdcp.remote.JobService;
-import ca.eandb.jdcp.server.classmanager.ClassManager;
+import ca.eandb.jdcp.server.classmanager.ChildClassManager;
 import ca.eandb.jdcp.server.classmanager.ParentClassManager;
 import ca.eandb.jdcp.server.scheduling.TaskScheduler;
 import ca.eandb.util.UnexpectedException;
@@ -75,6 +76,9 @@ public final class JobServer implements JobService {
 
 	/** The <code>Logger</code> for this class. */
 	private static final Logger logger = Logger.getLogger(JobServer.class);
+
+	/** The <code>Random</code> number generator (for generating task IDs. */
+	private static final Random rand = new Random();
 
 	/**
 	 * The <code>ProgressMonitorFactory</code> to use to create
@@ -399,7 +403,7 @@ public final class JobServer implements JobService {
 			}
 			jobs.remove(jobId);
 			scheduler.removeJob(jobId);
-			classManager.releaseChildClassManager(sched.classManager);
+			sched.classManager.release();
 		}
 	}
 
@@ -432,7 +436,7 @@ public final class JobServer implements JobService {
 		 * The <code>ClassManager</code> to use to store the class definitions
 		 * applicable to this job.
 		 */
-		public final ClassManager				classManager;
+		public final ChildClassManager			classManager;
 
 		/** The working directory for this job. */
 		private final File						workingDirectory;
@@ -521,6 +525,18 @@ public final class JobServer implements JobService {
 		}
 
 		/**
+		 * Generates a unique task identifier.
+		 * @return The generated task ID.
+		 */
+		private int generateTaskId() {
+			int taskId;
+			do {
+				taskId = rand.nextInt();
+			} while (scheduler.contains(id, taskId));
+			return taskId;
+		}
+
+		/**
 		 * Obtains and schedules the next task for this job.
 		 * @throws JobExecutionException If the job throws an exception while
 		 * 		attempting to obtain the next task.
@@ -528,7 +544,9 @@ public final class JobServer implements JobService {
 		public void scheduleNextTask() throws JobExecutionException {
 			Object task = job.getNextTask();
 			if (task != null) {
-				scheduler.add(id, task);
+				int taskId = generateTaskId();
+				TaskDescription desc = new TaskDescription(id, taskId, task);
+				scheduler.add(desc);
 			}
 		}
 

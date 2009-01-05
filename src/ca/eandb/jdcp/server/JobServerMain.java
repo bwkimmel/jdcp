@@ -37,8 +37,9 @@ import java.util.prefs.Preferences;
 
 import javax.swing.JFrame;
 
-import ca.eandb.jdcp.server.classmanager.FileClassManager;
-import ca.eandb.jdcp.server.classmanager.ParentClassManager;
+import org.apache.derby.jdbc.EmbeddedDataSource;
+
+import ca.eandb.jdcp.server.classmanager.DbClassManager;
 import ca.eandb.jdcp.server.scheduling.PrioritySerialTaskScheduler;
 import ca.eandb.jdcp.server.scheduling.TaskScheduler;
 import ca.eandb.util.progress.ProgressPanel;
@@ -68,6 +69,11 @@ public final class JobServerMain {
 
 		try {
 
+			Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+			EmbeddedDataSource ds = new EmbeddedDataSource();
+			ds.setConnectionAttributes("create=true");
+			ds.setDatabaseName("classes");
+
 			System.err.print("Initializing progress monitor...");
 			ProgressPanel panel = new ProgressPanel();
 			panel.setPreferredSize(new Dimension(500, 350));
@@ -87,7 +93,9 @@ public final class JobServerMain {
 			System.err.println("OK");
 
 			System.err.print("Initializing service...");
-			ParentClassManager classManager = new FileClassManager(classesDirectory);
+			DbClassManager classManager = new DbClassManager(ds);
+			classManager.prepareDataSource();
+
 			TaskScheduler scheduler = new PrioritySerialTaskScheduler();
 			Executor executor = Executors.newCachedThreadPool();
 			JobServer jobServer = new JobServer(jobsDirectory, panel, scheduler, classManager, executor);

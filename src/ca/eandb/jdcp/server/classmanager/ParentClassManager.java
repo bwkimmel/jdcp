@@ -39,16 +39,15 @@ public interface ParentClassManager extends ClassManager {
 	 * Creates a new child <code>ClassManager</code>.
 	 * @return The new child <code>ClassManager</code>.
 	 */
-	ClassManager createChildClassManager();
+	ChildClassManager createChildClassManager();
 
 	/**
-	 * Releases any resources used by the given child <code>ClassManager</code>.
-	 * @param child The child <code>ClassManager</code> to whose resources to
-	 * 		release.
-	 * @throws IllegalArgumentException If this is not the parent of the
-	 * 		specified <code>ClassManager</code>.
+	 * Retrieves an existing <code>ChildClassManager</code>.
+	 * @param id The identifier for the <code>ChildClassManager</code> to
+	 * 		retrieve.
+	 * @return The <code>ChildClassManager</code> with the specified ID, or
+	 * 		<code>null</code> if there is no such child.
 	 */
-	void releaseChildClassManager(ClassManager child)
-			throws IllegalArgumentException;
+	ChildClassManager getChildClassManager(int id);
 
 }

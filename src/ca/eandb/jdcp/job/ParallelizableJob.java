@@ -25,6 +25,9 @@
 
 package ca.eandb.jdcp.job;
 
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 import ca.eandb.util.progress.ProgressMonitor;
 
 /**
@@ -58,14 +61,14 @@ public interface ParallelizableJob {
 	 * Notifies the job that it is about to be suspended (for example, if the
 	 * server application is about to be shut down).
 	 */
-	void suspend() throws Exception;
+	void saveState(ObjectOutput output) throws Exception;
 
 	/**
 	 * Notifies the job that it is about to be resumed after having been
 	 * suspended.  The job should reinstate any transient data (e.g., open
 	 * files).
 	 */
-	void resume() throws Exception;
+	void restoreState(ObjectInput input) throws Exception;
 
 	/**
 	 * Gets the next task to be performed.

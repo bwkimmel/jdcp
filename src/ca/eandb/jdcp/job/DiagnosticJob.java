@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
 
+import ca.eandb.util.io.Archive;
 import ca.eandb.util.progress.ProgressMonitor;
 
 /**
@@ -97,6 +98,15 @@ public final class DiagnosticJob extends AbstractParallelizableJob implements Se
 		out.close();
 	}
 
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.job.AbstractParallelizableJob#archiveState(ca.eandb.util.io.Archive)
+	 */
+	@Override
+	protected void archiveState(Archive ar) throws IOException {
+		nextTask = ar.archiveInt(nextTask);
+		tasksComplete = ar.archiveInt(tasksComplete);
+	}
+
 	/**
 	 * A <code>TaskWorker</code> for a <code>DiagnosticJob</code>.
 	 * @author Brad Kimmel
@@ -134,12 +144,12 @@ public final class DiagnosticJob extends AbstractParallelizableJob implements Se
 	/**
 	 * The index of the next task to be assigned.
 	 */
-	private int nextTask = 0;
+	private transient int nextTask = 0;
 
 	/**
 	 * The number of tasks complete.
 	 */
-	private int tasksComplete = 0;
+	private transient int tasksComplete = 0;
 
 	/**
 	 * Serialization version ID.

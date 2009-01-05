@@ -27,14 +27,13 @@ package ca.eandb.jdcp.server.classmanager;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,8 +87,8 @@ public final class FileClassManager extends AbstractClassManager implements
 	 */
 	private final Map<String, List<Integer>> deprecationMap = new HashMap<String, List<Integer>>();
 
-	/** A list of references to the child <code>ClassManager</code>s. */
-	private final List<Reference<ChildClassManager>> activeChildren = new ArrayList<Reference<ChildClassManager>>();
+	/** A list of the child <code>ClassManager</code>s. */
+	private final List<FileChildClassManager> activeChildren = new ArrayList<FileChildClassManager>();
 
 	/**
 	 * A list of indices associated with released
@@ -128,6 +127,25 @@ public final class FileClassManager extends AbstractClassManager implements
 		childrenDirectory.mkdir();
 		FileUtil.clearDirectory(deprecatedDirectory);
 		FileUtil.clearDirectory(childrenDirectory);
+	}
+
+	private static final Comparator<? super Object> childComparator = new Comparator<Object>() {
+		public int compare(Object a, Object b) {
+			if (a instanceof FileChildClassManager) {
+				return -((Integer) b).compareTo(((FileChildClassManager) a).childIndex);
+			} else {
+				return ((Integer) a).compareTo(((FileChildClassManager) b).childIndex);
+			}
+		}
+	};
+
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.server.classmanager.ParentClassManager#getChildClassManager(int)
+	 */
+	public ca.eandb.jdcp.server.classmanager.ChildClassManager getChildClassManager(int id) {
+		int index = Collections.binarySearch(activeChildren, id,
+				childComparator);
+		return (index >= 0) ? activeChildren.get(index) : null;
 	}
 
 	/**
@@ -318,21 +336,10 @@ public final class FileClassManager extends AbstractClassManager implements
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.server.classmanager.ParentClassManager#createChildClassManager()
 	 */
-	public ClassManager createChildClassManager() {
-		ChildClassManager child = new ChildClassManager();
-		activeChildren.add(new WeakReference<ChildClassManager>(child));
+	public FileChildClassManager createChildClassManager() {
+		FileChildClassManager child = new FileChildClassManager();
+		activeChildren.add(child);
 		return child;
-	}
-
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.server.classmanager.ParentClassManager#releaseChildClassManager(ca.eandb.jdcp.server.classmanager.ClassManager)
-	 */
-	public void releaseChildClassManager(ClassManager childClassManager) {
-		ChildClassManager child = (ChildClassManager) childClassManager;
-		if (child.getParent() != this) {
-			throw new IllegalArgumentException("childClassManager is not the child of this ParentClassManager");
-		}
-		releaseChildClassManager(child);
 	}
 
 	/**
@@ -340,11 +347,9 @@ public final class FileClassManager extends AbstractClassManager implements
 	 * <code>ClassManager</code>.
 	 * @param child The child <code>ClassManager</code> to release.
 	 */
-	private void releaseChildClassManager(ChildClassManager child) {
-		child.release();
+	private void releaseChildClassManager(FileChildClassManager child) {
 		for (int i = 0; i < activeChildren.size(); i++) {
-			Reference<ChildClassManager> ref = activeChildren.get(i);
-			ChildClassManager current = ref.get();
+			FileChildClassManager current = activeChildren.get(i);
 			if (current.childIndex == child.childIndex) {
 				FileUtil.deleteRecursive(child.childDirectory);
 				deprecationPendingList.add(child.childIndex);
@@ -366,7 +371,7 @@ public final class FileClassManager extends AbstractClassManager implements
 	 * A child <code>ClassManager</code> of a <code>FileClassManager</code>.
 	 * @author Brad Kimmel
 	 */
-	private final class ChildClassManager extends AbstractClassManager {
+	private final class FileChildClassManager extends AbstractClassManager implements ca.eandb.jdcp.server.classmanager.ChildClassManager {
 
 		/**
 		 * The root of the directory tree in which class definitions specific
@@ -386,7 +391,7 @@ public final class FileClassManager extends AbstractClassManager implements
 		/**
 		 * Creates a new <code>ChildClassManager</code>.
 		 */
-		public ChildClassManager() {
+		public FileChildClassManager() {
 			this.childIndex = nextChildIndex++;
 			this.childDirectory = new File(childrenDirectory, Integer
 					.toString(childIndex));
@@ -471,11 +476,20 @@ public final class FileClassManager extends AbstractClassManager implements
 			return FileClassManager.this;
 		}
 
-		/**
-		 * Releases this <code>ChildClassManager</code>.
+		/* (non-Javadoc)
+		 * @see ca.eandb.jdcp.server.classmanager.ChildClassManager#release()
 		 */
-		private void release() {
+		public void release() {
 			released = true;
+			releaseChildClassManager(this);
+		}
+
+		/* (non-Javadoc)
+		 * @see ca.eandb.jdcp.server.classmanager.ChildClassManager#getChildId()
+		 */
+		public int getChildId() {
+			check();
+			return childIndex;
 		}
 
 	}

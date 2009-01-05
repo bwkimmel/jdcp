@@ -53,7 +53,7 @@ public final class TestFileClassManager {
 		printBytes(cm.getClassDefinition("Test1"));
 		printBytes(cm.getClassDigest("Test1"));
 
-		ClassManager child = cm.createChildClassManager();
+		ChildClassManager child = cm.createChildClassManager();
 		cm.setClassDefinition("Test1", StringUtil.hexToByteArray("FEDCBA9876543210"));
 		cm.setClassDefinition("Test1", StringUtil.hexToByteArray("FEDCBA9876543210"));
 		printBytes(cm.getClassDefinition("Test1"));
@@ -61,7 +61,7 @@ public final class TestFileClassManager {
 		printBytes(child.getClassDefinition("Test1"));
 		printBytes(child.getClassDigest("Test1"));
 
-		cm.releaseChildClassManager(child);
+		child.release();
 
 		child.getClassDefinition("Test1");
 

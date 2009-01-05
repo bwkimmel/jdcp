@@ -26,9 +26,11 @@
 package ca.eandb.jdcp.job;
 
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
 
+import ca.eandb.util.io.Archive;
 import ca.eandb.util.progress.ProgressMonitor;
 
 /**
@@ -114,6 +116,15 @@ public final class DummyParallelizableJob extends AbstractParallelizableJob
 		return this.worker;
 	}
 
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.job.AbstractParallelizableJob#archiveState(ca.eandb.util.io.Archive)
+	 */
+	@Override
+	protected void archiveState(Archive ar) throws IOException {
+		nextTask = ar.archiveInt(nextTask);
+		numResultsReceived = ar.archiveInt(numResultsReceived);
+	}
+
 	/**
 	 * A random number generator.
 	 */
@@ -135,10 +146,10 @@ public final class DummyParallelizableJob extends AbstractParallelizableJob
 	private final int tasks;
 
 	/** The index of the next task to serve. */
-	private int nextTask = 0;
+	private transient int nextTask = 0;
 
 	/** The number of results that have been received. */
-	private int numResultsReceived = 0;
+	private transient int numResultsReceived = 0;
 
 	/**
 	 * The task worker to use to process tasks.
