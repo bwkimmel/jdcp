@@ -144,15 +144,15 @@ public final class ParallelizableJobRunner implements Runnable {
 						break;
 					}
 
-					/* Create a worker and process the task. */
-					String workerTitle = String.format("Worker (%d)", taskNumber);
-					Worker worker = new Worker(taskWorker, task, monitorFactory.createProgressMonitor(workerTitle));
-
 					/* Acquire one of the slots for processing a task -- this
 					 * limits the processing to the specified number of concurrent
 					 * tasks.
 					 */
 					this.workerSlot.acquire();
+
+					/* Create a worker and process the task. */
+					String workerTitle = String.format("Worker (%d)", taskNumber);
+					Worker worker = new Worker(taskWorker, task, monitorFactory.createProgressMonitor(workerTitle));
 
 					notifyStatusChanged(String.format("Starting worker %d", ++taskNumber));
 					this.executor.execute(worker);
