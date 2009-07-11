@@ -172,11 +172,14 @@ public final class JobServer implements JobService {
 		}
 
 		try {
+			ServerUtil.setHostService(sched);
 			sched.initializeJob(job);
 			sched.scheduleNextTask();
 		} catch (JobExecutionException e) {
 			handleJobExecutionException(e, jobId);
 			throw e;
+		} finally {
+			ServerUtil.clearHostService();
 		}
 
 		if (logger.isInfoEnabled()) {
@@ -193,11 +196,14 @@ public final class JobServer implements JobService {
 		jobs.put(sched.id, sched);
 
 		try {
+			ServerUtil.setHostService(sched);
 			sched.initializeJob(job);
 			sched.scheduleNextTask();
 		} catch (JobExecutionException e) {
 			handleJobExecutionException(e, sched.id);
 			throw e;
+		} finally {
+			ServerUtil.clearHostService();
 		}
 
 		if (logger.isInfoEnabled()) {
@@ -243,9 +249,12 @@ public final class JobServer implements JobService {
 
 		ScheduledJob sched = jobs.get(taskDesc.getJobId());
 		try {
+			ServerUtil.setHostService(sched);
 			sched.scheduleNextTask();
 		} catch (JobExecutionException e) {
 			handleJobExecutionException(e, sched.id);
+		} finally {
+			ServerUtil.clearHostService();
 		}
 		return taskDesc;
 	}
@@ -257,7 +266,12 @@ public final class JobServer implements JobService {
 			final Serialized<Object> results) throws SecurityException {
 		ScheduledJob sched = jobs.get(jobId);
 		if (sched != null) {
-			sched.submitTaskResults(taskId, results);
+			try {
+				ServerUtil.setHostService(sched);
+				sched.submitTaskResults(taskId, results);
+			} finally {
+				ServerUtil.clearHostService();
+			}
 		}
 	}
 
@@ -424,7 +438,7 @@ public final class JobServer implements JobService {
 		public final String						description;
 
 		/** The <code>TaskWorker</code> to use to process tasks for the job. */
-		public Serialized<TaskWorker>				worker;
+		public Serialized<TaskWorker>			worker;
 
 		/**
 		 * The <code>ProgressMonitor</code> to use to monitor the progress of
@@ -440,6 +454,9 @@ public final class JobServer implements JobService {
 
 		/** The working directory for this job. */
 		private final File						workingDirectory;
+
+		/** The <code>ClassLoader</code> to use to deserialize this job. */
+		public ClassLoader						classLoader;
 
 		/**
 		 * Initializes the scheduled job.
@@ -471,13 +488,14 @@ public final class JobServer implements JobService {
 		 * @throws JobExecutionException If the job throws an exception.
 		 */
 		public void initializeJob(Serialized<ParallelizableJob> job) throws ClassNotFoundException, JobExecutionException {
-			ClassLoader loader	= new StrategyClassLoader(classManager, JobServer.class.getClassLoader());
-			this.job			= new JobExecutionWrapper(job.deserialize(loader));
+			this.classLoader	= new StrategyClassLoader(classManager, JobServer.class.getClassLoader());
+			this.job			= new JobExecutionWrapper(job.deserialize(classLoader));
 			this.worker			= new Serialized<TaskWorker>(this.job.worker());
 			this.monitor.notifyStatusChanged("");
 
 			this.workingDirectory.mkdir();
 			this.job.setHostService(this);
+
 			this.job.initialize();
 		}
 
@@ -487,12 +505,15 @@ public final class JobServer implements JobService {
 		 * @param results The serialized results.
 		 */
 		public void submitTaskResults(int taskId, Serialized<Object> results) {
-			Object task = scheduler.remove(id, taskId);
-			Runnable command = new TaskResultSubmitter(this, task, results, monitor);
-			try {
-				executor.execute(command);
-			} catch (RejectedExecutionException e) {
-				command.run();
+			TaskDescription taskDesc = scheduler.remove(id, taskId);
+			if (taskDesc != null) {
+				Object task = taskDesc.getTask().get();
+				Runnable command = new TaskResultSubmitter(this, task, results, monitor);
+				try {
+					executor.execute(command);
+				} catch (RejectedExecutionException e) {
+					command.run();
+				}
 			}
 		}
 
@@ -688,9 +709,10 @@ public final class JobServer implements JobService {
 		 * @see java.lang.Runnable#run()
 		 */
 		public void run() {
-			ClassLoader cl = sched.job.getClass().getClassLoader();
+			ClassLoader cl = sched.classLoader;
 			if (task != null) {
 				try {
+					ServerUtil.setHostService(sched);
 					sched.job.submitTaskResults(task,
 							results.deserialize(cl), monitor);
 
@@ -710,6 +732,8 @@ public final class JobServer implements JobService {
 							"Exception thrown while attempting to submit task results for job "
 									+ sched.id.toString(), e);
 					removeScheduledJob(sched.id, false);
+				} finally {
+					ServerUtil.clearHostService();
 				}
 			}
 		}
