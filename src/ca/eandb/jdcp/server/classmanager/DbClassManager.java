@@ -72,13 +72,14 @@ public final class DbClassManager extends AbstractClassManager implements Parent
 			con.setAutoCommit(false);
 
 			DatabaseMetaData meta = con.getMetaData();
-			ResultSet rs = meta.getTables(null, null, "%Class%", new String[]{"TABLE"});
+			ResultSet rs = meta.getTables(null, null, null, new String[]{"TABLE"});
 			int tableNameColumn = rs.findColumn("TABLE_NAME");
 			int count = 0;
 			while (rs.next()) {
-				if (rs.getString(tableNameColumn) == "ParentClasses" ||
-					rs.getString(tableNameColumn) == "ChildClasses" ||
-					rs.getString(tableNameColumn) == "ChildClassManagers") {
+				String tableName = rs.getString(tableNameColumn);
+				if (tableName.equalsIgnoreCase("ParentClasses") ||
+					tableName.equalsIgnoreCase("ChildClasses") ||
+					tableName.equalsIgnoreCase("ChildClassManagers")) {
 					count++;
 				}
 			}
