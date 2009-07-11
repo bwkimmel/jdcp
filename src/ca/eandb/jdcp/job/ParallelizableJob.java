@@ -27,6 +27,7 @@ package ca.eandb.jdcp.job;
 
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.io.Serializable;
 
 import ca.eandb.util.progress.ProgressMonitor;
 
@@ -34,7 +35,7 @@ import ca.eandb.util.progress.ProgressMonitor;
  * Represents a job that can be split into smaller chunks.
  * @author Brad Kimmel
  */
-public interface ParallelizableJob {
+public interface ParallelizableJob extends Serializable {
 
 	/**
 	 * Sets the <code>HostService</code> object that provides secure access

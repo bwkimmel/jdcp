@@ -40,6 +40,11 @@ import ca.eandb.util.progress.ProgressMonitor;
  */
 public final class JobExecutionWrapper implements ParallelizableJob {
 
+	/**
+	 * Serialization version ID.
+	 */
+	private static final long serialVersionUID = -3231530847968982289L;
+
 	/** The inner <code>ParallelizableJob</code>. */
 	private final ParallelizableJob job;
 
