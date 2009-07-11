@@ -84,11 +84,9 @@ public final class JobServerMain {
 					.userNodeForPackage(JobServer.class);
 			String path = pref.get("rootDirectory", "./server");
 			File rootDirectory = new File(path);
-			File classesDirectory = new File(rootDirectory, "classes");
 			File jobsDirectory = new File(rootDirectory, "jobs");
 
 			rootDirectory.mkdir();
-			classesDirectory.mkdir();
 			jobsDirectory.mkdir();
 			System.err.println("OK");
 
