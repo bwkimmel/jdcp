@@ -105,7 +105,7 @@
             </fileset>
             <manifest>
                 <attribute name="Main-Class" value="${worker.main}"/>
-                <attribute name="Class-Path" value="jdcp-common.jar lib/eandb.jar lib/jnlp.jar lib/log4j-1.2.15.jar"/>
+                <attribute name="Class-Path" value="jdcp-common.jar lib/eandb.jar lib/jnlp.jar lib/log4j-1.2.15.jar lib/derby.jar lib/derbyclient.jar"/>
             </manifest>
         </jar>
 	</target>

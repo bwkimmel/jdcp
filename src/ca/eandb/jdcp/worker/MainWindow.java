@@ -46,6 +46,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.sql.SQLException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -66,6 +67,7 @@ import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
+import org.apache.derby.jdbc.EmbeddedDataSource;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
@@ -414,6 +416,21 @@ public final class MainWindow extends JFrame {
 
 		worker = new ThreadServiceWorker(serviceFactory, options.numberOfCpus,
 				threadPool, getProgressPanel());
+
+		setStatus("Preparing data source...");
+
+		EmbeddedDataSource ds = null;
+		try {
+			Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+			ds = new EmbeddedDataSource();
+			ds.setConnectionAttributes("create=true");
+			ds.setDatabaseName("classes");
+			worker.setDataSource(ds);
+		} catch (ClassNotFoundException e) {
+			logger.error("Could not locate database driver.", e);
+		} catch (SQLException e) {
+			logger.error("Error occurred while initializing data source.", e);
+		}
 
 		workerThread = new Thread(worker);
 		workerThread.start();

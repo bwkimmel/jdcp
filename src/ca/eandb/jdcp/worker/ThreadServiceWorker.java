@@ -26,6 +26,7 @@
 package ca.eandb.jdcp.worker;
 
 import java.rmi.RemoteException;
+import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,6 +38,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.jnlp.UnavailableServiceException;
+import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 
@@ -79,6 +81,18 @@ public final class ThreadServiceWorker implements Runnable {
 		this.maxConcurrentWorkers = maxConcurrentWorkers;
 		this.monitorFactory = monitorFactory;
 
+	}
+
+	/**
+	 * Sets a <code>DataSource</code> to use to store cached class definitions.
+	 * @param dataSource A <code>DataSource</code> to use to store cached class
+	 * 		definitions.
+	 * @throws SQLException If an error occurs while initializing the data
+	 * 		source.
+	 */
+	public void setDataSource(DataSource dataSource) throws SQLException {
+		DbCachingJobServiceClassLoaderStrategy.prepareDataSource(dataSource);
+		this.dataSource = dataSource;
 	}
 
 	/* (non-Javadoc)
@@ -358,10 +372,14 @@ public final class ThreadServiceWorker implements Runnable {
 			Serialized<TaskWorker> envelope = this.service.getTaskWorker(jobId);
 
 			ClassLoaderStrategy strategy;
-			try {
-				strategy = new PersistenceCachingJobServiceClassLoaderStrategy(service, jobId);
-			} catch (UnavailableServiceException e) {
-				strategy = new FileCachingJobServiceClassLoaderStrategy(service, jobId, "./worker");
+			if (dataSource != null) {
+				strategy = new DbCachingJobServiceClassLoaderStrategy(service, jobId, dataSource);
+			} else {
+				try {
+					strategy = new PersistenceCachingJobServiceClassLoaderStrategy(service, jobId);
+				} catch (UnavailableServiceException e) {
+					strategy = new FileCachingJobServiceClassLoaderStrategy(service, jobId, "./worker");
+				}
 			}
 
 			ClassLoader loader = new StrategyClassLoader(strategy, ThreadServiceWorker.class.getClassLoader());
@@ -646,5 +664,10 @@ public final class ThreadServiceWorker implements Runnable {
 	 * The maximum number of <code>TaskWorker</code>s to retain in the cache.
 	 */
 	private final int maxCachedWorkers = 5;
+
+	/**
+	 * A <code>DataSource</code> to use to store cached class definitions.
+	 */
+	private DataSource dataSource = null;
 
 }
