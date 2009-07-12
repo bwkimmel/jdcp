@@ -73,6 +73,8 @@ import org.apache.log4j.PatternLayout;
 
 import ca.eandb.jdcp.remote.AuthenticationService;
 import ca.eandb.jdcp.remote.JobService;
+import ca.eandb.util.args.ArgumentProcessor;
+import ca.eandb.util.args.IntegerFieldOption;
 import ca.eandb.util.concurrent.BackgroundThreadFactory;
 import ca.eandb.util.io.DocumentOutputStream;
 import ca.eandb.util.progress.ProgressPanel;
@@ -95,6 +97,18 @@ public final class MainWindow extends JFrame {
 	private JLabel statusLabel = null;
 	private ThreadServiceWorker worker = null;
 	private Thread workerThread = null;
+	private final Options options;
+
+	/**
+	 * Container class for command line options.
+	 * @author Brad Kimmel
+	 */
+	public static final class Options {
+
+		/** Number of CPUs to use to process worker threads. */
+		public int numberOfCpus = 0;
+
+	};
 
 	/**
 	 * This method initializes jSplitPane
@@ -164,20 +178,37 @@ public final class MainWindow extends JFrame {
 		appender.activateOptions();
 		BasicConfigurator.configure(appender);
 
+		ArgumentProcessor<Options> argProcessor = new ArgumentProcessor<Options>();
+		argProcessor.addOption("ncpus", 'n', new IntegerFieldOption<Options>("numberOfCpus"));
+
+		final Options options = new Options();
+		argProcessor.process(args, options);
+
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				MainWindow thisClass = new MainWindow();
+				MainWindow thisClass = new MainWindow(options);
 				thisClass.setVisible(true);
 			}
 		});
 	}
 
 	/**
+	 * Creates a <code>MainWindow</code> using the specified
+	 * <code>Options</code>.
+	 * @param options The <code>Options</code> to use to configure the behavior
+	 * 		of the program.
+	 */
+	public MainWindow(Options options) {
+		super();
+		this.options = options;
+		initialize();
+	}
+
+	/**
 	 * This is the default constructor
 	 */
 	public MainWindow() {
-		super();
-		initialize();
+		this(new Options());
 	}
 
 	/**
@@ -363,8 +394,11 @@ public final class MainWindow extends JFrame {
 
 		};
 
-		int numberOfCpus = Runtime.getRuntime().availableProcessors();
-		Executor threadPool = Executors.newFixedThreadPool(numberOfCpus, new BackgroundThreadFactory());
+		int availableCpus = Runtime.getRuntime().availableProcessors();
+		if (options.numberOfCpus <= 0 || options.numberOfCpus > availableCpus) {
+			options.numberOfCpus = availableCpus;
+		}
+		Executor threadPool = Executors.newFixedThreadPool(options.numberOfCpus, new BackgroundThreadFactory());
 
 		if (worker != null) {
 			setStatus("Shutting down worker...");
@@ -378,7 +412,7 @@ public final class MainWindow extends JFrame {
 
 		setStatus("Starting worker...");
 
-		worker = new ThreadServiceWorker(serviceFactory, numberOfCpus,
+		worker = new ThreadServiceWorker(serviceFactory, options.numberOfCpus,
 				threadPool, getProgressPanel());
 
 		workerThread = new Thread(worker);
