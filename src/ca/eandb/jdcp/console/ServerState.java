@@ -49,17 +49,30 @@ import ca.eandb.util.progress.ProgressState;
 import ca.eandb.util.progress.ProgressStateFactory;
 
 /**
- * @author Brad
- *
+ * Provides commands for managing the server.
+ * @author Brad Kimmel
  */
 public final class ServerState {
 
+	/** The <code>Logger</code> to log messages to. */
 	private static final Logger logger = Logger.getLogger(ServerState.class);
 
-	private List<ProgressState> progress = null;
+	/**
+	 * The <code>ProgressMonitor</code>s for tracking the overall progress of
+	 * each job running on the server.
+	 */
+	private List<ProgressState> jobProgressStates = null;
 
+	/** The RMI <code>Registry</code> to register the server with. */
 	private Registry registry = null;
 
+	/**
+	 * Gets the RMI <code>Registry</code> to register the server with, creating
+	 * it if necessary.
+	 * @return The RMI <code>Registry</code> to register the server with.
+	 * @throws RemoteException If an error occurs while attempting to create
+	 * 		the <code>Registry</code>.
+	 */
 	public synchronized Registry getRegistry() throws RemoteException {
 		if (registry == null) {
 			registry = LocateRegistry.createRegistry(1099);
@@ -81,7 +94,7 @@ public final class ServerState {
 			status = "status";
 		}
 		ProgressState state = new ProgressState(title);
-		progress.add(state);
+		jobProgressStates.add(state);
 		state.notifyProgress(prog);
 		state.notifyStatusChanged(status);
 		if (cancel) {
@@ -98,18 +111,24 @@ public final class ServerState {
 		}
 	}
 
+	/**
+	 * Removes completed and cancelled jobs from the stat list.
+	 */
 	@CommandArgument
 	public void clean() {
-		for (int i = 0; i < progress.size();) {
-			ProgressState state = progress.get(i);
+		for (int i = 0; i < jobProgressStates.size();) {
+			ProgressState state = jobProgressStates.get(i);
 			if (state.isCancelled() || state.isComplete()) {
-				progress.remove(i);
+				jobProgressStates.remove(i);
 			} else {
 				i++;
 			}
 		}
 	}
 
+	/**
+	 * Starts the server.
+	 */
 	@CommandArgument
 	public void start() {
 		System.out.println("Starting server");
@@ -120,9 +139,9 @@ public final class ServerState {
 			ds.setConnectionAttributes("create=true");
 			ds.setDatabaseName("classes");
 
-			logger.info("Initializing progress monitor");
+			logger.info("Initializing jobProgressStates monitor");
 			ProgressStateFactory factory = new ProgressStateFactory();
-			progress = factory.getProgressStates();
+			jobProgressStates = factory.getProgressStates();
 
 			logger.info("Initializing folders...");
 			Preferences pref = Preferences
@@ -148,6 +167,7 @@ public final class ServerState {
 			registry.bind("AuthenticationService", authServer);
 
 			logger.info("Server ready");
+			System.out.println("Server started");
 
 		} catch (Exception e) {
 			System.err.println("Failed to start server");
@@ -155,26 +175,35 @@ public final class ServerState {
 		}
 	}
 
+	/**
+	 * Stops the server.
+	 */
 	@CommandArgument
 	public void stop() {
-		System.out.println("Stopping server");
 		try {
 			Registry registry = getRegistry();
 			registry.unbind("AuthenticationService");
-			this.progress = null;
+			this.jobProgressStates = null;
+			System.out.println("Server stopped");
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("An error occurred while stopping the server", e);
+			System.err.println("Server did not shut down cleanly, see log for details.");
 		}
 	}
 
+	/**
+	 * Prints the status of the jobs running on the server.
+	 * @param index The 1-based index of the job to print the status of, or
+	 * 		zero to print the status of all jobs.
+	 */
 	@CommandArgument
 	public void stat(int index) {
-		if (this.progress == null) {
+		if (this.jobProgressStates == null) {
 			System.err.println("Server not running");
 			return;
 		}
 		if (index == 0) {
-			List<ProgressState> progress = new ArrayList<ProgressState>(this.progress);
+			List<ProgressState> progress = new ArrayList<ProgressState>(this.jobProgressStates);
 			if (progress != null) {
 				System.out.println("   # Title                     Progress Status                          ");
 				System.out.println("------------------------------------------------------------------------");
@@ -201,8 +230,8 @@ public final class ServerState {
 							flag, i + 1, title, progStr, status);
 				}
 			}
-		} else if (index > 0 && index <= this.progress.size()) {
-			ProgressState state = this.progress.get(index - 1);
+		} else if (index > 0 && index <= this.jobProgressStates.size()) {
+			ProgressState state = this.jobProgressStates.get(index - 1);
 			System.out.printf("Job #%d", index);
 			if (state.isComplete()) {
 				System.out.print(" [COMPLETE]");
@@ -226,7 +255,7 @@ public final class ServerState {
 			System.out.println();
 			System.out.printf("Status   : %s\n", state.getStatus());
 		} else {
-			System.out.println("Invalid job number");
+			System.err.println("Invalid job number");
 		}
 	}
 

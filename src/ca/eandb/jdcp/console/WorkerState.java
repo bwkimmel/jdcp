@@ -51,19 +51,35 @@ import ca.eandb.util.progress.ProgressState;
 import ca.eandb.util.progress.ProgressStateFactory;
 
 /**
- * @author Brad
- *
+ * Provides commands for managing a worker process.
+ * @author Brad Kimmel
  */
 public final class WorkerState {
 
+	/** The <code>Logger</code> to use to log messages. */
 	private static final Logger logger = Logger.getLogger(WorkerState.class);
 
+	/** The list of <code>ProgressMonitor</code>s for each worker thread. */
 	private List<ProgressState> taskProgressStates = null;
 
+	/**
+	 * The <code>ThreadServiceWorker</code> that manages the worker threads.
+	 */
 	private ThreadServiceWorker worker = null;
 
+	/**
+	 * The <code>Thread</code> on which the <code>ThreadServiceWorker</code>
+	 * executes.
+	 */
 	private Thread workerThread = null;
 
+	/**
+	 * Starts the worker process.
+	 * @param numberOfCpus The number of worker threads to spawn.
+	 * @param host The name of the host to connect to.
+	 * @param username The user name to log in with.
+	 * @param password The password to log in with.
+	 */
 	@CommandArgument
 	public void start(
 			@OptionArgument("ncpus") int numberOfCpus,
@@ -71,6 +87,11 @@ public final class WorkerState {
 			@OptionArgument("username") final String username,
 			@OptionArgument("password") final String password
 			) {
+
+		int availableCpus = Runtime.getRuntime().availableProcessors();
+		if (numberOfCpus <= 0 || numberOfCpus > availableCpus) {
+			numberOfCpus = availableCpus;
+		}
 		System.out.println("Starting worker with " + Integer.toString(numberOfCpus) + " cpus");
 
 		JobServiceFactory serviceFactory = new JobServiceFactory() {
@@ -96,10 +117,6 @@ public final class WorkerState {
 
 		};
 
-		int availableCpus = Runtime.getRuntime().availableProcessors();
-		if (numberOfCpus <= 0 || numberOfCpus > availableCpus) {
-			numberOfCpus = availableCpus;
-		}
 		Executor threadPool = Executors.newFixedThreadPool(numberOfCpus, new BackgroundThreadFactory());
 
 		if (worker != null) {
@@ -139,6 +156,9 @@ public final class WorkerState {
 
 	}
 
+	/**
+	 * Stops the worker process.
+	 */
 	@CommandArgument
 	public void stop() {
 		System.out.println("Stopping worker");
@@ -154,13 +174,18 @@ public final class WorkerState {
 		taskProgressStates = null;
 	}
 
+	/**
+	 * Prints the status of the worker threads.
+	 * @param index The 1-based index of the worker thread to print the status
+	 * 		of, or zero to print the status of all worker threads.
+	 */
 	@CommandArgument
 	public void stat(int index) {
 		if (taskProgressStates == null) {
 			System.out.println("Worker not running");
 			return;
 		}
-		if (index == 0) {
+		if (index == 0) { // print status of all workers.
 			List<ProgressState> taskProgressStates = new ArrayList<ProgressState>(this.taskProgressStates);
 			if (taskProgressStates != null) {
 				System.out.println("  # Progress                         Status                             ");
@@ -200,6 +225,7 @@ public final class WorkerState {
 				}
 			}
 		} else if (index > 0 && index <= this.taskProgressStates.size()) {
+			// print status of a single worker.
 			ProgressState state = this.taskProgressStates.get(index - 1);
 			System.out.printf("Worker #%d", index);
 			if (state.isComplete()) {
@@ -223,7 +249,7 @@ public final class WorkerState {
 			System.out.println();
 			System.out.printf("Status   : %s\n", state.getStatus());
 		} else {
-			System.out.println("Invalid worker number");
+			System.err.println("Invalid worker number");
 		}
 
 	}
