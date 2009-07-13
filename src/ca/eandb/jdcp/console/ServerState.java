@@ -80,37 +80,6 @@ public final class ServerState {
 		return registry;
 	}
 
-	@CommandArgument
-	public void test(
-			@OptionArgument("cancel") boolean cancel,
-			@OptionArgument("indeterminant") boolean indet,
-			@OptionArgument(value="complete", shortKey='C') boolean complete,
-			@OptionArgument(value="cancelled", shortKey='X') boolean cancelled,
-			String title, double prog, String status) {
-		if (title.isEmpty()) {
-			title = "title";
-		}
-		if (status.isEmpty()) {
-			status = "status";
-		}
-		ProgressState state = new ProgressState(title);
-		jobProgressStates.add(state);
-		state.notifyProgress(prog);
-		state.notifyStatusChanged(status);
-		if (cancel) {
-			state.setCancelPending();
-		}
-		if (indet) {
-			state.notifyIndeterminantProgress();
-		}
-		if (complete) {
-			state.notifyComplete();
-		}
-		if (cancelled) {
-			state.notifyCancelled();
-		}
-	}
-
 	/**
 	 * Removes completed and cancelled jobs from the stat list.
 	 */
