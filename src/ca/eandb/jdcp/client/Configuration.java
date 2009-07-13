@@ -39,7 +39,7 @@ import ca.eandb.jdcp.remote.JobService;
  * Command line options for the JDCP client application.
  * @author Brad Kimmel
  */
-public final class Configuration {
+public class Configuration {
 
 	/**
 	 * A value indicating whether the application should display additional
