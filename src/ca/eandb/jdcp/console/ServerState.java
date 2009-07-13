@@ -25,11 +25,7 @@
 
 package ca.eandb.jdcp.console;
 
-import java.awt.Dimension;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -39,9 +35,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.prefs.Preferences;
 
-import javax.swing.JFrame;
-
 import org.apache.derby.jdbc.EmbeddedDataSource;
+import org.apache.log4j.Logger;
 
 import ca.eandb.jdcp.server.AuthenticationServer;
 import ca.eandb.jdcp.server.JobServer;
@@ -50,7 +45,6 @@ import ca.eandb.jdcp.server.scheduling.PrioritySerialTaskScheduler;
 import ca.eandb.jdcp.server.scheduling.TaskScheduler;
 import ca.eandb.util.args.CommandArgument;
 import ca.eandb.util.args.OptionArgument;
-import ca.eandb.util.progress.ProgressPanel;
 import ca.eandb.util.progress.ProgressState;
 import ca.eandb.util.progress.ProgressStateFactory;
 
@@ -59,6 +53,8 @@ import ca.eandb.util.progress.ProgressStateFactory;
  *
  */
 public final class ServerState {
+
+	private static final Logger logger = Logger.getLogger(ServerState.class);
 
 	private List<ProgressState> progress = null;
 
@@ -124,12 +120,11 @@ public final class ServerState {
 			ds.setConnectionAttributes("create=true");
 			ds.setDatabaseName("classes");
 
-			System.err.print("Initializing progress monitor...");
+			logger.info("Initializing progress monitor");
 			ProgressStateFactory factory = new ProgressStateFactory();
 			progress = factory.getProgressStates();
-			System.err.println("OK");
 
-			System.err.print("Initializing folders...");
+			logger.info("Initializing folders...");
 			Preferences pref = Preferences
 					.userNodeForPackage(JobServer.class);
 			String path = pref.get("rootDirectory", "./server");
@@ -138,9 +133,8 @@ public final class ServerState {
 
 			rootDirectory.mkdir();
 			jobsDirectory.mkdir();
-			System.err.println("OK");
 
-			System.err.print("Initializing service...");
+			logger.info("Initializing service");
 			DbClassManager classManager = new DbClassManager(ds);
 			classManager.prepareDataSource();
 
@@ -148,18 +142,16 @@ public final class ServerState {
 			Executor executor = Executors.newCachedThreadPool();
 			JobServer jobServer = new JobServer(jobsDirectory, factory, scheduler, classManager, executor);
 			AuthenticationServer authServer = new AuthenticationServer(jobServer, 9000);
-			System.err.println("OK");
 
-			System.err.print("Binding service...");
+			logger.info("Binding service");
 			Registry registry = getRegistry();
 			registry.bind("AuthenticationService", authServer);
-			System.err.println("OK");
 
-			System.err.println("Server ready");
+			logger.info("Server ready");
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println("Failed to start server");
+			logger.error("Failed to start server", e);
 		}
 	}
 
@@ -178,7 +170,7 @@ public final class ServerState {
 	@CommandArgument
 	public void stat(int index) {
 		if (this.progress == null) {
-			System.out.println("Server not running");
+			System.err.println("Server not running");
 			return;
 		}
 		if (index == 0) {
