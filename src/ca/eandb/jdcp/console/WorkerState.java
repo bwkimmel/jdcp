@@ -30,6 +30,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -154,12 +155,77 @@ public final class WorkerState {
 	}
 
 	@CommandArgument
-	public void stat() {
+	public void stat(int index) {
 		if (taskProgressStates == null) {
 			System.out.println("Worker not running");
 			return;
 		}
-		System.out.println("Worker stats");
+		if (index == 0) {
+			List<ProgressState> taskProgressStates = new ArrayList<ProgressState>(this.taskProgressStates);
+			if (taskProgressStates != null) {
+				System.out.println("  # Progress                         Status                             ");
+				System.out.println("------------------------------------------------------------------------");
+				for (int i = 0, n = taskProgressStates.size(); i < n; i++) {
+					ProgressState state = taskProgressStates.get(i);
+					char flag = ' ';
+					if (state.isComplete()) {
+						flag = '*';
+					} else if (state.isCancelled()) {
+						flag = 'X';
+					} else if (state.isCancelPending()) {
+						flag = 'C';
+					}
+					String status = state.getStatus();
+					if (status.length() > 35) {
+						status = status.substring(0, 34) + ">";
+					}
+					boolean indeterminant = state.isIndeterminant();
+					double progress = state.getProgress();
+					String progressBar;
+					if (!indeterminant) {
+						StringBuilder progressBarBuilder = new StringBuilder("|");
+						for (int j = 0; j < 25; j++) {
+							if (indeterminant) {
+							}
+							progressBarBuilder.append((progress >= (double) (j + 1) / 25.0) ? "=" : " ");
+						}
+						progressBarBuilder.append("|");
+						progressBar = progressBarBuilder.toString();
+					} else {
+						progressBar = "|?????????????????????????|";
+					}
+					String progStr = (indeterminant ? "????" : String.format("% 3.0f%%", 100.0 * progress));
+					System.out.printf("%c% 2d %s %s %-35s\n",
+							flag, i + 1, progressBar, progStr, status);
+				}
+			}
+		} else if (index > 0 && index <= this.taskProgressStates.size()) {
+			ProgressState state = this.taskProgressStates.get(index - 1);
+			System.out.printf("Worker #%d", index);
+			if (state.isComplete()) {
+				System.out.print(" [COMPLETE]");
+			} else if (state.isCancelled()) {
+				System.out.print(" [CANCELLED]");
+			} else if (state.isCancelPending()) {
+				System.out.print(" [CANCEL PENDING]");
+			}
+			System.out.println();
+			if (state.isIndeterminant()) {
+				System.out.print("Progress : ???");
+			} else {
+				System.out.printf("Progress : %.2f%%", 100.0 * state.getProgress());
+			}
+			int maximum = state.getMaximum();
+			int value = state.getValue();
+			if (maximum > 0) {
+				System.out.printf(" (%d/%d)", value, maximum);
+			}
+			System.out.println();
+			System.out.printf("Status   : %s\n", state.getStatus());
+		} else {
+			System.out.println("Invalid worker number");
+		}
+
 	}
 
 }
