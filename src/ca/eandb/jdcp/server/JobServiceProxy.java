@@ -68,6 +68,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 	 * @param server The underlying <code>JobService</code>.
 	 */
 	public JobServiceProxy(Subject user, JobService service) throws RemoteException {
+		super(9001);
 		this.user = user;
 		this.service = service;
 	}

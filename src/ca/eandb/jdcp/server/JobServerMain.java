@@ -97,7 +97,7 @@ public final class JobServerMain {
 			TaskScheduler scheduler = new PrioritySerialTaskScheduler();
 			Executor executor = Executors.newCachedThreadPool();
 			JobServer jobServer = new JobServer(jobsDirectory, panel, scheduler, classManager, executor);
-			AuthenticationServer authServer = new AuthenticationServer(jobServer);
+			AuthenticationServer authServer = new AuthenticationServer(jobServer, 9000);
 			System.err.println("OK");
 
 			System.err.print("Exporting service stubs...");
