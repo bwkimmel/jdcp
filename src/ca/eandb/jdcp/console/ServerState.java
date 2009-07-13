@@ -49,6 +49,7 @@ import ca.eandb.jdcp.server.classmanager.DbClassManager;
 import ca.eandb.jdcp.server.scheduling.PrioritySerialTaskScheduler;
 import ca.eandb.jdcp.server.scheduling.TaskScheduler;
 import ca.eandb.util.args.CommandArgument;
+import ca.eandb.util.args.OptionArgument;
 import ca.eandb.util.progress.ProgressPanel;
 import ca.eandb.util.progress.ProgressState;
 import ca.eandb.util.progress.ProgressStateFactory;
@@ -68,6 +69,49 @@ public final class ServerState {
 			registry = LocateRegistry.createRegistry(1099);
 		}
 		return registry;
+	}
+
+	@CommandArgument
+	public void test(
+			@OptionArgument("cancel") boolean cancel,
+			@OptionArgument("indeterminant") boolean indet,
+			@OptionArgument(value="complete", shortKey='C') boolean complete,
+			@OptionArgument(value="cancelled", shortKey='X') boolean cancelled,
+			String title, double prog, String status) {
+		if (title.isEmpty()) {
+			title = "title";
+		}
+		if (status.isEmpty()) {
+			status = "status";
+		}
+		ProgressState state = new ProgressState(title);
+		progress.add(state);
+		state.notifyProgress(prog);
+		state.notifyStatusChanged(status);
+		if (cancel) {
+			state.setCancelPending();
+		}
+		if (indet) {
+			state.notifyIndeterminantProgress();
+		}
+		if (complete) {
+			state.notifyComplete();
+		}
+		if (cancelled) {
+			state.notifyCancelled();
+		}
+	}
+
+	@CommandArgument
+	public void clean() {
+		for (int i = 0; i < progress.size();) {
+			ProgressState state = progress.get(i);
+			if (state.isCancelled() || state.isComplete()) {
+				progress.remove(i);
+			} else {
+				i++;
+			}
+		}
 	}
 
 	@CommandArgument
@@ -103,7 +147,7 @@ public final class ServerState {
 			TaskScheduler scheduler = new PrioritySerialTaskScheduler();
 			Executor executor = Executors.newCachedThreadPool();
 			JobServer jobServer = new JobServer(jobsDirectory, factory, scheduler, classManager, executor);
-			AuthenticationServer authServer = new AuthenticationServer(jobServer);
+			AuthenticationServer authServer = new AuthenticationServer(jobServer, 9000);
 			System.err.println("OK");
 
 			System.err.print("Binding service...");
@@ -132,31 +176,65 @@ public final class ServerState {
 	}
 
 	@CommandArgument
-	public void stat() {
+	public void stat(int index) {
 		if (this.progress == null) {
 			System.out.println("Server not running");
 			return;
 		}
-		System.out.println("Server stats");
-		List<ProgressState> progress = new ArrayList<ProgressState>(this.progress);
-		if (progress != null) {
-			System.out.println("   # Title                     Progress Status                          ");
-			System.out.println("------------------------------------------------------------------------");
-			for (int i = 0, n = progress.size(); i < n; i++) {
-				ProgressState state = progress.get(i);
-				char flag = state.isCancelPending() ? '*' : ' ';
-				String title = state.getTitle();
-				if (title.length() > 25) {
-					title = title.substring(0, 24) + ">";
+		if (index == 0) {
+			List<ProgressState> progress = new ArrayList<ProgressState>(this.progress);
+			if (progress != null) {
+				System.out.println("   # Title                     Progress Status                          ");
+				System.out.println("------------------------------------------------------------------------");
+				for (int i = 0, n = progress.size(); i < n; i++) {
+					ProgressState state = progress.get(i);
+					char flag = ' ';
+					if (state.isComplete()) {
+						flag = '*';
+					} else if (state.isCancelled()) {
+						flag = 'X';
+					} else if (state.isCancelPending()) {
+						flag = 'C';
+					}
+					String title = state.getTitle();
+					if (title.length() > 25) {
+						title = title.substring(0, 24) + ">";
+					}
+					String status = state.getStatus();
+					if (status.length() > 32) {
+						status = status.substring(0, 31) + ">";
+					}
+					String progStr = (state.isIndeterminant() ? "????????" : String.format(" % 6.2f%%", 100.0 * state.getProgress()));
+					System.out.printf("%c% 3d %-25s %s %-33s\n",
+							flag, i + 1, title, progStr, status);
 				}
-				String status = state.getStatus();
-				if (status.length() > 32) {
-					status = status.substring(0, 31) + ">";
-				}
-				double pct = 100.0 * state.getProgress();
-				System.out.printf("%c% 3d %25s % 6.2f%% %33s\n",
-						flag, i, title, pct, status);
 			}
+		} else if (index > 0 && index <= this.progress.size()) {
+			ProgressState state = this.progress.get(index - 1);
+			System.out.printf("Job #%d", index);
+			if (state.isComplete()) {
+				System.out.print(" [COMPLETE]");
+			} else if (state.isCancelled()) {
+				System.out.print(" [CANCELLED]");
+			} else if (state.isCancelPending()) {
+				System.out.print(" [CANCEL PENDING]");
+			}
+			System.out.println();
+			System.out.printf("Title    : %s\n", state.getTitle());
+			if (state.isIndeterminant()) {
+				System.out.print("Progress : ???");
+			} else {
+				System.out.printf("Progress : %.2f%%", 100.0 * state.getProgress());
+			}
+			int maximum = state.getMaximum();
+			int value = state.getValue();
+			if (maximum > 0) {
+				System.out.printf(" (%d/%d)", value, maximum);
+			}
+			System.out.println();
+			System.out.printf("Status   : %s\n", state.getStatus());
+		} else {
+			System.out.println("Invalid job number");
 		}
 	}
 
