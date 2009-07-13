@@ -44,7 +44,6 @@ import ca.eandb.jdcp.server.classmanager.DbClassManager;
 import ca.eandb.jdcp.server.scheduling.PrioritySerialTaskScheduler;
 import ca.eandb.jdcp.server.scheduling.TaskScheduler;
 import ca.eandb.util.args.CommandArgument;
-import ca.eandb.util.args.OptionArgument;
 import ca.eandb.util.progress.ProgressState;
 import ca.eandb.util.progress.ProgressStateFactory;
 
