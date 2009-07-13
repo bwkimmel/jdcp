@@ -44,7 +44,7 @@ public final class ClientMain {
 	 */
 	public static void main(String[] args) {
 
-		ArgumentProcessor<Configuration> argProcessor = new ArgumentProcessor<Configuration>(true);
+		ArgumentProcessor<Configuration> argProcessor = new ArgumentProcessor<Configuration>("");
 
 		argProcessor.addOption("verbose", 'V', new BooleanFieldOption<Configuration>("verbose"));
 		argProcessor.addOption("host", 'h', new StringFieldOption<Configuration>("host"));
@@ -55,6 +55,7 @@ public final class ClientMain {
 		argProcessor.addCommand("sync", new SynchronizeCommand());
 		argProcessor.addCommand("idle", new SetIdleTimeCommand());
 		argProcessor.addCommand("script", new ScriptCommand());
+		argProcessor.addCommand("connect", new ConnectCommand());
 
 		argProcessor.setDefaultCommand(UnrecognizedCommand.getInstance());
 
