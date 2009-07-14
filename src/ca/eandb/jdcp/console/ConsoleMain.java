@@ -25,12 +25,19 @@
 
 package ca.eandb.jdcp.console;
 
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.PatternLayout;
+
+import ca.eandb.jdcp.client.Configuration;
 import ca.eandb.jdcp.client.ConnectCommand;
 import ca.eandb.jdcp.client.ScriptCommand;
 import ca.eandb.jdcp.client.SetIdleTimeCommand;
 import ca.eandb.jdcp.client.SynchronizeCommand;
 import ca.eandb.jdcp.client.VerifyCommand;
 import ca.eandb.util.args.ArgumentProcessor;
+import ca.eandb.util.args.BooleanFieldOption;
+import ca.eandb.util.args.StringFieldOption;
 import ca.eandb.util.args.UnrecognizedCommand;
 
 /**
@@ -44,7 +51,19 @@ public final class ConsoleMain {
 	 */
 	public static void main(String[] args) {
 
+		ConsoleAppender appender = new ConsoleAppender();
+		appender.setLayout(new PatternLayout(PatternLayout.TTCC_CONVERSION_PATTERN));
+		appender.setTarget(ConsoleAppender.SYSTEM_ERR);
+		appender.setFollow(true);
+		appender.activateOptions();
+		BasicConfigurator.configure(appender);
+
 		ArgumentProcessor<ConsoleState> argProcessor = new ArgumentProcessor<ConsoleState>("");
+
+		argProcessor.addOption("verbose", 'V', new BooleanFieldOption<Configuration>("verbose"));
+		argProcessor.addOption("host", 'h', new StringFieldOption<Configuration>("host"));
+		argProcessor.addOption("username", 'u', new StringFieldOption<Configuration>("username"));
+		argProcessor.addOption("password", 'p', new StringFieldOption<Configuration>("password"));
 
 		argProcessor.addCommand("verify", new VerifyCommand());
 		argProcessor.addCommand("sync", new SynchronizeCommand());
