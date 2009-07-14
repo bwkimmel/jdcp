@@ -79,6 +79,23 @@ public class ConnectionDialog extends JDialog {
 		initialize();
 	}
 
+	/* (non-Javadoc)
+	 * @see java.awt.Dialog#setVisible(boolean)
+	 */
+	@Override
+	public void setVisible(boolean b) {
+		if (b) {
+			cancelled = false;
+			timedOut = false;
+			getOkButton().setText("OK");
+			if (timeout > 0) {
+				timeoutThread = new Thread(new TimeoutTask(timeout));
+				timeoutThread.start();
+			}
+		}
+		super.setVisible(b);
+	}
+
 	/**
 	 * This method initializes this
 	 *
@@ -90,16 +107,6 @@ public class ConnectionDialog extends JDialog {
 		this.setContentPane(getJContentPane());
 		this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		this.addWindowListener(new WindowAdapter() {
-			public void windowActivated(WindowEvent e) {
-				cancelled = false;
-				timedOut = false;
-				getOkButton().setText("OK");
-				if (timeout > 0) {
-					timeoutThread = new Thread(new TimeoutTask(timeout));
-					timeoutThread.start();
-				}
-			}
-
 			public void windowClosed(WindowEvent e) {
 				cancelTimeout();
 			}
