@@ -24,11 +24,13 @@
     <property name="server.label" value="${ant.project.name}-server-${version}"/>
     <property name="worker.label" value="${ant.project.name}-worker-${version}"/>
     <property name="client.label" value="${ant.project.name}-client-${version}"/>
+    <property name="console.label" value="${ant.project.name}-console-${version}"/>
     <property name="full.label" value="${ant.project.name}-${version}"/>
 
 	<property name="server.dist.dir" value="${dist.dir}/${server.label}"/>
 	<property name="worker.dist.dir" value="${dist.dir}/${worker.label}"/>
 	<property name="client.dist.dir" value="${dist.dir}/${client.label}"/>
+	<property name="console.dist.dir" value="${dist.dir}/${console.label}"/>
 	<property name="full.dist.dir" value="${dist.dir}/${full.label}"/>
 
 	<property name="eandb.util.dir" value="${basedir}/../util"/>
@@ -39,6 +41,7 @@
 	<property name="server.main" value="ca.eandb.jdcp.server.JobServerMain"/>
 	<property name="worker.main" value="ca.eandb.jdcp.worker.MainWindow"/>
 	<property name="client.main" value="ca.eandb.jdcp.client.ClientMain"/>
+	<property name="console.main" value="ca.eandb.jdcp.console.ConsoleMain"/>
 
 	<property name="macosx.javastub.file" value="/System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub"/>
 
@@ -82,6 +85,7 @@
                 <exclude name="ca/eandb/jdcp/server/**"/>
                 <exclude name="ca/eandb/jdcp/worker/**"/>
 			    <exclude name="ca/eandb/jdcp/client/**"/>
+				<exclude name="ca/eandb/jdcp/console/**"/>
 			</fileset>
 		</jar>
 	</target>
@@ -122,7 +126,19 @@
         </jar>
 	</target>
 
-	<target name="jar" depends="jar-server,jar-worker,jar-client">
+	<target name="jar-console" depends="compile,jar-common,jar-server,jar-worker,jar-client">
+		<jar destfile="${jar.dir}/${ant.project.name}-console.jar">
+			<fileset dir="${classes.dir}">
+				<include name="ca/eandb/jdcp/console/**"/>
+			</fileset>
+			<manifest>
+				<attribute name="Main-Class" value="${console.main}"/>
+				<attribute name="Class-Path" value="jdcp-common.jar jdcp-server.jar jdcp-worker.jar jdcp-client.jar lib/eandb.jar lib/jnlp.jar lib/log4j-1.2.15.jar lib/derby.jar lib/derbyclient.jar"/>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="jar" depends="jar-server,jar-worker,jar-client,jar-console">
 	</target>
 
 	<target name="dist-server" depends="jar-server,jar-eandb-util">
@@ -182,7 +198,32 @@
         <copy file="${eandb.util.jar.file}" todir="${client.dist.dir}/lib"/>
     </target>
 
-	<target name="dist-full" depends="dist-server,dist-worker,dist-client">
+	<target name="dist-console" depends="jar-console,jar-eandb-util">
+		<mkdir dir="${dist.dir}"/>
+		<mkdir dir="${console.dist.dir}"/>
+		<mkdir dir="${console.dist.dir}/lib"/>
+		<mkdir dir="${console.dist.dir}/etc"/>
+        <copy file="${jar.dir}/${ant.project.name}-common.jar" todir="${console.dist.dir}" />
+        <copy file="${jar.dir}/${ant.project.name}-server.jar" todir="${console.dist.dir}" />
+        <copy file="${jar.dir}/${ant.project.name}-worker.jar" todir="${console.dist.dir}" />
+        <copy file="${jar.dir}/${ant.project.name}-client.jar" todir="${console.dist.dir}" />
+        <copy file="${jar.dir}/${ant.project.name}-console.jar" todir="${console.dist.dir}" />
+		<copy todir="${console.dist.dir}">
+			<fileset dir="${basedir}">
+                <include name="jdcp.ico"/>
+                <include name="jdcp-*.png"/>
+				<include name="jdcp-server.bat"/>
+				<include name="jdcp-server.sh"/>
+				<include name="lib/log4j-*.jar"/>
+				<include name="lib/derby*.jar"/>
+				<include name="lib/jnlp.jar"/>
+				<include name="etc/**"/>
+			</fileset>
+		</copy>
+        <copy file="${eandb.util.jar.file}" todir="${console.dist.dir}/lib"/>
+	</target>
+
+	<target name="dist-full" depends="dist-server,dist-worker,dist-client,dist-console">
 		<mkdir dir="${full.dist.dir}"/>
         <copy todir="${full.dist.dir}">
             <fileset dir="${server.dist.dir}" includes="**"/>
@@ -193,9 +234,12 @@
         <copy todir="${full.dist.dir}">
             <fileset dir="${client.dist.dir}" includes="**"/>
         </copy>
+        <copy todir="${full.dist.dir}">
+            <fileset dir="${console.dist.dir}" includes="**"/>
+        </copy>
 	</target>
 
-	<target name="dist" depends="dist-server,dist-worker,dist-client,dist-full">
+	<target name="dist" depends="dist-server,dist-worker,dist-client,dist-console,dist-full">
 	</target>
 
 	<target name="run-server" depends="dist-server">
@@ -234,6 +278,26 @@
         </java>
     </target>
 
+	<target name="run-console" depends="dist-console">
+		<java spawn="true" fork="true" dir="${console.dist.dir}" classname="${console.main}">
+			<classpath>
+				<path location="${console.dist.dir}/${ant.project.name}-console.jar"/>
+				<path location="${console.dist.dir}/${ant.project.name}-server.jar"/>
+				<path location="${console.dist.dir}/${ant.project.name}-worker.jar"/>
+				<path location="${console.dist.dir}/${ant.project.name}-client.jar"/>
+				<path location="${console.dist.dir}/${ant.project.name}-common.jar"/>
+				<path>
+					<fileset dir="${console.dist.dir}/lib" includes="**/*.jar"/>
+			    </path>
+			</classpath>
+			<jvmarg value="-Djava.security.manager"/>
+			<sysproperty key="java.library.path" value="lib"/>
+			<sysproperty key="java.security.auth.login.config" value="etc/login.config"/>
+			<sysproperty key="java.security.policy" value="etc/policy"/>
+			<sysproperty key="log4j.configuration" value="file:./etc/log4j.properties"/>
+		</java>
+	</target>
+
     <target name="tar-server" depends="dist-server">
         <tar destfile="${dist.dir}/${server.label}.tar.bz2" basedir="${dist.dir}" includes="${server.label}/**" compression="bzip2"/>
     </target>
@@ -246,11 +310,15 @@
         <tar destfile="${dist.dir}/${client.label}.tar.bz2" basedir="${dist.dir}" includes="${client.label}/**" compression="bzip2"/>
     </target>
 
+    <target name="tar-console" depends="dist-console">
+        <tar destfile="${dist.dir}/${console.label}.tar.bz2" basedir="${dist.dir}" includes="${console.label}/**" compression="bzip2"/>
+    </target>
+
     <target name="tar-full" depends="dist-full">
     	<tar destfile="${dist.dir}/${full.label}.tar.bz2" basedir="${dist.dir}" includes="${full.label}/**" compression="bzip2"/>
     </target>
 
-	<target name="tar" depends="tar-server,tar-worker,tar-client,tar-full">
+	<target name="tar" depends="tar-server,tar-worker,tar-client,tar-console,tar-full">
 	</target>
 
     <target name="zip-server" depends="dist-server">
@@ -265,11 +333,15 @@
         <zip destfile="${dist.dir}/${client.label}.zip" basedir="${dist.dir}" includes="${client.label}/**"/>
     </target>
 
+    <target name="zip-console" depends="dist-console">
+        <zip destfile="${dist.dir}/${console.label}.zip" basedir="${dist.dir}" includes="${console.label}/**"/>
+    </target>
+
 	<target name="zip-full" depends="dist-full">
 		<zip destfile="${dist.dir}/${full.label}.zip" basedir="${dist.dir}" includes="${full.label}/**"/>
 	</target>
 
-    <target name="zip" depends="zip-server,zip-worker,zip-client,zip-full">
+    <target name="zip" depends="zip-server,zip-worker,zip-client,zip-console,zip-full">
     </target>
 
 	<target name="archive" depends="tar,zip">
