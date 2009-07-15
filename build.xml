@@ -212,6 +212,8 @@
 			<fileset dir="${basedir}">
                 <include name="jdcp.ico"/>
                 <include name="jdcp-*.png"/>
+                <include name="jdcp-console.bat"/>
+                <include name="jdcp-console.sh"/>
 				<include name="jdcp-server.bat"/>
 				<include name="jdcp-server.sh"/>
 				<include name="lib/log4j-*.jar"/>
