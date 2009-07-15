@@ -69,6 +69,8 @@ Section -Main SEC0000
     SetOutPath $INSTDIR\lib
     File build\dist\jdcp-${VERSION}\lib\log4j-1.2.15.jar
     File build\dist\jdcp-${VERSION}\lib\eandb.jar
+    File build\dist\jdcp-${VERSION}\lib\derby.jar
+    File build\dist\jdcp-${VERSION}\lib\derbyclient.jar
     WriteRegStr HKLM "${REGKEY}\Components" Main 1
 SectionEnd
 
