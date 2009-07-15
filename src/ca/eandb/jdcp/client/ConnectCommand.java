@@ -53,7 +53,6 @@ public final class ConnectCommand implements Command<Configuration> {
 	/* (non-Javadoc)
 	 * @see ca.eandb.util.args.AbstractCommand#process(java.util.Queue, java.lang.Object)
 	 */
-	@Override
 	public void process(Queue<String> argq, Configuration state) {
 		argProcessor.process(argq, state);
 	}

@@ -65,6 +65,9 @@ public final class ServerState {
 	/** The RMI <code>Registry</code> to register the server with. */
 	private Registry registry = null;
 
+	/** The running <code>JobServer</code>. */
+	private JobServer jobServer = null;
+
 	/**
 	 * Gets the RMI <code>Registry</code> to register the server with, creating
 	 * it if necessary.
@@ -127,7 +130,7 @@ public final class ServerState {
 
 			TaskScheduler scheduler = new PrioritySerialTaskScheduler();
 			Executor executor = Executors.newCachedThreadPool();
-			JobServer jobServer = new JobServer(jobsDirectory, factory, scheduler, classManager, executor);
+			jobServer = new JobServer(jobsDirectory, factory, scheduler, classManager, executor);
 			AuthenticationServer authServer = new AuthenticationServer(jobServer, 9000);
 
 			logger.info("Binding service");
@@ -141,6 +144,23 @@ public final class ServerState {
 			System.err.println("Failed to start server");
 			logger.error("Failed to start server", e);
 		}
+	}
+
+	/**
+	 * Cancels a job.
+	 * @param index The 1-based index of the job to cancel.
+	 */
+	@CommandArgument
+	public void cancel(int index) {
+		if (jobProgressStates == null) {
+			System.err.println("Server not running");
+			return;
+		}
+		if (index <= 0 || index > jobProgressStates.size()) {
+			System.err.println("Invalid job number");
+		}
+		ProgressState state = jobProgressStates.get(index - 1);
+		state.setCancelPending();
 	}
 
 	/**
