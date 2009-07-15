@@ -87,6 +87,8 @@ import ca.eandb.util.progress.ProgressPanel;
  */
 public final class MainWindow extends JFrame {
 
+	private static final boolean SYSTEM_TRAY_SUPPORTED = Double.parseDouble(System.getProperty("java.specification.version")) >= 1.6;
+
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(MainWindow.class);  //  @jve:decl-index=0:
 	private static final int RECONNECT_TIMEOUT = 60;
@@ -257,6 +259,17 @@ public final class MainWindow extends JFrame {
 
 		this.setJMenuBar(menuBar);
 
+		if (SYSTEM_TRAY_SUPPORTED) {
+			initializeSystemTray();
+		}
+	}
+
+	/**
+	 * Initializes the system tray icon.
+	 *
+	 * REQUIRES JAVA SE 6 OR HIGHER.
+	 */
+	private void initializeSystemTray() {
 		if (SystemTray.isSupported()) {
 
 			Image image = Toolkit.getDefaultToolkit().getImage("jdcp-32.png");

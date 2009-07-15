@@ -71,7 +71,7 @@
 	</target>
 
 	<target name="compile" depends="jar-eandb-util">
-		<javac srcdir="${src.dir}" destdir="${classes.dir}" >
+		<javac target="1.5" source="1.5" srcdir="${src.dir}" destdir="${classes.dir}" >
 			<classpath>
 				<path refid="classpath"/>
 				<path location="${eandb.util.jar.file}"/>
