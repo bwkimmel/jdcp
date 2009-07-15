@@ -99,9 +99,9 @@ public final class WorkerState {
 			public JobService connect() {
 				JobService service = null;
 				try {
-					Registry registry = LocateRegistry.getRegistry(host.isEmpty() ? "localhost" : host);
+					Registry registry = LocateRegistry.getRegistry(host.equals("") ? "localhost" : host);
 					AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
-					service = auth.authenticate(username.isEmpty() ? "guest" : username, password);
+					service = auth.authenticate(username.equals("") ? "guest" : username, password);
 				} catch (NotBoundException e) {
 					logger.error("Job service not found at remote host.", e);
 				} catch (RemoteException e) {

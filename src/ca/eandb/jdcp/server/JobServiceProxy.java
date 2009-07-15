@@ -110,7 +110,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 			RemoteException {
 
 		try {
-			return Subject.doAsPrivileged(user, new PrivilegedExceptionAction<UUID>() {
+			return (UUID) Subject.doAsPrivileged(user, new PrivilegedExceptionAction<UUID>() {
 
 				public UUID run() throws Exception {
 					AccessController.checkPermission(new JdcpPermission("createJob"));
@@ -137,7 +137,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 			throws SecurityException, RemoteException {
 
 		try {
-			return Subject.doAsPrivileged(user, new PrivilegedExceptionAction<byte[]>() {
+			return (byte[]) Subject.doAsPrivileged(user, new PrivilegedExceptionAction<byte[]>() {
 
 				public byte[] run() throws Exception {
 					AccessController.checkPermission(new JdcpPermission("getJobClassDefinition"));
@@ -164,7 +164,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 			throws SecurityException, RemoteException {
 
 		try {
-			return Subject.doAsPrivileged(user, new PrivilegedExceptionAction<byte[]>() {
+			return (byte[]) Subject.doAsPrivileged(user, new PrivilegedExceptionAction<byte[]>() {
 
 				public byte[] run() throws Exception {
 					AccessController.checkPermission(new JdcpPermission("getJobClassDigest"));
@@ -191,7 +191,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 			RemoteException {
 
 		try {
-			return Subject.doAsPrivileged(user, new PrivilegedExceptionAction<byte[]>() {
+			return (byte[]) Subject.doAsPrivileged(user, new PrivilegedExceptionAction<byte[]>() {
 
 				public byte[] run() throws Exception {
 					AccessController.checkPermission(new JdcpPermission("getGlobalClassDigest"));
@@ -214,11 +214,12 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.remote.JobService#getTaskWorker(java.util.UUID)
 	 */
+	@SuppressWarnings("unchecked")
 	public Serialized<TaskWorker> getTaskWorker(final UUID jobId)
 			throws IllegalArgumentException, SecurityException, RemoteException {
 
 		try {
-			return Subject.doAsPrivileged(user, new PrivilegedExceptionAction<Serialized<TaskWorker>>() {
+			return (Serialized<TaskWorker>) Subject.doAsPrivileged(user, new PrivilegedExceptionAction<Serialized<TaskWorker>>() {
 
 				public Serialized<TaskWorker> run() throws Exception {
 					AccessController.checkPermission(new JdcpPermission("getTaskWorker"));
@@ -247,7 +248,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 			RemoteException {
 
 		try {
-			return Subject.doAsPrivileged(user, new PrivilegedExceptionAction<TaskDescription>() {
+			return (TaskDescription) Subject.doAsPrivileged(user, new PrivilegedExceptionAction<TaskDescription>() {
 
 				public TaskDescription run() throws Exception {
 					AccessController.checkPermission(new JdcpPermission("requestTask"));
@@ -427,7 +428,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 			throws SecurityException, ClassNotFoundException, RemoteException, JobExecutionException {
 
 		try {
-			return Subject.doAsPrivileged(user, new PrivilegedExceptionAction<UUID>() {
+			return (UUID) Subject.doAsPrivileged(user, new PrivilegedExceptionAction<UUID>() {
 
 				public UUID run() throws Exception {
 					AccessController.checkPermission(new JdcpPermission("submitJob"));
