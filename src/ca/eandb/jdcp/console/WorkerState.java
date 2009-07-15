@@ -59,6 +59,9 @@ public final class WorkerState {
 	/** The <code>Logger</code> to use to log messages. */
 	private static final Logger logger = Logger.getLogger(WorkerState.class);
 
+	/** The interval between connection attempts (in seconds). */
+	private static final int RECONNECT_INTERVAL = 60;
+
 	/** The list of <code>ProgressMonitor</code>s for each worker thread. */
 	private List<ProgressState> taskProgressStates = null;
 
@@ -72,6 +75,11 @@ public final class WorkerState {
 	 * executes.
 	 */
 	private Thread workerThread = null;
+
+	/**
+	 * The number of seconds until the next reconnection attempt is made.
+	 */
+	private int reconnectCountdown = -1;
 
 	/**
 	 * Starts the worker process.
@@ -95,26 +103,12 @@ public final class WorkerState {
 		System.out.println("Starting worker with " + Integer.toString(numberOfCpus) + " cpus");
 
 		JobServiceFactory serviceFactory = new JobServiceFactory() {
-
 			public JobService connect() {
-				JobService service = null;
-				try {
-					Registry registry = LocateRegistry.getRegistry(host.equals("") ? "localhost" : host);
-					AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
-					service = auth.authenticate(username.equals("") ? "guest" : username, password);
-				} catch (NotBoundException e) {
-					logger.error("Job service not found at remote host.", e);
-				} catch (RemoteException e) {
-					logger.error("Could not connect to job service.", e);
-				} catch (LoginException e) {
-					logger.error("Login failed.", e);
-				}
-				if (service == null) {
-					throw new RuntimeException("No service.");
-				}
-				return service;
+				return waitForService(
+						host.equals("") ? "localhost" : host,
+						username.equals("") ? "guest" : username,
+						password, RECONNECT_INTERVAL);
 			}
-
 		};
 
 		Executor threadPool = Executors.newFixedThreadPool(numberOfCpus, new BackgroundThreadFactory());
@@ -156,6 +150,45 @@ public final class WorkerState {
 
 	}
 
+	private JobService waitForService(String host, String username, String password, int retryInterval) {
+		JobService service = null;
+		while (true) {
+			reconnectCountdown = 0;
+			service = connect(host, username, password);
+			if (service != null) {
+				break;
+			}
+
+			for (int i = retryInterval; i > 0; i--) {
+				reconnectCountdown = i;
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					reconnectCountdown = -1;
+					return null;
+				}
+			}
+		}
+		reconnectCountdown = -1;
+		return service;
+	}
+
+	private JobService connect(String host, String username, String password) {
+		JobService service = null;
+		try {
+			Registry registry = LocateRegistry.getRegistry(host);
+			AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
+			service = auth.authenticate(username, password);
+		} catch (NotBoundException e) {
+			logger.error("Job service not found at remote host.", e);
+		} catch (RemoteException e) {
+			logger.error("Could not connect to job service.", e);
+		} catch (LoginException e) {
+			logger.error("Login failed.", e);
+		}
+		return service;
+	}
+
 	/**
 	 * Stops the worker process.
 	 */
@@ -181,6 +214,14 @@ public final class WorkerState {
 	 */
 	@CommandArgument
 	public void stat(int index) {
+		if (reconnectCountdown > 0) {
+			System.out.printf("Lost connection, reconnecting in %d seconds.\n", reconnectCountdown);
+			return;
+		}
+		if (reconnectCountdown == 0) {
+			System.out.println("Connecting...");
+			return;
+		}
 		if (taskProgressStates == null) {
 			System.out.println("Worker not running");
 			return;

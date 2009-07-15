@@ -112,6 +112,10 @@ public final class ThreadServiceWorker implements Runnable {
 					Worker worker = this.workerQueue.take();
 					if (reconnectPending) {
 						this.initializeService();
+						if (shutdownPending) {
+							runThread = null;
+							return;
+						}
 						reconnectPending = false;
 					}
 					this.executor.execute(worker);
