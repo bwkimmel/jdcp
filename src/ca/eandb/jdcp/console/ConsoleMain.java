@@ -26,8 +26,6 @@
 package ca.eandb.jdcp.console;
 
 import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.PatternLayout;
 
 import ca.eandb.jdcp.client.Configuration;
 import ca.eandb.jdcp.client.ConnectCommand;
@@ -51,12 +49,7 @@ public final class ConsoleMain {
 	 */
 	public static void main(String[] args) {
 
-		ConsoleAppender appender = new ConsoleAppender();
-		appender.setLayout(new PatternLayout(PatternLayout.TTCC_CONVERSION_PATTERN));
-		appender.setTarget(ConsoleAppender.SYSTEM_ERR);
-		appender.setFollow(true);
-		appender.activateOptions();
-		BasicConfigurator.configure(appender);
+		BasicConfigurator.configure();
 
 		ArgumentProcessor<ConsoleState> argProcessor = new ArgumentProcessor<ConsoleState>("");
 
