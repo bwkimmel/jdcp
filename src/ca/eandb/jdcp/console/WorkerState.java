@@ -176,7 +176,7 @@ public final class WorkerState {
 	private JobService connect(String host, String username, String password) {
 		JobService service = null;
 		try {
-			Registry registry = LocateRegistry.getRegistry(host);
+			Registry registry = LocateRegistry.getRegistry(host, 5327);
 			AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
 			service = auth.authenticate(username, password);
 		} catch (NotBoundException e) {
