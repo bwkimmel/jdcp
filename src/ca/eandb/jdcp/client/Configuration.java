@@ -80,7 +80,7 @@ public class Configuration {
 	public JobService getJobService() {
 		if (service == null) {
 			try {
-				Registry registry = LocateRegistry.getRegistry(host);
+				Registry registry = LocateRegistry.getRegistry(host, 5327);
 				AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
 				service = auth.authenticate(username, password);
 			} catch (NotBoundException e) {

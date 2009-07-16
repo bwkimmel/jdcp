@@ -73,7 +73,7 @@ public final class JdcpUtil {
 			JobExecutionException, LoginException, NotBoundException {
 
 		Serialized<ParallelizableJob> payload = new Serialized<ParallelizableJob>(job);
-		Registry registry = LocateRegistry.getRegistry(host);
+		Registry registry = LocateRegistry.getRegistry(host, 5327);
 		AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
 		JobService service = auth.authenticate(username, password);
 

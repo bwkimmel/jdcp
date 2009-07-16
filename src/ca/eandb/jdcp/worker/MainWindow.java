@@ -366,7 +366,7 @@ public final class MainWindow extends JFrame {
 
 	private JobService connect(String host, String user, String password, boolean showMessageDialog) {
 		try {
-			Registry registry = LocateRegistry.getRegistry(host);
+			Registry registry = LocateRegistry.getRegistry(host, 5327);
 			AuthenticationService authService = (AuthenticationService) registry.lookup("AuthenticationService");
 			return authService.authenticate(user, password);
 		} catch (LoginException e) {
