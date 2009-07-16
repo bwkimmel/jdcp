@@ -77,7 +77,7 @@ public final class ServerState {
 	 */
 	public synchronized Registry getRegistry() throws RemoteException {
 		if (registry == null) {
-			registry = LocateRegistry.createRegistry(1099);
+			registry = LocateRegistry.createRegistry(5327);
 		}
 		return registry;
 	}
@@ -131,7 +131,7 @@ public final class ServerState {
 			TaskScheduler scheduler = new PrioritySerialTaskScheduler();
 			Executor executor = Executors.newCachedThreadPool();
 			jobServer = new JobServer(jobsDirectory, factory, scheduler, classManager, executor);
-			AuthenticationServer authServer = new AuthenticationServer(jobServer, 9000);
+			AuthenticationServer authServer = new AuthenticationServer(jobServer, 5327);
 
 			logger.info("Binding service");
 			Registry registry = getRegistry();
