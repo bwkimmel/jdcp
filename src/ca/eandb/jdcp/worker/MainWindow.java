@@ -501,7 +501,7 @@ public final class MainWindow extends JFrame {
 			service = first ? MainWindow.this.connect() : reconnect();
 			if (service == null) {
 				setVisible(false);
-				throw new RuntimeException("Huh?");
+				throw new RuntimeException("Unable to connect");
 			}
 			setStatus("Connected");
 			first = false;
