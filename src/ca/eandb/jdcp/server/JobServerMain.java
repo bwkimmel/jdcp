@@ -39,6 +39,7 @@ import javax.swing.JFrame;
 
 import org.apache.derby.jdbc.EmbeddedDataSource;
 
+import ca.eandb.jdcp.JdcpUtil;
 import ca.eandb.jdcp.server.classmanager.DbClassManager;
 import ca.eandb.jdcp.server.scheduling.PrioritySerialTaskScheduler;
 import ca.eandb.jdcp.server.scheduling.TaskScheduler;
@@ -68,6 +69,8 @@ public final class JobServerMain {
 	private static void startServer() {
 
 		try {
+
+			JdcpUtil.initialize();
 
 			Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
 			EmbeddedDataSource ds = new EmbeddedDataSource();

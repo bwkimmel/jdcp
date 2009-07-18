@@ -25,6 +25,7 @@
 
 package ca.eandb.jdcp;
 
+import java.io.File;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -39,6 +40,7 @@ import ca.eandb.jdcp.job.ParallelizableJob;
 import ca.eandb.jdcp.remote.AuthenticationService;
 import ca.eandb.jdcp.remote.JobService;
 import ca.eandb.jdcp.server.ServerUtil;
+import ca.eandb.util.io.FileUtil;
 import ca.eandb.util.rmi.Serialized;
 
 /**
@@ -88,6 +90,35 @@ public final class JdcpUtil {
 	 */
 	public static HostService getHostService() {
 		return ServerUtil.getHostService();
+	}
+
+	/**
+	 * Gets the folder at which JDCP application data is stored.
+	 * @return The <code>File</code> representing the folder at which JDCP
+	 * 		application data is stored.
+	 */
+	public static File getHomeDirectory() {
+		initialize();
+		return new File(System.getProperty("jdcp.home"));
+	}
+
+	/**
+	 * Performs initialization for the currently running JDCP
+	 * application.
+	 */
+	public static void initialize() {
+		String homeDirName = System.getProperty("jdcp.home");
+		File homeDir;
+		if (homeDirName != null) {
+			homeDir = new File(homeDirName);
+		} else {
+			homeDir = FileUtil.getApplicationDataDirectory("jdcp");
+			System.setProperty("jdcp.home", homeDir.getPath());
+		}
+		homeDir.mkdir();
+		if (System.getProperty("derby.system.home") == null) {
+			System.setProperty("derby.system.home", homeDir.getPath());
+		}
 	}
 
 	/** This constructor is private to prevent instances from being created. */

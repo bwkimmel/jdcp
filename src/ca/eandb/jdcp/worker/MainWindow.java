@@ -73,6 +73,7 @@ import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
+import ca.eandb.jdcp.JdcpUtil;
 import ca.eandb.jdcp.remote.AuthenticationService;
 import ca.eandb.jdcp.remote.JobService;
 import ca.eandb.util.args.ArgumentProcessor;
@@ -175,6 +176,8 @@ public final class MainWindow extends JFrame {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		JdcpUtil.initialize();
+
 		ConsoleAppender appender = new ConsoleAppender();
 		appender.setLayout(new PatternLayout(PatternLayout.TTCC_CONVERSION_PATTERN));
 		appender.setTarget(ConsoleAppender.SYSTEM_ERR);

@@ -27,6 +27,7 @@ package ca.eandb.jdcp.console;
 
 import org.apache.log4j.PropertyConfigurator;
 
+import ca.eandb.jdcp.JdcpUtil;
 import ca.eandb.jdcp.client.Configuration;
 import ca.eandb.jdcp.client.ConnectCommand;
 import ca.eandb.jdcp.client.ScriptCommand;
@@ -49,6 +50,7 @@ public final class ConsoleMain {
 	 */
 	public static void main(String[] args) {
 
+		JdcpUtil.initialize();
 		PropertyConfigurator.configure(System.getProperties());
 
 		ArgumentProcessor<ConsoleState> argProcessor = new ArgumentProcessor<ConsoleState>("");
