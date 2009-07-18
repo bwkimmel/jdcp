@@ -38,8 +38,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.prefs.Preferences;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -66,6 +68,7 @@ public class ConnectionDialog extends JDialog {
 	private JTextField hostField = null;
 	private JTextField userField = null;
 	private JPasswordField passwordField = null;
+	private JCheckBox rememberPasswordCheckBox = null;
 	private boolean cancelled = false;
 	private boolean timedOut = false;
 	private int timeout = 0;
@@ -85,6 +88,7 @@ public class ConnectionDialog extends JDialog {
 	@Override
 	public void setVisible(boolean b) {
 		if (b) {
+			restore();
 			cancelled = false;
 			timedOut = false;
 			getOkButton().setText("OK");
@@ -191,6 +195,12 @@ public class ConnectionDialog extends JDialog {
 			c.gridx = 0;
 			c.gridy = 3;
 			c.weightx = 1.0D;
+			c.gridwidth = 2;
+			mainPanel.add(getRememberPasswordCheckBox(), c);
+
+			c.gridx = 0;
+			c.gridy = 4;
+			c.weightx = 1.0D;
 			c.weighty = 1.0D;
 			c.gridwidth = 2;
 			mainPanel.add(new JPanel(), c);
@@ -240,6 +250,7 @@ public class ConnectionDialog extends JDialog {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
 					cancelled = false;
 					timedOut = false;
+					save();
 					setVisible(false);
 				}
 			});
@@ -276,7 +287,6 @@ public class ConnectionDialog extends JDialog {
 	private JTextField getHostField() {
 		if (hostField == null) {
 			hostField = new JTextField();
-			hostField.setText("localhost");
 		}
 		return hostField;
 	}
@@ -289,7 +299,6 @@ public class ConnectionDialog extends JDialog {
 	private JTextField getUserField() {
 		if (userField == null) {
 			userField = new JTextField();
-			userField.setText("guest");
 		}
 		return userField;
 	}
@@ -304,6 +313,18 @@ public class ConnectionDialog extends JDialog {
 			passwordField = new JPasswordField();
 		}
 		return passwordField;
+	}
+
+	/**
+	 * This method initializes the remember password check box.
+	 *
+	 * @return javax.swing.JCheckBox
+	 */
+	private JCheckBox getRememberPasswordCheckBox() {
+		if (rememberPasswordCheckBox == null) {
+			rememberPasswordCheckBox = new JCheckBox("Remember password");
+		}
+		return rememberPasswordCheckBox;
 	}
 
 	/**
@@ -372,6 +393,44 @@ public class ConnectionDialog extends JDialog {
 		cancelled = false;
 		timedOut = true;
 		setVisible(false);
+	}
+
+	/**
+	 * Saves field values to preferences.
+	 */
+	private void save() {
+		Preferences pref = Preferences
+				.userNodeForPackage(ConnectionDialog.class);
+
+		pref.put("host", getHost());
+		pref.put("user", getUser());
+
+		boolean remember = getRememberPasswordCheckBox().isSelected();
+		pref.putBoolean("remember", remember);
+		if (remember) {
+			pref.put("password", getPassword());
+		} else {
+			pref.remove("password");
+		}
+	}
+
+	/**
+	 * Restores persisted field values from preferences.
+	 */
+	private void restore() {
+		Preferences pref = Preferences
+				.userNodeForPackage(ConnectionDialog.class);
+
+		getHostField().setText(pref.get("host", "localhost"));
+		getUserField().setText(pref.get("user", "guest"));
+
+		boolean remember = pref.getBoolean("remember", false);
+		getRememberPasswordCheckBox().setSelected(remember);
+		if (remember) {
+			getPasswordField().setText(pref.get("password", ""));
+		} else {
+			getPasswordField().setText("");
+		}
 	}
 
 	/**
