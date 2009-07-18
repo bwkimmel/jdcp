@@ -272,6 +272,7 @@ public class ConnectionDialog extends JDialog {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
 					cancelled = true;
 					timedOut = false;
+					restore();
 					setVisible(false);
 				}
 			});
