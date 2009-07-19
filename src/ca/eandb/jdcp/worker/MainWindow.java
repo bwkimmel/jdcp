@@ -43,6 +43,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -50,6 +51,7 @@ import java.rmi.registry.Registry;
 import java.sql.SQLException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.prefs.Preferences;
 
 import javax.security.auth.login.LoginException;
 import javax.swing.JEditorPane;
@@ -78,6 +80,7 @@ import ca.eandb.jdcp.JdcpUtil;
 import ca.eandb.jdcp.remote.AuthenticationService;
 import ca.eandb.jdcp.remote.JobService;
 import ca.eandb.util.args.ArgumentProcessor;
+import ca.eandb.util.args.BooleanFieldOption;
 import ca.eandb.util.args.IntegerFieldOption;
 import ca.eandb.util.concurrent.BackgroundThreadFactory;
 import ca.eandb.util.io.DocumentOutputStream;
@@ -93,6 +96,7 @@ public final class MainWindow extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(MainWindow.class);  //  @jve:decl-index=0:
+	private static final Preferences pref = Preferences.userNodeForPackage(MainWindow.class);
 	private static final int RECONNECT_TIMEOUT = 60;
 	private JPanel jContentPane = null;
 	private JSplitPane jSplitPane = null;
@@ -113,6 +117,9 @@ public final class MainWindow extends JFrame {
 
 		/** Number of CPUs to use to process worker threads. */
 		public int numberOfCpus = 0;
+
+		/** A value indicating if the program is being run on startup. */
+		public boolean startup = false;
 
 	};
 
@@ -177,6 +184,18 @@ public final class MainWindow extends JFrame {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+
+		ArgumentProcessor<Options> argProcessor = new ArgumentProcessor<Options>();
+		argProcessor.addOption("ncpus", 'n', new IntegerFieldOption<Options>("numberOfCpus"));
+		argProcessor.addOption("startup", 'S', new BooleanFieldOption<Options>("startup"));
+
+		final Options options = new Options();
+		argProcessor.process(args, options);
+
+		if (options.startup && !pref.getBoolean("runOnStartup", true)) {
+			return;
+		}
+
 		JdcpUtil.initialize();
 
 		ConsoleAppender appender = new ConsoleAppender();
@@ -186,16 +205,12 @@ public final class MainWindow extends JFrame {
 		appender.activateOptions();
 		BasicConfigurator.configure(appender);
 
-		ArgumentProcessor<Options> argProcessor = new ArgumentProcessor<Options>();
-		argProcessor.addOption("ncpus", 'n', new IntegerFieldOption<Options>("numberOfCpus"));
-
-		final Options options = new Options();
-		argProcessor.process(args, options);
-
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				MainWindow thisClass = new MainWindow(options);
-				thisClass.setVisible(true);
+				if (!options.startup) {
+					thisClass.setVisible(true);
+				}
 			}
 		});
 	}
@@ -231,7 +246,6 @@ public final class MainWindow extends JFrame {
 		this.addWindowListener(new WindowAdapter() {
 			public void windowOpened(WindowEvent e) {
 				connectConsole();
-				startWorker();
 			}
 		});
 
@@ -251,6 +265,14 @@ public final class MainWindow extends JFrame {
 		});
 		menu.add(item);
 
+		item = new JMenuItem("Preferences", 'p');
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				openPreferences();
+			}
+		});
+		menu.add(item);
+
 		menu.addSeparator();
 
 		item = new JMenuItem("Exit", 'x');
@@ -266,6 +288,8 @@ public final class MainWindow extends JFrame {
 		if (SYSTEM_TRAY_SUPPORTED) {
 			initializeSystemTray();
 		}
+
+		startWorker();
 	}
 
 	/**
@@ -276,7 +300,8 @@ public final class MainWindow extends JFrame {
 	private void initializeSystemTray() {
 		if (SystemTray.isSupported()) {
 
-			Image image = Toolkit.getDefaultToolkit().getImage("jdcp-32.png");
+			URL imageUrl = MainWindow.class.getResource("resources/jdcp-32.png");
+			Image image = Toolkit.getDefaultToolkit().getImage(imageUrl);
 			final TrayIcon icon = new TrayIcon(image, "JDCP Worker");
 			icon.setImageAutoSize(true);
 
@@ -332,6 +357,15 @@ public final class MainWindow extends JFrame {
 			}
 
 		}
+	}
+
+	private void openPreferences() {
+		final PreferencesDialog dialog = new PreferencesDialog(this);
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				dialog.setVisible(true);
+			}
+		});
 	}
 
 	private void changeConnection() {

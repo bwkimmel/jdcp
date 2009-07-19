@@ -126,6 +126,7 @@ public class ConnectionDialog extends JDialog {
 				}
 			}
 		}, AWTEvent.KEY_EVENT_MASK | AWTEvent.MOUSE_EVENT_MASK);
+		restore();
 	}
 
 	private void cancelTimeout() {

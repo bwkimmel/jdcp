@@ -100,6 +100,7 @@ Section Worker SEC0002
     SetOutPath $INSTDIR
     CreateShortcut "$SMPROGRAMS\$StartMenuGroup\JDCP Worker.lnk" "$SYSDIR\javaw.exe" "-Dlog4j.configuration=file:./etc/log4j.properties -jar jdcp-worker.jar" "$INSTDIR\jdcp.ico"
     WriteRegStr HKLM "${REGKEY}\Components" Worker 1
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "JDCP Worker" '"$SYSDIR\javaw.exe" -Dlog4j.configuration="$INSTDIR\etc\log4j.properties" -jar "$INSTDIR\jdcp-worker.jar" --startup'
 SectionEnd
 
 Section /o Client SEC0003
@@ -150,6 +151,7 @@ Section /o -un.Worker UNSEC0002
     Delete /REBOOTOK $INSTDIR\lib\jnlp.jar
     Delete /REBOOTOK $INSTDIR\jdcp-worker.jar
     DeleteRegValue HKLM "${REGKEY}\Components" Worker
+    DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "JDCP Worker"
 SectionEnd
 
 Section /o -un.Server UNSEC0001

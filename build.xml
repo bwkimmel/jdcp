@@ -77,6 +77,11 @@
 				<path location="${eandb.util.jar.file}"/>
 			</classpath>
 		</javac>
+        <copy todir="${classes.dir}">
+            <fileset dir="${src.dir}">
+                <include name="**/resources/**"/>
+            </fileset>
+        </copy>
 	</target>
 
 	<target name="jar-common" depends="compile">
