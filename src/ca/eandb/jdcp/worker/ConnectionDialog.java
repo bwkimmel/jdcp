@@ -38,8 +38,12 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.security.SecureRandom;
 import java.util.prefs.Preferences;
 
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.spec.IvParameterSpec;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
@@ -48,6 +52,8 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+
+import org.apache.log4j.Logger;
 
 /**
  * A <code>JDialog</code> for prompting the user for connection information.
@@ -59,6 +65,8 @@ public class ConnectionDialog extends JDialog {
 	 * Serialization version ID.
 	 */
 	private static final long serialVersionUID = -5563554710634496583L;
+
+	private static final Logger logger = Logger.getLogger(ConnectionDialog.class);
 
 	private JPanel jContentPane = null;
 	private JPanel mainPanel = null;
@@ -408,11 +416,31 @@ public class ConnectionDialog extends JDialog {
 		pref.put("user", getUser());
 
 		boolean remember = getRememberPasswordCheckBox().isSelected();
-		pref.putBoolean("remember", remember);
 		if (remember) {
-			pref.put("password", getPassword());
+			try {
+				Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+				KeyGenerator keygen = KeyGenerator.getInstance("AES");
+				SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+				random.setSeed(new byte[]{
+					0x60, (byte) 0xFD, 0x28, 0x07, 0x35, 0x4A, 0x0D, 0x3B
+				});
+				byte[] iv = new byte[16];
+				random.nextBytes(iv);
+				IvParameterSpec spec = new IvParameterSpec(iv);
+				keygen.init(128, random);
+				cipher.init(Cipher.ENCRYPT_MODE, keygen.generateKey(), spec);
+				byte[] clearText = getPassword().getBytes();
+				byte[] cipherText = cipher.doFinal(clearText);
+				pref.putByteArray("password", cipherText);
+				pref.putBoolean("remember", true);
+			} catch (Exception e) {
+				logger.error("Could not encrypt password", e);
+				pref.remove("password");
+				pref.putBoolean("remember", false);
+			}
 		} else {
 			pref.remove("password");
+			pref.putBoolean("remember", false);
 		}
 	}
 
@@ -427,10 +455,33 @@ public class ConnectionDialog extends JDialog {
 		getUserField().setText(pref.get("user", "guest"));
 
 		boolean remember = pref.getBoolean("remember", false);
+		boolean passwordSet = false;
 		getRememberPasswordCheckBox().setSelected(remember);
 		if (remember) {
-			getPasswordField().setText(pref.get("password", ""));
-		} else {
+			byte[] cipherText = pref.getByteArray("password", null);
+			if (cipherText != null) {
+				try {
+					Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+					KeyGenerator keygen = KeyGenerator.getInstance("AES");
+					SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+					random.setSeed(new byte[]{
+						0x60, (byte) 0xFD, 0x28, 0x07, 0x35, 0x4A, 0x0D, 0x3B
+					});
+					byte[] iv = new byte[16];
+					random.nextBytes(iv);
+					IvParameterSpec spec = new IvParameterSpec(iv);
+					keygen.init(128, random);
+					cipher.init(Cipher.DECRYPT_MODE, keygen.generateKey(), spec);
+					byte[] clearText = cipher.doFinal(cipherText);
+					String password = new String(clearText);
+					getPasswordField().setText(password);
+					passwordSet = true;
+				} catch (Exception e) {
+					logger.error("Could not decrypt password", e);
+				}
+			}
+		}
+		if (!passwordSet) {
 			getPasswordField().setText("");
 		}
 	}
