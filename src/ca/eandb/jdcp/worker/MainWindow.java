@@ -42,6 +42,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -351,13 +352,42 @@ public final class MainWindow extends JFrame {
 	}
 
 	private JobService connect(int timeout) {
-		ConnectionDialog dialog = getConnectionDialog();
+		final ConnectionDialog dialog = getConnectionDialog();
 		JobService service = null;
 		do {
-			dialog.setTimeout(timeout);
-			dialog.setVisible(true);
-			if (dialog.isCancelled()) {
-				break;
+			if (MainWindow.this.isVisible()) {
+				dialog.setTimeout(timeout);
+				try {
+					SwingUtilities.invokeAndWait(new Runnable() {
+						public void run() {
+							dialog.setVisible(true);
+						}
+					});
+					if (dialog.isCancelled()) {
+						break;
+					}
+				} catch (InterruptedException e) {
+					break;
+				} catch (InvocationTargetException e) {
+					logger.error("Exception raised while displaying connection dialog.", e);
+					break;
+				}
+			} else {
+				final Thread thisThread = Thread.currentThread();
+				WindowAdapter l = new WindowAdapter() {
+					public void windowActivated(WindowEvent e) {
+						thisThread.interrupt();
+					}
+				};
+				MainWindow.this.addWindowListener(l);
+				try {
+					Thread.sleep(1000 * timeout);
+				} catch (InterruptedException e) {
+					timeout = 0;
+					continue;
+				} finally {
+					MainWindow.this.removeWindowListener(l);
+				}
 			}
 			service = connect(dialog.getHost(), dialog.getUser(), dialog.getPassword(), !dialog.isTimedOut());
 			if (!dialog.isTimedOut()) {
@@ -395,20 +425,41 @@ public final class MainWindow extends JFrame {
 	private void startWorker() {
 		JobServiceFactory serviceFactory = new JobServiceFactory() {
 
-			private ConnectionTask task = new ConnectionTask();
+			private boolean first = true;
 
 			public JobService connect() {
-				try {
-					SwingUtilities.invokeAndWait(task);
-				} catch (Exception e) {
-					logger.warn("Exception thrown trying to reconnect", e);
-					throw new RuntimeException(e);
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						setStatus("Connecting...");
+					}
+				});
+				JobService service = first ? MainWindow.this.connect()
+						: reconnect();
+				if (service == null) {
+					setVisible(false);
+					throw new RuntimeException("Unable to connect");
 				}
-				if (task.service == null) {
-					throw new RuntimeException("No service.");
-				}
-				return task.service;
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						setStatus("Connected");
+					}
+				});
+				first = false;
+				return service;
 			}
+//
+//			public JobService connect() {
+//				try {
+//					SwingUtilities.invokeAndWait(task);
+//				} catch (Exception e) {
+//					logger.warn("Exception thrown trying to reconnect", e);
+//					throw new RuntimeException(e);
+//				}
+//				if (task.service == null) {
+//					throw new RuntimeException("No service.");
+//				}
+//				return task.service;
+//			}
 
 		};
 
@@ -489,24 +540,6 @@ public final class MainWindow extends JFrame {
 		MutableAttributeSet attributes = new SimpleAttributeSet();
 		StyleConstants.setForeground(attributes, Color.RED);
 		System.setErr(new PrintStream(new DocumentOutputStream(document, attributes)));
-	}
-
-	private class ConnectionTask implements Runnable {
-
-		private boolean first = true;
-		private JobService service;
-
-		public void run() {
-			setStatus("Connecting...");
-			service = first ? MainWindow.this.connect() : reconnect();
-			if (service == null) {
-				setVisible(false);
-				throw new RuntimeException("Unable to connect");
-			}
-			setStatus("Connected");
-			first = false;
-		}
-
 	}
 
 }
