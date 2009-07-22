@@ -293,6 +293,10 @@ public final class JobServer implements JobService {
 	public BitSet getFinishedTasks(UUID[] jobIds, int[] taskIds)
 			throws IllegalArgumentException, SecurityException, RemoteException {
 
+		if (jobIds == null || taskIds == null) {
+			return new BitSet(0);
+		}
+
 		if (jobIds.length != taskIds.length) {
 			throw new IllegalArgumentException("jobIds.length != taskIds.length");
 		}
