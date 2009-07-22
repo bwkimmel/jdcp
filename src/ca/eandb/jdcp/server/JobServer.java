@@ -35,6 +35,7 @@ import java.nio.ByteBuffer;
 import java.rmi.RemoteException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.BitSet;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -284,6 +285,28 @@ public final class JobServer implements JobService {
 		if (sched != null) {
 			sched.reportException(taskId, e);
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.remote.JobService#getFinishedTasks(java.util.UUID[], int[])
+	 */
+	public BitSet getFinishedTasks(UUID[] jobIds, int[] taskIds)
+			throws IllegalArgumentException, SecurityException, RemoteException {
+
+		if (jobIds.length != taskIds.length) {
+			throw new IllegalArgumentException("jobIds.length != taskIds.length");
+		}
+
+		BitSet finished = new BitSet(jobIds.length);
+
+		for (int i = 0; i < jobIds.length; i++) {
+			UUID jobId = jobIds[i];
+			int taskId = taskIds[i];
+			finished.set(i, jobId == null || !scheduler.contains(jobId, taskId));
+		}
+
+		return finished;
+
 	}
 
 	/* (non-Javadoc)

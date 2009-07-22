@@ -41,6 +41,7 @@ grant Principal ca.eandb.util.auth.RolePrincipal "jdcp.worker" {
 	permission ca.eandb.jdcp.security.JdcpPermission "requestTask";
 	permission ca.eandb.jdcp.security.JdcpPermission "submitTaskResults";
 	permission ca.eandb.jdcp.security.JdcpPermission "reportException";
+	permission ca.eandb.jdcp.security.JdcpPermission "getFinishedTasks";
 };
 
 grant Principal ca.eandb.util.auth.RolePrincipal "jdcp.admin" {

@@ -27,6 +27,7 @@ package ca.eandb.jdcp.remote;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.BitSet;
 import java.util.UUID;
 
 
@@ -270,5 +271,7 @@ public interface JobService extends Remote {
 	 * @throws RemoteException If a communication error occurs.
 	 */
 	void setJobPriority(UUID jobId, int priority) throws IllegalArgumentException, SecurityException, RemoteException;
+
+	BitSet getFinishedTasks(UUID[] jobIds, int[] taskIds) throws IllegalArgumentException, SecurityException, RemoteException;
 
 }

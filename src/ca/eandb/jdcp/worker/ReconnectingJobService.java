@@ -25,7 +25,12 @@
 
 package ca.eandb.jdcp.worker;
 
+import java.rmi.ConnectException;
+import java.rmi.ConnectIOException;
+import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
+import java.rmi.UnknownHostException;
+import java.util.BitSet;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
@@ -169,7 +174,7 @@ public final class ReconnectingJobService implements JobService {
 				service.reportException(jobId, taskId, e);
 				return;
 			} catch (RemoteException e1) {
-				logger.error("Lost connection", e);
+				logger.error("Lost connection", e1);
 			}
 		}
 	}
@@ -304,6 +309,28 @@ public final class ReconnectingJobService implements JobService {
 				service.submitTaskResults(jobId, taskId, results);
 				return;
 			} catch (RemoteException e) {
+				logger.error("Lost connection", e);
+			}
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.remote.JobService#getFinishedTasks(java.util.UUID[], int[])
+	 */
+	public BitSet getFinishedTasks(UUID[] jobIds, int[] taskIds)
+			throws IllegalArgumentException, SecurityException, RemoteException {
+		JobService service = null;
+		while (true) {
+			try {
+				service = getJobService(service);
+				return service.getFinishedTasks(jobIds, taskIds);
+			} catch (NoSuchObjectException e) {
+				logger.error("Lost connection", e);
+			} catch (ConnectException e) {
+				logger.error("Lost connection", e);
+			} catch (ConnectIOException e) {
+				logger.error("Lost connection", e);
+			} catch (UnknownHostException e) {
 				logger.error("Lost connection", e);
 			}
 		}

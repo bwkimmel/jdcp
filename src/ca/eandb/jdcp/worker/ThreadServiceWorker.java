@@ -26,9 +26,13 @@
 package ca.eandb.jdcp.worker;
 
 import java.sql.SQLException;
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
@@ -103,6 +107,9 @@ public final class ThreadServiceWorker implements Runnable {
 
 		runThread = Thread.currentThread();
 
+		FinishedTaskPoller poller = new FinishedTaskPoller();
+		executor.execute(poller);
+
 		while (!shutdownPending) {
 			try {
 				Worker worker = getWorker();
@@ -112,8 +119,69 @@ public final class ThreadServiceWorker implements Runnable {
 			}
 		}
 
+		poller.shutdown();
 		runThread = null;
 
+	}
+
+	private class FinishedTaskPoller implements Runnable {
+
+		private boolean shutdown = false;
+
+		private Thread pollingThread = null;
+
+		public synchronized void shutdown() {
+			shutdown = true;
+			Thread thread = pollingThread;
+			if (thread != null) {
+				thread.interrupt();
+			}
+		}
+
+		public void run() {
+			pollingThread = Thread.currentThread();
+
+			Worker[] workers;
+			UUID[] jobIds;
+			int[] taskIds;
+			boolean lastPollOk = true;
+
+			while (!shutdown) {
+				synchronized (activeWorkers) {
+					int n = activeWorkers.size();
+					workers = new Worker[n];
+					jobIds = new UUID[n];
+					taskIds = new int[n];
+					int i = 0;
+					for (Worker worker : activeWorkers) {
+						workers[i] = worker;
+						jobIds[i] = worker.getCurrentJobId();
+						taskIds[i++] = worker.getCurrentTaskId();
+					}
+				}
+
+				if (workers.length > 0) {
+					try {
+						BitSet finished = service.getFinishedTasks(jobIds, taskIds);
+						lastPollOk = true;
+						for (int i = finished.nextSetBit(0); i >= 0; i = finished
+								.nextSetBit(i + 1)) {
+							workers[i].cancel(jobIds[i], taskIds[i]);
+						}
+					} catch (Exception e) {
+						if (lastPollOk) {
+							logger.warn("Could not poll for finished tasks.", e);
+							lastPollOk = false;
+						}
+					}
+				}
+
+				try {
+					Thread.sleep(finishedTaskPollingInterval);
+				} catch (InterruptedException e) {}
+			}
+			pollingThread = null;
+		}
 	}
 
 	/**
@@ -421,6 +489,27 @@ public final class ThreadServiceWorker implements Runnable {
 			this.monitor = monitor;
 		}
 
+		/**
+		 * Signals this worker that it should cancel the currently running
+		 * task if it the specified task.
+		 * @param jobId The <code>UUID</code> of the job whose task is to be
+		 * 		cancelled.
+		 * @param taskId The ID of the task to be cancelled.
+		 */
+		public void cancel(UUID jobId, int taskId) {
+			if (jobId == currentJobId && taskId == currentTaskId) {
+				monitor.cancel();
+			}
+		}
+
+		public UUID getCurrentJobId() {
+			return currentJobId;
+		}
+
+		public int getCurrentTaskId() {
+			return currentTaskId;
+		}
+
 		/* (non-Javadoc)
 		 * @see java.lang.Runnable#run()
 		 */
@@ -428,6 +517,7 @@ public final class ThreadServiceWorker implements Runnable {
 
 			try {
 
+				this.monitor.reset();
 				this.monitor.notifyIndeterminantProgress();
 				this.monitor.notifyStatusChanged("Requesting task...");
 
@@ -440,10 +530,14 @@ public final class ThreadServiceWorker implements Runnable {
 
 					TaskDescription taskDesc = service.requestTask();
 					UUID jobId = taskDesc.getJobId();
+					int taskId = taskDesc.getTaskId();
 
 					if (jobId != null) { // server has a task to perform.
 
 						idleEnd(); // Signal that idling is complete.
+						currentJobId = jobId;
+						currentTaskId = taskId;
+						activeWorkers.add(this);
 
 						this.monitor.notifyStatusChanged("Obtaining task worker...");
 						TaskWorker worker;
@@ -468,13 +562,13 @@ public final class ThreadServiceWorker implements Runnable {
 							Object task = taskDesc.getTask().deserialize(loader);
 							results = worker.performTask(task, monitor);
 						} catch (Exception e) {
-							service.reportException(jobId, taskDesc.getTaskId(), e);
+							service.reportException(jobId, taskId, e);
 							results = null;
 						}
 
 						if (results != null && !monitor.isCancelPending()) {
 							this.monitor.notifyStatusChanged("Submitting task results...");
-							service.submitTaskResults(jobId, taskDesc.getTaskId(), new Serialized<Object>(results));
+							service.submitTaskResults(jobId, taskId, new Serialized<Object>(results));
 						}
 
 					} else { // server has no tasks to perform.
@@ -495,6 +589,9 @@ public final class ThreadServiceWorker implements Runnable {
 			} finally {
 
 				this.monitor.notifyComplete();
+				activeWorkers.remove(this);
+				currentJobId = null;
+				currentTaskId = 0;
 				workerQueue.add(this);
 
 			}
@@ -640,6 +737,10 @@ public final class ThreadServiceWorker implements Runnable {
 		 */
 		private final ProgressMonitorWrapper monitor;
 
+		private UUID currentJobId = null;
+
+		private int currentTaskId = 0;
+
 	}
 
 	/**
@@ -658,6 +759,8 @@ public final class ThreadServiceWorker implements Runnable {
 		 */
 		private final int workerId;
 
+		private boolean cancelPending = false;
+
 		/**
 		 * Creates a new <code>ProgressMonitorWrapper</code>.
 		 * @param workerId The id of this worker (used to determine if the
@@ -670,8 +773,16 @@ public final class ThreadServiceWorker implements Runnable {
 			this.monitor = monitor;
 		}
 
+		public void reset() {
+			cancelPending = false;
+		}
+
+		public void cancel() {
+			cancelPending = true;
+		}
+
 		public boolean isWorkerShutdownPending() {
-			return shutdownPending || (workerId >= maxWorkers);
+			return cancelPending || shutdownPending || (workerId >= maxWorkers);
 		}
 
 		/* (non-Javadoc)
@@ -807,5 +918,14 @@ public final class ThreadServiceWorker implements Runnable {
 	 * idling.
 	 */
 	private int poller = -1;
+
+	/**
+	 * The <code>Set</code> of <code>Worker</code>s that are currently
+	 * processing tasks.  This is used by the thread responsible for polling
+	 * the server to determine if any of those tasks are already complete.
+	 */
+	private final Set<Worker> activeWorkers = Collections.synchronizedSet(new HashSet<Worker>());
+
+	private final long finishedTaskPollingInterval = 10000;
 
 }

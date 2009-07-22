@@ -30,6 +30,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.BitSet;
 import java.util.UUID;
 
 import javax.security.auth.Subject;
@@ -504,6 +505,35 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 			}, null);
 		} catch (PrivilegedActionException e) {
 			if (e.getException() instanceof SecurityException) {
+				throw (SecurityException) e.getException();
+			} else if (e.getException() instanceof RemoteException) {
+				throw (RemoteException) e.getException();
+			} else {
+				throw new UnexpectedException(e);
+			}
+		}
+
+	}
+
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.remote.JobService#getFinishedTasks(java.util.UUID[], int[])
+	 */
+	public BitSet getFinishedTasks(final UUID[] jobIds, final int[] taskIds)
+			throws SecurityException, RemoteException {
+
+		try {
+			return (BitSet) Subject.doAsPrivileged(user, new PrivilegedExceptionAction<BitSet>() {
+
+				public BitSet run() throws Exception {
+					AccessController.checkPermission(new JdcpPermission("getFinishedTasks"));
+					return service.getFinishedTasks(jobIds, taskIds);
+				}
+
+			}, null);
+		} catch (PrivilegedActionException e) {
+			if (e.getException() instanceof IllegalArgumentException) {
+				throw (IllegalArgumentException) e.getException();
+			} else if (e.getException() instanceof SecurityException) {
 				throw (SecurityException) e.getException();
 			} else if (e.getException() instanceof RemoteException) {
 				throw (RemoteException) e.getException();
