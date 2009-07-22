@@ -125,8 +125,8 @@ public final class WorkerState {
 		logger.info("Starting worker");
 
 		ProgressStateFactory factory = new ProgressStateFactory();
-		worker = new ThreadServiceWorker(serviceFactory, numberOfCpus,
-				threadPool, factory);
+		worker = new ThreadServiceWorker(serviceFactory, threadPool, factory);
+		worker.setMaxWorkers(numberOfCpus);
 
 		taskProgressStates = factory.getProgressStates();
 
@@ -187,6 +187,25 @@ public final class WorkerState {
 			logger.error("Login failed.", e);
 		}
 		return service;
+	}
+
+	/**
+	 * Sets the maximum number of concurrent workers.
+	 * @param numberOfCpus The number of CPUs to use (zero to use all available
+	 * 		CPUs on the machine).
+	 */
+	@CommandArgument
+	public void setcpus(int numberOfCpus) {
+		if (worker == null) {
+			System.err.println("Worker not running.");
+			return;
+		}
+		int availableCpus = Runtime.getRuntime().availableProcessors();
+		if (numberOfCpus <= 0 || numberOfCpus > availableCpus) {
+			numberOfCpus = availableCpus;
+		}
+		System.out.printf("Setting number of CPUs to %d\n", numberOfCpus);
+		worker.setMaxWorkers(numberOfCpus);
 	}
 
 	/**

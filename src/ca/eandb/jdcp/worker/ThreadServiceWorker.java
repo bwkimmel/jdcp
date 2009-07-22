@@ -25,7 +25,6 @@
 
 package ca.eandb.jdcp.worker;
 
-import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -44,7 +43,6 @@ import org.apache.log4j.Logger;
 
 import ca.eandb.jdcp.job.TaskDescription;
 import ca.eandb.jdcp.job.TaskWorker;
-import ca.eandb.jdcp.remote.JobService;
 import ca.eandb.util.UnexpectedException;
 import ca.eandb.util.classloader.ClassLoaderStrategy;
 import ca.eandb.util.classloader.StrategyClassLoader;
@@ -66,19 +64,17 @@ public final class ThreadServiceWorker implements Runnable {
 	 * @param masterHost The URL of the master.
 	 * @param idleTime The time (in seconds) to idle when no task is
 	 * 		available.
-	 * @param maxConcurrentWorkers The maximum number of concurrent worker
-	 * 		threads to allow.
 	 * @param executor The <code>Executor</code> to use to process tasks.
 	 * @param monitorFactory The <code>ProgressMonitorFactory</code> to use to
 	 * 		create <code>ProgressMonitor</code>s for worker tasks.
 	 */
-	public ThreadServiceWorker(JobServiceFactory serviceFactory, int maxConcurrentWorkers, Executor executor, ProgressMonitorFactory monitorFactory) {
+	public ThreadServiceWorker(JobServiceFactory serviceFactory, Executor executor, ProgressMonitorFactory monitorFactory) {
 
-		assert(maxConcurrentWorkers > 0);
+		assert(maxWorkers > 0);
 
-		this.serviceFactory = serviceFactory;
+		this.service = new ReconnectingJobService(serviceFactory);
 		this.executor = executor;
-		this.maxConcurrentWorkers = maxConcurrentWorkers;
+		this.maxWorkers = Runtime.getRuntime().availableProcessors();
 		this.monitorFactory = monitorFactory;
 
 	}
@@ -101,29 +97,14 @@ public final class ThreadServiceWorker implements Runnable {
 	public synchronized void run() {
 
 		runThread = Thread.currentThread();
-		reconnectPending = true;
-
-		this.initializeWorkers(maxConcurrentWorkers);
 
 		while (!shutdownPending) {
-
 			try {
-				while (!Thread.interrupted()) {
-					Worker worker = this.workerQueue.take();
-					if (reconnectPending) {
-						this.initializeService();
-						if (shutdownPending) {
-							runThread = null;
-							return;
-						}
-						reconnectPending = false;
-					}
-					this.executor.execute(worker);
-				}
+				Worker worker = getWorker();
+				executor.execute(worker);
 			} catch (InterruptedException e) {
 				/* nothing to do. */
 			}
-
 		}
 
 		runThread = null;
@@ -143,32 +124,32 @@ public final class ThreadServiceWorker implements Runnable {
 	}
 
 	/**
-	 * Schedules a reconnection to the <code>JobService</code>.
+	 * Sets the maximum number of concurrent workers.
+	 * @param maxWorkers The maximum number of concurrent workers.
 	 */
-	private void reconnect() {
-		reconnectPending = true;
-	}
-
-	/**
-	 * Initializes the worker queue with the specified number of workers.
-	 * @param numWorkers The number of workers to create.
-	 * @param parentMonitor The <code>ProgressMonitor</code> to use to create
-	 * 		child <code>ProgressMonitor</code>s for each <code>Worker</code>.
-	 */
-	private void initializeWorkers(int numWorkers) {
-		for (int i = 0; i < numWorkers; i++) {
-			String title = String.format("Worker (%d)", i + 1);
-			ProgressMonitor monitor = new ProgressMonitorWrapper(monitorFactory.createProgressMonitor(title));
-			workerQueue.add(new Worker(monitor));
+	public void setMaxWorkers(int maxWorkers) {
+		synchronized (workerQueue) {
+			this.maxWorkers = maxWorkers;
+			while (numWorkers < maxWorkers) {
+				String title = String.format("Worker (%d)", numWorkers + 1);
+				ProgressMonitor monitor = new ProgressMonitorWrapper(numWorkers++, monitorFactory.createProgressMonitor(title));
+				workerQueue.add(new Worker(monitor));
+			}
 		}
 	}
 
 	/**
-	 * Attempt to initialize a connection to the master service.
-	 * @return A value indicating whether the operation succeeded.
+	 * Gets the next worker available to process a task.
+	 * @return The next available worker.
+	 * @throws InterruptedException If the thread is interrupted while waiting
+	 * 		for an available worker.
 	 */
-	private void initializeService() {
-		this.service = serviceFactory.connect();
+	private Worker getWorker() throws InterruptedException {
+		while (numWorkers > maxWorkers) {
+			workerQueue.take();
+			numWorkers--;
+		}
+		return workerQueue.take();
 	}
 
 	/**
@@ -339,10 +320,9 @@ public final class ThreadServiceWorker implements Runnable {
 	 * @return The <code>TaskWorker</code> to process tasks for the job with
 	 * 		the specified <code>UUID</code>, or <code>null</code> if the job
 	 * 		is invalid or has already been completed.
-	 * @throws RemoteException
 	 * @throws ClassNotFoundException
 	 */
-	private TaskWorker getTaskWorker(UUID jobId) throws RemoteException, ClassNotFoundException {
+	private TaskWorker getTaskWorker(UUID jobId) throws ClassNotFoundException {
 
 		WorkerCacheEntry entry = null;
 		boolean hit;
@@ -465,8 +445,8 @@ public final class ThreadServiceWorker implements Runnable {
 							results = null;
 						}
 
-						this.monitor.notifyStatusChanged("Submitting task results...");
-						if (results != null) {
+						if (results != null && !monitor.isCancelPending()) {
+							this.monitor.notifyStatusChanged("Submitting task results...");
 							service.submitTaskResults(jobId, taskDesc.getTaskId(), new Serialized<Object>(results));
 						}
 
@@ -481,21 +461,11 @@ public final class ThreadServiceWorker implements Runnable {
 
 					}
 
-					this.monitor.notifyComplete();
-
 				}
-
-			} catch (RemoteException e) {
-
-				logger.error("Could not communicate with master.", e);
-
-				this.monitor.notifyStatusChanged("Failed to communicate with master.");
-				reconnect();
-
-				this.monitor.notifyCancelled();
 
 			} finally {
 
+				this.monitor.notifyComplete();
 				workerQueue.add(this);
 
 			}
@@ -554,56 +524,74 @@ public final class ThreadServiceWorker implements Runnable {
 		private final ProgressMonitor monitor;
 
 		/**
+		 * The id for this worker (used to determine if the worker should shut
+		 * down if the maximum number of concurrent workers is reduced).
+		 */
+		private final int workerId;
+
+		/**
 		 * Creates a new <code>ProgressMonitorWrapper</code>.
+		 * @param workerId The id of this worker (used to determine if the
+		 * 		worker should shut down if the maximum number of concurrent
+		 * 		workers is reduced).
 		 * @param monitor The <code>ProgressMonitor</code> to wrap.
 		 */
-		public ProgressMonitorWrapper(ProgressMonitor monitor) {
+		public ProgressMonitorWrapper(int workerId, ProgressMonitor monitor) {
+			this.workerId = workerId;
 			this.monitor = monitor;
+		}
+
+		public boolean isWorkerShutdownPending() {
+			return shutdownPending || (workerId >= maxWorkers);
 		}
 
 		/* (non-Javadoc)
 		 * @see ca.eandb.util.progress.ProgressMonitor#isCancelPending()
 		 */
 		public boolean isCancelPending() {
-			return shutdownPending;
+			return isWorkerShutdownPending() || monitor.isCancelPending();
 		}
 
 		/* (non-Javadoc)
 		 * @see ca.eandb.util.progress.ProgressMonitor#notifyCancelled()
 		 */
 		public void notifyCancelled() {
-			/* ignore. */
+			if (isWorkerShutdownPending()) {
+				monitor.notifyCancelled();
+			}
 		}
 
 		/* (non-Javadoc)
 		 * @see ca.eandb.util.progress.ProgressMonitor#notifyComplete()
 		 */
 		public void notifyComplete() {
-			/* ignore. */
+			if (isWorkerShutdownPending()) {
+				monitor.notifyComplete();
+			}
 		}
 
 		/* (non-Javadoc)
 		 * @see ca.eandb.util.progress.ProgressMonitor#notifyIndeterminantProgress()
 		 */
 		public boolean notifyIndeterminantProgress() {
-			monitor.notifyIndeterminantProgress();
-			return !shutdownPending;
+			return monitor.notifyIndeterminantProgress()
+					&& !isWorkerShutdownPending();
 		}
 
 		/* (non-Javadoc)
 		 * @see ca.eandb.util.progress.ProgressMonitor#notifyProgress(int, int)
 		 */
 		public boolean notifyProgress(int value, int maximum) {
-			monitor.notifyProgress(value, maximum);
-			return !shutdownPending;
+			return monitor.notifyProgress(value, maximum)
+				&& !isWorkerShutdownPending();
 		}
 
 		/* (non-Javadoc)
 		 * @see ca.eandb.util.progress.ProgressMonitor#notifyProgress(double)
 		 */
 		public boolean notifyProgress(double progress) {
-			monitor.notifyProgress(progress);
-			return !shutdownPending;
+			return monitor.notifyProgress(progress)
+				&& !isWorkerShutdownPending();
 		}
 
 		/* (non-Javadoc)
@@ -618,12 +606,6 @@ public final class ThreadServiceWorker implements Runnable {
 	/** The <code>Logger</code> to write log messages to. */
 	private static final Logger logger = Logger.getLogger(ThreadServiceWorker.class);
 
-	/**
-	 * The <code>JobServiceFactory</code> to use to connect to a
-	 * <code>JobService</code>.
-	 */
-	private final JobServiceFactory serviceFactory;
-
 	/** The <code>Executor</code> to use to process tasks. */
 	private final Executor executor;
 
@@ -637,7 +619,7 @@ public final class ThreadServiceWorker implements Runnable {
 	 * The <code>JobService</code> to obtain tasks from and submit
 	 * results to.
 	 */
-	private JobService service = null;
+	private final ReconnectingJobService service;
 
 	/**
 	 * The <code>Thread</code> that is currently executing the {@link #run()}
@@ -648,11 +630,11 @@ public final class ThreadServiceWorker implements Runnable {
 	/** A value indicating if thread is about to be shut down. */
 	private boolean shutdownPending = false;
 
-	/** A value indicating if the worker should reconnect. */
-	private boolean reconnectPending;
-
 	/** The maximum number of workers that may be executing simultaneously. */
-	private final int maxConcurrentWorkers;
+	private int maxWorkers;
+
+	/** The number of currently active workers. */
+	private int numWorkers;
 
 	/** A queue containing the available workers. */
 	private final BlockingQueue<Worker> workerQueue = new LinkedBlockingQueue<Worker>();

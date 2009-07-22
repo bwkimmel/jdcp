@@ -30,11 +30,17 @@ import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.NumberFormat;
 import java.util.prefs.Preferences;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 /**
@@ -42,6 +48,8 @@ import javax.swing.JPanel;
  *
  */
 public final class PreferencesDialog extends JDialog {
+
+	private static final Preferences pref = Preferences.userNodeForPackage(MainWindow.class);  //  @jve:decl-index=0:
 
 	private static final long serialVersionUID = 1L;
 	private JPanel jContentPane = null;
@@ -51,12 +59,14 @@ public final class PreferencesDialog extends JDialog {
 	private JButton okButton;
 	private JButton cancelButton;
 	private boolean cancelled;
+	private JCheckBox limitCpusCheckBox;
+	private JFormattedTextField maxCpusTextField;
 
 	/**
 	 * @param owner
 	 */
 	public PreferencesDialog(Frame owner) {
-		super(owner);
+		super(owner, true);
 		initialize();
 	}
 
@@ -83,18 +93,34 @@ public final class PreferencesDialog extends JDialog {
 	 * Updates the form elements based on preferences.
 	 */
 	private void readPreferences() {
-		Preferences pref = Preferences.userNodeForPackage(MainWindow.class);
 		boolean runOnStartup = pref.getBoolean("runOnStartup", true);
 		getRunOnStartupCheckBox().setSelected(runOnStartup);
+
+		int maxCpus = pref.getInt("maxCpus", 0);
+		if (maxCpus <= 0) {
+			getLimitCpusCheckBox().setSelected(false);
+			getMaxCpusTextField().setValue(Runtime.getRuntime().availableProcessors());
+			getMaxCpusTextField().setEnabled(false);
+		} else {
+			getLimitCpusCheckBox().setSelected(true);
+			getMaxCpusTextField().setValue(maxCpus);
+			getMaxCpusTextField().setEnabled(true);
+		}
 	}
 
 	/**
 	 * Writes the form values to preferences.
 	 */
 	private void writePreferences() {
-		Preferences pref = Preferences.userNodeForPackage(MainWindow.class);
 		boolean runOnStartup = getRunOnStartupCheckBox().isSelected();
 		pref.putBoolean("runOnStartup", runOnStartup);
+
+		if (getLimitCpusCheckBox().isSelected()) {
+			int maxCpus = ((Number) getMaxCpusTextField().getValue()).intValue();
+			pref.putInt("maxCpus", maxCpus);
+		} else {
+			pref.putInt("maxCpus", 0);
+		}
 	}
 
 	/**
@@ -163,9 +189,11 @@ public final class PreferencesDialog extends JDialog {
 			okButton.setMnemonic('O');
 			okButton.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
-					cancelled = false;
-					writePreferences();
-					setVisible(false);
+					if (validateFields()) {
+						cancelled = false;
+						writePreferences();
+						setVisible(false);
+					}
 				}
 			});
 		}
@@ -217,6 +245,27 @@ public final class PreferencesDialog extends JDialog {
 			c.gridy = 1;
 			c.gridwidth = 2;
 			c.weightx = 1.0D;
+			c.weighty = 0.0D;
+			mainPanel.add(getLimitCpusCheckBox(), c);
+
+			c.gridx = 0;
+			c.gridy = 2;
+			c.gridwidth = 1;
+			c.weightx = 0.0D;
+			c.weighty = 0.0D;
+			mainPanel.add(new JLabel("Maximum CPUs"), c);
+
+			c.gridx = 1;
+			c.gridy = 2;
+			c.gridwidth = 1;
+			c.weightx = 1.0D;
+			c.weighty = 0.0D;
+			mainPanel.add(getMaxCpusTextField(), c);
+
+			c.gridx = 0;
+			c.gridy = 3;
+			c.gridwidth = 2;
+			c.weightx = 1.0D;
 			c.weighty = 1.0D;
 			mainPanel.add(new JPanel(), c);
 		}
@@ -234,5 +283,36 @@ public final class PreferencesDialog extends JDialog {
 		}
 		return runOnStartupCheckBox;
 	}
+
+	private JCheckBox getLimitCpusCheckBox() {
+		if (limitCpusCheckBox == null) {
+			limitCpusCheckBox = new JCheckBox("Limit number of CPUs");
+			limitCpusCheckBox.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					boolean selected = getLimitCpusCheckBox().isSelected();
+					getMaxCpusTextField().setEnabled(selected);
+				}
+			});
+		}
+		return limitCpusCheckBox;
+	}
+
+	private JFormattedTextField getMaxCpusTextField() {
+		if (maxCpusTextField == null) {
+			maxCpusTextField = new JFormattedTextField(NumberFormat.getIntegerInstance());
+		}
+		return maxCpusTextField;
+	}
+
+	private boolean validateFields() {
+		if (getLimitCpusCheckBox().isSelected()
+				&& ((Number) getMaxCpusTextField().getValue()).intValue() <= 0) {
+
+			JOptionPane.showMessageDialog(this, "Maximum CPUs must be positive.", "Invalid CPU limit", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		return true;
+	}
+
 
 }

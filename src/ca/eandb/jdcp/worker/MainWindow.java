@@ -116,7 +116,7 @@ public final class MainWindow extends JFrame {
 	public static final class Options {
 
 		/** Number of CPUs to use to process worker threads. */
-		public int numberOfCpus = 0;
+		public int numberOfCpus = -1;
 
 		/** A value indicating if the program is being run on startup. */
 		public boolean startup = false;
@@ -364,8 +364,20 @@ public final class MainWindow extends JFrame {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				dialog.setVisible(true);
+				if (!dialog.isCancelled()) {
+					onPreferencesChanged();
+				}
 			}
 		});
+	}
+
+	private void onPreferencesChanged() {
+		int maxCpus = pref.getInt("maxCpus", 0);
+		int availableCpus = Runtime.getRuntime().availableProcessors();
+		if (maxCpus <= 0 || maxCpus > availableCpus) {
+			maxCpus = availableCpus;
+		}
+		worker.setMaxWorkers(maxCpus);
 	}
 
 	private void changeConnection() {
@@ -498,6 +510,9 @@ public final class MainWindow extends JFrame {
 		};
 
 		int availableCpus = Runtime.getRuntime().availableProcessors();
+		if (options.numberOfCpus < 0) {
+			options.numberOfCpus = pref.getInt("maxCpus", 0);
+		}
 		if (options.numberOfCpus <= 0 || options.numberOfCpus > availableCpus) {
 			options.numberOfCpus = availableCpus;
 		}
@@ -515,8 +530,9 @@ public final class MainWindow extends JFrame {
 
 		setStatus("Starting worker...");
 
-		worker = new ThreadServiceWorker(serviceFactory, options.numberOfCpus,
-				threadPool, getProgressPanel());
+		worker = new ThreadServiceWorker(serviceFactory, threadPool,
+				getProgressPanel());
+		worker.setMaxWorkers(options.numberOfCpus);
 
 		setStatus("Preparing data source...");
 
