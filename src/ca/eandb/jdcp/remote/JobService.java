@@ -272,6 +272,21 @@ public interface JobService extends Remote {
 	 */
 	void setJobPriority(UUID jobId, int priority) throws IllegalArgumentException, SecurityException, RemoteException;
 
+	/**
+	 * Determines if any of the specified tasks are no longer outstanding.
+	 * @param jobIds An array of <code>UUID</code> indicating the IDs of the
+	 * 		jobs corresponding to the tasks to check.
+	 * @param taskIds An array indicating the IDs of the tasks to check (must
+	 * 		be the same length as <code>jobIds</code>).
+	 * @return A <code>BitSet</code> indicating which tasks are no longer
+	 * 		outstanding.  If either <code>jobIds</code> or <code>taskIds</code>
+	 * 		is null, an empty <code>BitSet</code> is returned.
+	 * @throws IllegalArgumentException If
+	 * 		<code>jobIds.length != taskIds.length</code>.
+	 * @throws SecurityException If the caller does not have permission to get
+	 * 		the completion status of tasks.
+	 * @throws RemoteException If a communication error occurs.
+	 */
 	BitSet getFinishedTasks(UUID[] jobIds, int[] taskIds) throws IllegalArgumentException, SecurityException, RemoteException;
 
 }
