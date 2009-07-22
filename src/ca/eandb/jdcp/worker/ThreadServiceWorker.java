@@ -759,6 +759,7 @@ public final class ThreadServiceWorker implements Runnable {
 		 */
 		private final int workerId;
 
+		/** A value indicating if the task is pending cancellation. */
 		private boolean cancelPending = false;
 
 		/**
@@ -773,23 +774,44 @@ public final class ThreadServiceWorker implements Runnable {
 			this.monitor = monitor;
 		}
 
+		/**
+		 * Resets the local cancel pending flag.
+		 */
 		public void reset() {
 			cancelPending = false;
 		}
 
+		/**
+		 * Requests that the task being processed be canceled.
+		 */
 		public void cancel() {
 			cancelPending = true;
 		}
 
+		/**
+		 * Determines if the worker is to be shut down.
+		 * @return A value indicating whether the worker is to be shut down.
+		 */
 		public boolean isWorkerShutdownPending() {
-			return cancelPending || shutdownPending || (workerId >= maxWorkers);
+			return shutdownPending || (workerId >= maxWorkers);
 		}
 
 		/* (non-Javadoc)
 		 * @see ca.eandb.util.progress.ProgressMonitor#isCancelPending()
 		 */
 		public boolean isCancelPending() {
-			return isWorkerShutdownPending() || monitor.isCancelPending();
+			return isLocalCancelPending() || monitor.isCancelPending();
+		}
+
+		/**
+		 * Determines if cancellation is pending due to a request directly to
+		 * this object that the worker be canceled, or due to the owning worker
+		 * being shut down (i.e., not due to the decorated
+		 * <code>ProgressMonitor</code> requesting cancellation.
+		 * @return A value whether cancellation is pending locally.
+		 */
+		private boolean isLocalCancelPending() {
+			return cancelPending || isWorkerShutdownPending();
 		}
 
 		/* (non-Javadoc)
@@ -815,7 +837,7 @@ public final class ThreadServiceWorker implements Runnable {
 		 */
 		public boolean notifyIndeterminantProgress() {
 			return monitor.notifyIndeterminantProgress()
-					&& !isWorkerShutdownPending();
+					&& !isLocalCancelPending();
 		}
 
 		/* (non-Javadoc)
@@ -823,7 +845,7 @@ public final class ThreadServiceWorker implements Runnable {
 		 */
 		public boolean notifyProgress(int value, int maximum) {
 			return monitor.notifyProgress(value, maximum)
-				&& !isWorkerShutdownPending();
+				&& !isLocalCancelPending();
 		}
 
 		/* (non-Javadoc)
@@ -831,7 +853,7 @@ public final class ThreadServiceWorker implements Runnable {
 		 */
 		public boolean notifyProgress(double progress) {
 			return monitor.notifyProgress(progress)
-				&& !isWorkerShutdownPending();
+				&& !isLocalCancelPending();
 		}
 
 		/* (non-Javadoc)
@@ -926,6 +948,11 @@ public final class ThreadServiceWorker implements Runnable {
 	 */
 	private final Set<Worker> activeWorkers = Collections.synchronizedSet(new HashSet<Worker>());
 
+	/**
+	 * The interval (in milliseconds) between requests to the server to obtain
+	 * a list of completed tasks that this <code>ThreadServiceWorker</code> is
+	 * processing.
+	 */
 	private final long finishedTaskPollingInterval = 10000;
 
 }
