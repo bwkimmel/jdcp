@@ -32,8 +32,13 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.jnlp.UnavailableServiceException;
@@ -68,12 +73,12 @@ public final class ThreadServiceWorker implements Runnable {
 	 * @param monitorFactory The <code>ProgressMonitorFactory</code> to use to
 	 * 		create <code>ProgressMonitor</code>s for worker tasks.
 	 */
-	public ThreadServiceWorker(JobServiceFactory serviceFactory, Executor executor, ProgressMonitorFactory monitorFactory) {
+	public ThreadServiceWorker(JobServiceFactory serviceFactory, ThreadFactory threadFactory, ProgressMonitorFactory monitorFactory) {
 
 		assert(maxWorkers > 0);
 
 		this.service = new ReconnectingJobService(serviceFactory);
-		this.executor = executor;
+		this.executor = Executors.newCachedThreadPool(threadFactory);
 		this.maxWorkers = Runtime.getRuntime().availableProcessors();
 		this.monitorFactory = monitorFactory;
 
@@ -129,10 +134,25 @@ public final class ThreadServiceWorker implements Runnable {
 	 */
 	public void setMaxWorkers(int maxWorkers) {
 		synchronized (workerQueue) {
-			this.maxWorkers = maxWorkers;
+			idleLock.lock();
+			try {
+				int oldMaxWorkers = this.maxWorkers;
+				this.maxWorkers = maxWorkers;
+
+				// If the number of workers is being reduced, then signal any
+				// waiting workers so that they can terminate themselves if
+				// their id is greater than the number of workers, and so that
+				// another worker can take over idle polling if the current
+				// polling worker is to be terminated.
+				if (maxWorkers < oldMaxWorkers) {
+					idleComplete.signalAll();
+				}
+			} finally {
+				idleLock.unlock();
+			}
 			while (numWorkers < maxWorkers) {
 				String title = String.format("Worker (%d)", numWorkers + 1);
-				ProgressMonitor monitor = new ProgressMonitorWrapper(numWorkers++, monitorFactory.createProgressMonitor(title));
+				ProgressMonitorWrapper monitor = new ProgressMonitorWrapper(numWorkers++, monitorFactory.createProgressMonitor(title));
 				workerQueue.add(new Worker(monitor));
 			}
 		}
@@ -397,7 +417,7 @@ public final class ThreadServiceWorker implements Runnable {
 		 * @param monitor The <code>ProgressMonitor</code> to report
 		 * 		the progress of the task to.
 		 */
-		public Worker(ProgressMonitor monitor) {
+		public Worker(ProgressMonitorWrapper monitor) {
 			this.monitor = monitor;
 		}
 
@@ -413,10 +433,17 @@ public final class ThreadServiceWorker implements Runnable {
 
 				if (service != null) {
 
+					// Wait for idling to complete.
+					if (!idleWait()) {
+						return; // Monitor signaled worker should cancel.
+					}
+
 					TaskDescription taskDesc = service.requestTask();
 					UUID jobId = taskDesc.getJobId();
 
-					if (jobId != null) {
+					if (jobId != null) { // server has a task to perform.
+
+						idleEnd(); // Signal that idling is complete.
 
 						this.monitor.notifyStatusChanged("Obtaining task worker...");
 						TaskWorker worker;
@@ -450,13 +477,15 @@ public final class ThreadServiceWorker implements Runnable {
 							service.submitTaskResults(jobId, taskDesc.getTaskId(), new Serialized<Object>(results));
 						}
 
-					} else {
+					} else { // server has no tasks to perform.
 
-						try {
-							int seconds = (Integer) taskDesc.getTask().deserialize();
-							this.idle(seconds);
-						} catch (ClassNotFoundException e) {
-							throw new UnexpectedException(e);
+						if (idleBegin()) {
+							try {
+								int seconds = (Integer) taskDesc.getTask().deserialize();
+								this.idle(seconds);
+							} catch (ClassNotFoundException e) {
+								throw new UnexpectedException(e);
+							}
 						}
 
 					}
@@ -473,6 +502,105 @@ public final class ThreadServiceWorker implements Runnable {
 		}
 
 		/**
+		 * Enter idling state.
+		 * @return A value indicating whether the current thread is designated
+		 * 		to poll the server.
+		 */
+		private boolean idleBegin() {
+			/* Only a single worker should idle.  The first one to
+			 * get here will be designated to poll the server.
+			 */
+			idleLock.lock();
+			if (!idling) {
+				idling = true;
+				poller = monitor.workerId;
+			}
+			idleLock.unlock();
+
+			return (poller == monitor.workerId); // did we win the race?
+		}
+
+		/**
+		 * Exit idling state, if it is enabled.
+		 */
+		private void idleEnd() {
+			/* If this task was designated to poll the server while
+			 * idling, then we should disable the idling flag and
+			 * wake up the other workers so that they can start
+			 * processing tasks.
+			 */
+			if (poller == monitor.workerId) {
+				idleLock.lock();
+				try {
+					idling = false;
+					poller = -1;
+					idleComplete.signalAll();
+				} finally {
+					idleLock.unlock();
+				}
+			}
+		}
+
+		/**
+		 * Wait for idling to complete if the current thread is not designated
+		 * to poll the server.  This method blocks until the current thread
+		 * should continue.
+		 * @return If true, the calling worker may proceed.  If false, the
+		 * 		worker should terminate.
+		 */
+		private boolean idleWait() {
+			idleLock.lock();
+			try {
+
+				/* If we are currently idling and this worker is not
+				 * designated to poll the server, then wait until the
+				 * polling worker signals me that the server has tasks
+				 * to process.
+				 */
+				if (idling && poller != monitor.workerId) {
+					monitor.notifyStatusChanged("Waiting...");
+					do {
+
+						/* Update the progress monitor and check if this
+						 * worker should terminate.
+						 */
+						if (!monitor.notifyIndeterminantProgress()) {
+							return false;
+						}
+
+						try {
+							// Wait on the condition.
+							idleComplete.await();
+
+							/* At this point, either:
+							 * 1) The number of workers was reduced (the
+							 *    "idling" flag will be true).
+							 *      Check if the polling worker is being
+							 *      terminated.  If so, and if this
+							 *      worker is not being terminated, then
+							 *      take over polling duties.
+							 * 2) The polling worker is signalling that
+							 *    the server has tasks to perform (the
+							 *    "idling" flag will be false).
+							 *       Exit the wait look and request a
+							 *       task from the server.
+							 */
+							if (idling && poller >= maxWorkers
+									&& monitor.workerId < maxWorkers) {
+								poller = monitor.workerId;
+								break;
+							}
+						} catch (InterruptedException e) {}
+					} while (idling);
+				}
+			} finally {
+				idleLock.unlock();
+			}
+
+			return true;
+		}
+
+		/**
 		 * Idles for the specified number of seconds.
 		 * @param seconds The number of seconds to idle for.
 		 */
@@ -484,6 +612,7 @@ public final class ThreadServiceWorker implements Runnable {
 
 				if (!monitor.notifyProgress(i, seconds)) {
 					monitor.notifyCancelled();
+					return;
 				}
 
 				this.sleep();
@@ -509,7 +638,7 @@ public final class ThreadServiceWorker implements Runnable {
 		/**
 		 * The <code>ProgressMonitor</code> to report to.
 		 */
-		private final ProgressMonitor monitor;
+		private final ProgressMonitorWrapper monitor;
 
 	}
 
@@ -655,5 +784,28 @@ public final class ThreadServiceWorker implements Runnable {
 	 * A <code>DataSource</code> to use to store cached class definitions.
 	 */
 	private DataSource dataSource = null;
+
+	/**
+	 * A <code>Lock</code> for controlling access to critical sections for
+	 * idle polling.
+	 */
+	private final Lock idleLock = new ReentrantLock();
+
+	/**
+	 * A <code>Condition</code> that is signaled when idling is complete
+	 * (i.e., when the server has tasks to perform).
+	 */
+	private final Condition idleComplete = idleLock.newCondition();
+
+	/**
+	 * A flag indicating whether the server is currently serving idle tasks.
+	 */
+	private boolean idling = false;
+
+	/**
+	 * The ID of the worker designated to poll the server for tasks when
+	 * idling.
+	 */
+	private int poller = -1;
 
 }

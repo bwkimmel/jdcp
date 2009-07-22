@@ -49,8 +49,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.sql.SQLException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.prefs.Preferences;
 
 import javax.security.auth.login.LoginException;
@@ -516,7 +515,6 @@ public final class MainWindow extends JFrame {
 		if (options.numberOfCpus <= 0 || options.numberOfCpus > availableCpus) {
 			options.numberOfCpus = availableCpus;
 		}
-		Executor threadPool = Executors.newFixedThreadPool(options.numberOfCpus, new BackgroundThreadFactory());
 
 		if (worker != null) {
 			setStatus("Shutting down worker...");
@@ -530,7 +528,8 @@ public final class MainWindow extends JFrame {
 
 		setStatus("Starting worker...");
 
-		worker = new ThreadServiceWorker(serviceFactory, threadPool,
+		ThreadFactory threadFactory = new BackgroundThreadFactory();
+		worker = new ThreadServiceWorker(serviceFactory, threadFactory,
 				getProgressPanel());
 		worker.setMaxWorkers(options.numberOfCpus);
 

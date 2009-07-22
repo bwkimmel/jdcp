@@ -33,8 +33,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import javax.security.auth.login.LoginException;
 
@@ -103,17 +102,6 @@ public final class WorkerState {
 		}
 		System.out.println("Starting worker with " + Integer.toString(numberOfCpus) + " cpus");
 
-		JobServiceFactory serviceFactory = new JobServiceFactory() {
-			public JobService connect() {
-				return waitForService(
-						host.equals("") ? "localhost" : host,
-						username.equals("") ? "guest" : username,
-						password, RECONNECT_INTERVAL);
-			}
-		};
-
-		Executor threadPool = Executors.newFixedThreadPool(numberOfCpus, new BackgroundThreadFactory());
-
 		if (worker != null) {
 			logger.info("Shutting down worker");
 			worker.shutdown();
@@ -125,11 +113,21 @@ public final class WorkerState {
 
 		logger.info("Starting worker");
 
-		ProgressStateFactory factory = new ProgressStateFactory();
-		worker = new ThreadServiceWorker(serviceFactory, threadPool, factory);
+		JobServiceFactory serviceFactory = new JobServiceFactory() {
+			public JobService connect() {
+				return waitForService(
+						host.equals("") ? "localhost" : host,
+						username.equals("") ? "guest" : username,
+						password, RECONNECT_INTERVAL);
+			}
+		};
+
+		ThreadFactory threadFactory = new BackgroundThreadFactory();
+		ProgressStateFactory monitorFactory = new ProgressStateFactory();
+		worker = new ThreadServiceWorker(serviceFactory, threadFactory, monitorFactory);
 		worker.setMaxWorkers(numberOfCpus);
 
-		taskProgressStates = factory.getProgressStates();
+		taskProgressStates = monitorFactory.getProgressStates();
 
 		logger.info("Preparing data source");
 
