@@ -31,6 +31,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -244,6 +245,13 @@ public final class WorkerState {
 		if (taskProgressStates == null) {
 			System.out.println("Worker not running");
 			return;
+		}
+		Iterator<ProgressState> iter = taskProgressStates.iterator();
+		while (iter.hasNext()) {
+			ProgressState state = iter.next();
+			if (state.isCancelled() || state.isComplete()) {
+				iter.remove();
+			}
 		}
 		if (index == 0) { // print status of all workers.
 			List<ProgressState> taskProgressStates = new ArrayList<ProgressState>(this.taskProgressStates);
