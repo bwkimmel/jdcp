@@ -27,7 +27,11 @@ package ca.eandb.jdcp.worker;
 
 import java.nio.ByteBuffer;
 import java.rmi.RemoteException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
+
+import org.apache.log4j.Logger;
 
 
 import ca.eandb.jdcp.remote.JobService;
@@ -43,6 +47,9 @@ import ca.eandb.util.classloader.ClassLoaderStrategy;
  */
 public abstract class CachingJobServiceClassLoaderStrategy implements ClassLoaderStrategy {
 
+	/** The <code>Logger</code> for this class. */
+	private static final Logger logger = Logger.getLogger(CachingJobServiceClassLoaderStrategy.class);
+
 	/** The <code>JobService</code> from which to obtain class definitions. */
 	private final JobService service;
 
@@ -51,6 +58,11 @@ public abstract class CachingJobServiceClassLoaderStrategy implements ClassLoade
 	 * definitions.
 	 */
 	private final UUID jobId;
+
+	/**
+	 * A <code>Map</code> that stores the digests associated with each class.
+	 */
+	private Map<String, byte[]> digestLookup = new HashMap<String, byte[]>();
 
 	/**
 	 * Creates a new <code>CachingJobServiceClassLoaderStrategy</code>.
@@ -64,6 +76,26 @@ public abstract class CachingJobServiceClassLoaderStrategy implements ClassLoade
 		this.jobId = jobId;
 	}
 
+	/**
+	 * Gets the digest associated with a given class.
+	 * @param name The name of the class.
+	 * @return The class digest.
+	 */
+	public synchronized final byte[] getClassDigest(String name) {
+		byte[] digest = digestLookup.get(name);
+		if (digest == null) {
+			try {
+				digest = service.getClassDigest(name, jobId);
+				digestLookup.put(name, digest);
+			} catch (SecurityException e) {
+				logger.error("Could not get class digest", e);
+			} catch (RemoteException e) {
+				logger.error("Could not get class digest", e);
+			}
+		}
+		return digest;
+	}
+
 	/* (non-Javadoc)
 	 * @see ca.eandb.util.classloader.ClassLoaderStrategy#getClassDefinition(java.lang.String)
 	 */
@@ -71,7 +103,7 @@ public abstract class CachingJobServiceClassLoaderStrategy implements ClassLoade
 
 		try {
 
-			byte[] digest = service.getClassDigest(name, jobId);
+			byte[] digest = getClassDigest(name);
 			byte[] def = cacheLookup(name, digest);
 
 			if (def == null) {
@@ -86,7 +118,7 @@ public abstract class CachingJobServiceClassLoaderStrategy implements ClassLoade
 			}
 
 		} catch (RemoteException e) {
-			e.printStackTrace();
+			logger.error("Could not get class definition", e);
 		}
 
 		return null;

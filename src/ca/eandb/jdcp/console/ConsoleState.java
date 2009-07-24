@@ -40,4 +40,7 @@ public final class ConsoleState extends Configuration {
 	@ShellArgument
 	public final ServerState server = new ServerState();
 
+	@ShellArgument
+	public final HubState hub = new HubState();
+
 }

@@ -131,19 +131,27 @@
         </jar>
 	</target>
 
-	<target name="jar-console" depends="compile,jar-common,jar-server,jar-worker,jar-client">
+	<target name="jar-hub" depends="compile,jar-common">
+		<jar destfile="${jar.dir}/${ant.project.name}-hub.jar">
+			<fileset dir="${classes.dir}">
+			    <include name="ca/eandb/jdcp/hub/**"/>
+			</fileset>
+		</jar>
+	</target>
+
+	<target name="jar-console" depends="compile,jar-common,jar-server,jar-worker,jar-client,jar-hub">
 		<jar destfile="${jar.dir}/${ant.project.name}-console.jar">
 			<fileset dir="${classes.dir}">
-				<include name="ca/eandb/jdcp/console/**"/>
+                <include name="ca/eandb/jdcp/console/**"/>
 			</fileset>
 			<manifest>
 				<attribute name="Main-Class" value="${console.main}"/>
-				<attribute name="Class-Path" value="jdcp-common.jar jdcp-server.jar jdcp-worker.jar jdcp-client.jar lib/eandb.jar lib/jnlp.jar lib/log4j-1.2.15.jar lib/derby.jar lib/derbyclient.jar"/>
+				<attribute name="Class-Path" value="jdcp-common.jar jdcp-server.jar jdcp-worker.jar jdcp-hub.jar jdcp-client.jar lib/eandb.jar lib/jnlp.jar lib/log4j-1.2.15.jar lib/derby.jar lib/derbyclient.jar"/>
 			</manifest>
 		</jar>
 	</target>
 
-	<target name="jar" depends="jar-server,jar-worker,jar-client,jar-console">
+	<target name="jar" depends="jar-server,jar-worker,jar-client,jar-console,jar-hub">
 	</target>
 
 	<target name="dist-server" depends="jar-server,jar-eandb-util">
@@ -211,6 +219,7 @@
         <copy file="${jar.dir}/${ant.project.name}-common.jar" todir="${console.dist.dir}" />
         <copy file="${jar.dir}/${ant.project.name}-server.jar" todir="${console.dist.dir}" />
         <copy file="${jar.dir}/${ant.project.name}-worker.jar" todir="${console.dist.dir}" />
+        <copy file="${jar.dir}/${ant.project.name}-hub.jar" todir="${console.dist.dir}" />
         <copy file="${jar.dir}/${ant.project.name}-client.jar" todir="${console.dist.dir}" />
         <copy file="${jar.dir}/${ant.project.name}-console.jar" todir="${console.dist.dir}" />
 		<copy todir="${console.dist.dir}">
@@ -290,7 +299,8 @@
 			<classpath>
 				<path location="${console.dist.dir}/${ant.project.name}-console.jar"/>
 				<path location="${console.dist.dir}/${ant.project.name}-server.jar"/>
-				<path location="${console.dist.dir}/${ant.project.name}-worker.jar"/>
+                <path location="${console.dist.dir}/${ant.project.name}-worker.jar"/>
+                <path location="${console.dist.dir}/${ant.project.name}-hub.jar"/>
 				<path location="${console.dist.dir}/${ant.project.name}-client.jar"/>
 				<path location="${console.dist.dir}/${ant.project.name}-common.jar"/>
 				<path>
