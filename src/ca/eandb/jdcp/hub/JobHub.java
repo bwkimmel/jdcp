@@ -236,6 +236,8 @@ public final class JobHub implements JobService {
 
 			TaskDescription task = info.requestTask();
 			if (task != null) {
+				UUID jobId = task.getJobId();
+				routes.put(jobId, info);
 				return task;
 			}
 		}
