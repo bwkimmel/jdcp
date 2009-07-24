@@ -45,7 +45,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import javax.jnlp.UnavailableServiceException;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
@@ -447,11 +446,7 @@ public final class ThreadServiceWorker implements Runnable {
 			if (dataSource != null) {
 				strategy = new DbCachingJobServiceClassLoaderStrategy(service, jobId, dataSource);
 			} else {
-				try {
-					strategy = new PersistenceCachingJobServiceClassLoaderStrategy(service, jobId);
-				} catch (UnavailableServiceException e) {
-					strategy = new FileCachingJobServiceClassLoaderStrategy(service, jobId, "./worker");
-				}
+				strategy = new InternalCachingJobServiceClassLoaderStrategy(service, jobId);
 			}
 
 			ClassLoader loader = new StrategyClassLoader(strategy, ThreadServiceWorker.class.getClassLoader());
@@ -467,6 +462,10 @@ public final class ThreadServiceWorker implements Runnable {
 
 			/* Clean up the cache. */
 			this.removeOldCacheEntries();
+
+			if (logger.isInfoEnabled()) {
+				logger.info(String.format("Got worker (thread=%d)", Thread.currentThread().getId()));
+			}
 
 			return worker;
 
