@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.WeakHashMap;
+import java.util.Map.Entry;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -128,7 +129,13 @@ public final class JobHub implements JobService {
 	public synchronized void disconnect(String hostname) {
 		ServiceInfo info = hosts.get(hostname);
 		if (info != null) {
-			routes.remove(info);
+			hosts.remove(hostname);
+			services.remove(info);
+			for (Entry<UUID, ServiceInfo> entry : routes.entrySet()) {
+				if (entry.getValue() == info) {
+					routes.remove(entry.getKey());
+				}
+			}
 		}
 	}
 
