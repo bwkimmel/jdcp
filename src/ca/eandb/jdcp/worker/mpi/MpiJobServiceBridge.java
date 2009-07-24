@@ -30,15 +30,25 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+
+import javax.security.auth.login.LoginException;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
+import ca.eandb.jdcp.JdcpUtil;
+import ca.eandb.jdcp.remote.AuthenticationService;
 import ca.eandb.jdcp.remote.JobService;
+import ca.eandb.jdcp.worker.JobServiceFactory;
+import ca.eandb.jdcp.worker.ReconnectingJobService;
 import ca.eandb.util.UnexpectedException;
-import ca.eandb.util.concurrent.BackgroundThreadFactory;
 import ca.eandb.util.rmi.Serialized;
 
 /**
@@ -46,6 +56,25 @@ import ca.eandb.util.rmi.Serialized;
  *
  */
 public final class MpiJobServiceBridge {
+
+	static {
+		System.out.println("Initializing");
+		JdcpUtil.initialize();
+		System.out.println("Setting up properties");
+		PropertyConfigurator.configure(System.getProperties());
+
+		JobServiceFactory serviceFactory = new JobServiceFactory() {
+			public JobService connect() {
+				return waitForService("kirk.home.eandb.ca", "brad-w", "tHH3hJL0", 10);
+			}
+		};
+
+		Logger logger = Logger.getLogger(MpiJobServiceBridge.class);
+		logger.info("Initializing job service");
+		setJobService(new ReconnectingJobService(serviceFactory));
+		logger.info("Job service initialized");
+
+	}
 
 	private static final Logger logger = Logger.getLogger(MpiJobServiceBridge.class);
 
@@ -59,14 +88,54 @@ public final class MpiJobServiceBridge {
 
 	private static JobService service;
 
-	private static Executor executor = Executors.newCachedThreadPool(new BackgroundThreadFactory());
+	private static Map<UUID, byte[]> taskWorkerCache = new HashMap<UUID, byte[]>();
+
+	private static Map<String, byte[]> classDigestCache = new HashMap<String, byte[]>();
+
+	private static Map<String, byte[]> classDefinitionCache = new HashMap<String, byte[]>();
+
+	private static JobService waitForService(String host, String username, String password, int retryInterval) {
+		JobService service = null;
+		while (true) {
+			service = connect(host, username, password);
+			if (service != null) {
+				break;
+			}
+
+			logger.info("CONNECTION FAILED");
+			for (int i = retryInterval; i > 0; i--) {
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					return null;
+				}
+			}
+		}
+		return service;
+	}
+
+	private static JobService connect(String host, String username, String password) {
+		JobService service = null;
+		try {
+			Registry registry = LocateRegistry.getRegistry(host, 5327);
+			AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
+			service = auth.authenticate(username, password);
+		} catch (NotBoundException e) {
+			logger.error("Job service not found at remote host.", e);
+		} catch (RemoteException e) {
+			logger.error("Could not connect to job service.", e);
+		} catch (LoginException e) {
+			logger.error("Login failed.", e);
+		}
+		return service;
+	}
 
 	public synchronized static void setJobService(JobService service) {
 		MpiJobServiceBridge.service = service;
 	}
 
 	public static void call(int methodId, int caller, byte[] payload) {
-		executor.execute(new MethodHandler(methodId, caller, payload));
+		new MethodHandler(methodId, caller, payload).run();
 	}
 
 	private static native void mpiReturn(int caller, byte[] payload);
@@ -88,6 +157,10 @@ public final class MpiJobServiceBridge {
 
 			Object retVal = null;
 			boolean success = true;
+			String name;
+			UUID jobId = null;
+			String key = null;
+			byte[] payload = null;
 
 			try {
 				ByteArrayInputStream bis = new ByteArrayInputStream(params);
@@ -95,41 +168,66 @@ public final class MpiJobServiceBridge {
 
 				switch (methodId) {
 				case GET_CLASS_DEFINITION:
-					retVal = service.getClassDefinition((String) ois
-							.readObject(), (UUID) ois.readObject());
+					name = (String) ois.readObject();
+					jobId = (UUID) ois.readObject();
+					if (logger.isInfoEnabled()) {
+						logger.info(String.format("GET_CLASS_DEFINITION: jobId=%s, name=%s", jobId.toString(), name));
+					}
+					key = jobId.toString() + name;
+					payload = classDefinitionCache.get(key);
+					if (payload == null) {
+						retVal = service.getClassDefinition(name, jobId);
+					}
 					break;
 
 				case GET_CLASS_DIGEST:
-					retVal = service.getClassDigest((String) ois.readObject(),
-							(UUID) ois.readObject());
+					name = (String) ois.readObject();
+					jobId = (UUID) ois.readObject();
+					if (logger.isInfoEnabled()) {
+						logger.info(String.format("GET_CLASS_DEFINITION: jobId=%s, name=%s", jobId.toString(), name));
+					}
+					key = jobId.toString() + name;
+					payload = classDefinitionCache.get(key);
+					if (payload == null) {
+						retVal = service.getClassDigest(name, jobId);
+					}
 					break;
 
 				case GET_FINISHED_TASKS:
+					logger.info("GET_FINISHED_TASKS");
 					retVal = service
 							.getFinishedTasks((UUID[]) ois.readObject(),
 									(int[]) ois.readObject());
 					break;
 
 				case GET_TASK_WORKER:
-					retVal = service.getTaskWorker((UUID) ois.readObject());
+					logger.info("GET_TASK_WORKER");
+					jobId = (UUID) ois.readObject();
+					payload = taskWorkerCache.get(jobId);
+					if (payload == null) {
+						retVal = service.getTaskWorker(jobId);
+					}
 					break;
 
 				case REPORT_EXCEPTION:
+					logger.info("REPORT_EXCEPTION");
 					service.reportException((UUID) ois.readObject(),
 							(Integer) ois.readObject(), (Exception) ois
 									.readObject());
-					retVal = new Object();
+					retVal = new byte[0];
 					break;
 
 				case REQUEST_TASK:
+					logger.info("REQUEST_TASK");
 					retVal = service.requestTask();
 					break;
 
 				case SUBMIT_TASK_RESULTS:
+					logger.info("SUBMIT_TASK_RESULTS");
 					service.submitTaskResults((UUID) ois.readObject(),
 							(Integer) ois.readObject(),
 							(Serialized<Object>) ois.readObject());
-					retVal = new Object();
+					retVal = new byte[0];
 					break;
 
 				default:
@@ -144,12 +242,26 @@ public final class MpiJobServiceBridge {
 			}
 
 			try {
-				ByteArrayOutputStream bos = new ByteArrayOutputStream();
-				ObjectOutputStream oos = new ObjectOutputStream(bos);
-				oos.writeBoolean(success);
-				oos.writeObject(retVal);
-				oos.flush();
-				mpiReturn(caller, bos.toByteArray());
+				if (payload == null) {
+					ByteArrayOutputStream bos = new ByteArrayOutputStream();
+					ObjectOutputStream oos = new ObjectOutputStream(bos);
+					oos.writeBoolean(success);
+					oos.writeObject(retVal);
+					oos.flush();
+					payload = bos.toByteArray();
+					switch (methodId) {
+					case GET_CLASS_DIGEST:
+						classDigestCache.put(key, payload);
+						break;
+					case GET_CLASS_DEFINITION:
+						classDefinitionCache.put(key, payload);
+						break;
+					case GET_TASK_WORKER:
+						taskWorkerCache.put(jobId, payload);
+						break;
+					}
+				}
+				mpiReturn(caller, payload);
 			} catch (IOException e) {
 				logger.error("Could not serialized return value", e);
 				throw new UnexpectedException(e);

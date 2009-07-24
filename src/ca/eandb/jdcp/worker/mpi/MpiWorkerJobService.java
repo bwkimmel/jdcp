@@ -33,6 +33,8 @@ import java.rmi.RemoteException;
 import java.util.BitSet;
 import java.util.UUID;
 
+import org.apache.log4j.Logger;
+
 import ca.eandb.jdcp.job.ParallelizableJob;
 import ca.eandb.jdcp.job.TaskDescription;
 import ca.eandb.jdcp.job.TaskWorker;
@@ -46,6 +48,8 @@ import ca.eandb.util.rmi.Serialized;
  */
 public final class MpiWorkerJobService implements JobService {
 
+	private static final Logger logger = Logger.getLogger(MpiWorkerJobService.class);
+
 	private static final int GET_CLASS_DEFINITION = 1;
 	private static final int GET_CLASS_DIGEST = 2;
 	private static final int GET_FINISHED_TASKS = 3;
@@ -54,15 +58,17 @@ public final class MpiWorkerJobService implements JobService {
 	private static final int REQUEST_TASK = 6;
 	private static final int SUBMIT_TASK_RESULTS = 7;
 
-	private static native byte[] mpiCall(int methodId, byte[] payload);
+	private static synchronized native byte[] mpiCall(int methodId, byte[] payload);
 
-	private static synchronized Object call(int methodId, Object... params) throws Exception {
+	private static Object call(int methodId, Object... params) throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		ObjectOutputStream oos = new ObjectOutputStream(bos);
-		for (int i = 0; i < params.length; i++) {
-			oos.writeObject(params[i]);
+		if (params != null) {
+			for (int i = 0; i < params.length; i++) {
+				oos.writeObject(params[i]);
+			}
+			oos.flush();
 		}
-		oos.flush();
 
 		byte[] result = mpiCall(methodId, bos.toByteArray());
 		ByteArrayInputStream bis = new ByteArrayInputStream(result);
@@ -96,6 +102,7 @@ public final class MpiWorkerJobService implements JobService {
 	public byte[] getClassDefinition(String name, UUID jobId)
 			throws SecurityException, RemoteException {
 		try {
+			logger.info("Calling GET_CLASS_DEFINITION");
 			return (byte[]) call(GET_CLASS_DEFINITION, name, jobId);
 		} catch (SecurityException e) {
 			throw e;
@@ -112,6 +119,7 @@ public final class MpiWorkerJobService implements JobService {
 	public byte[] getClassDigest(String name, UUID jobId)
 			throws SecurityException, RemoteException {
 		try {
+			logger.info("Calling GET_CLASS_DIGEST");
 			return (byte[]) call(GET_CLASS_DIGEST, name, jobId);
 		} catch (SecurityException e) {
 			throw e;
@@ -135,6 +143,7 @@ public final class MpiWorkerJobService implements JobService {
 	public BitSet getFinishedTasks(UUID[] jobIds, int[] taskIds)
 			throws IllegalArgumentException, SecurityException, RemoteException {
 		try {
+			logger.info("Calling GET_FINISHED_TASKS");
 			return (BitSet) call(GET_FINISHED_TASKS, jobIds, taskIds);
 		} catch (IllegalArgumentException e) {
 			throw e;
@@ -154,6 +163,7 @@ public final class MpiWorkerJobService implements JobService {
 	public Serialized<TaskWorker> getTaskWorker(UUID jobId)
 			throws IllegalArgumentException, SecurityException, RemoteException {
 		try {
+			logger.info("Calling GET_TASK_WORKER");
 			return (Serialized<TaskWorker>) call(GET_TASK_WORKER, jobId);
 		} catch (IllegalArgumentException e) {
 			throw e;
@@ -172,6 +182,7 @@ public final class MpiWorkerJobService implements JobService {
 	public void reportException(UUID jobId, int taskId, Exception e)
 			throws SecurityException, RemoteException {
 		try {
+			logger.info("Calling REPORT_EXCEPTION");
 			call(REPORT_EXCEPTION, jobId, taskId, e);
 		} catch (SecurityException e1) {
 			throw e1;
@@ -188,6 +199,7 @@ public final class MpiWorkerJobService implements JobService {
 	public TaskDescription requestTask() throws SecurityException,
 			RemoteException {
 		try {
+			logger.info("Calling REQUEST_TASK");
 			return (TaskDescription) call(REQUEST_TASK);
 		} catch (SecurityException e) {
 			throw e;
@@ -247,6 +259,7 @@ public final class MpiWorkerJobService implements JobService {
 			Serialized<Object> results) throws SecurityException,
 			RemoteException {
 		try {
+			logger.info("Calling SUBMIT_TASK_RESULTS");
 			call(SUBMIT_TASK_RESULTS, jobId, taskId, results);
 		} catch (SecurityException e) {
 			throw e;
