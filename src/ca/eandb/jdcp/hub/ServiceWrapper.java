@@ -79,18 +79,24 @@ final class ServiceWrapper implements JobService {
 	};
 
 	private <T> T run(ServiceOperation<T> operation) throws DelegationException {
-		if (service == null) {
-			service = connect(host, username, password);
+		synchronized (this) {
+			if (service == null) {
+				service = connect(host, username, password);
+			}
 		}
 		try {
 			return operation.run(service);
 		} catch (NoSuchObjectException e) {
+			service = null;
 			logger.error("Lost connection", e);
 		} catch (ConnectException e) {
+			service = null;
 			logger.error("Lost connection", e);
 		} catch (ConnectIOException e) {
+			service = null;
 			logger.error("Lost connection", e);
 		} catch (UnknownHostException e) {
+			service = null;
 			logger.error("Lost connection", e);
 		} catch (Exception e) {
 			throw new DelegationException("Error occurred delegating to server", e);
