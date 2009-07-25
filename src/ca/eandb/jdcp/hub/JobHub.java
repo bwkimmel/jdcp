@@ -214,8 +214,9 @@ public final class JobHub implements JobService {
 			for (ServiceInfo info : serv) {
 				try {
 					synchronized (this) {
-						services.remove(info);
-						services.add(info);
+						if (services.remove(info)) {
+							services.add(info);
+						}
 					}
 					TaskDescription task = info.requestTask();
 					if (task != null) {
