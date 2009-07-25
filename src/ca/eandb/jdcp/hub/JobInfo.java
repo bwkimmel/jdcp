@@ -26,7 +26,6 @@
 package ca.eandb.jdcp.hub;
 
 import java.nio.ByteBuffer;
-import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
@@ -34,10 +33,7 @@ import java.util.UUID;
 
 import javax.sql.DataSource;
 
-import org.apache.log4j.Logger;
-
 import ca.eandb.jdcp.job.TaskWorker;
-import ca.eandb.jdcp.remote.JobService;
 import ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy;
 import ca.eandb.jdcp.worker.DbCachingJobServiceClassLoaderStrategy;
 import ca.eandb.util.rmi.Serialized;
@@ -48,15 +44,13 @@ import ca.eandb.util.rmi.Serialized;
  */
 final class JobInfo {
 
-	private static final Logger logger = Logger.getLogger(JobInfo.class);
-
 	private final UUID id;
-	private final JobService service;
+	private final ServiceWrapper service;
 	private final Set<Integer> activeTaskIds = new HashSet<Integer>();
 	private Serialized<TaskWorker> worker = null;
 	private final CachingJobServiceClassLoaderStrategy classCache;
 
-	public JobInfo(UUID id, JobService service, DataSource dataSource) {
+	public JobInfo(UUID id, ServiceWrapper service, DataSource dataSource) {
 		this.id = id;
 		this.service = service;
 		this.classCache = new DbCachingJobServiceClassLoaderStrategy(service, id, dataSource);
@@ -81,38 +75,18 @@ final class JobInfo {
 
 	public synchronized Serialized<TaskWorker> getTaskWorker() {
 		if (worker == null) {
-			try {
-				worker = service.getTaskWorker(id);
-			} catch (IllegalArgumentException e) {
-				logger.error("Could not get task worker", e);
-			} catch (SecurityException e) {
-				logger.error("Could not get task worker", e);
-			} catch (RemoteException e) {
-				logger.error("Could not get task worker", e);
-			}
+			worker = service.getTaskWorker(id);
 		}
 		return worker;
 	}
 
 	public void submitTaskResults(int taskId, Serialized<Object> results) {
-		try {
-			service.submitTaskResults(id, taskId, results);
-			activeTaskIds.remove(taskId);
-		} catch (SecurityException e) {
-			logger.error("Cannot submit task results", e);
-		} catch (RemoteException e) {
-			logger.error("Cannot submit task results", e);
-		}
+		service.submitTaskResults(id, taskId, results);
+		activeTaskIds.remove(taskId);
 	}
 
 	public void reportException(int taskId, Exception e) {
-		try {
-			service.reportException(id, taskId, e);
-		} catch (SecurityException e1) {
-			logger.error("Could not report exception", e1);
-		} catch (RemoteException e1) {
-			logger.error("Could not report exception", e1);
-		}
+		service.reportException(id, taskId, e);
 	}
 
 	public boolean isTaskComplete(int taskId) {

@@ -267,8 +267,9 @@
 					<fileset dir="${server.dist.dir}/lib" includes="**/*.jar"/>
 			    </path>
 			</classpath>
-			<jvmarg value="-Djava.security.manager"/>
-			<sysproperty key="java.library.path" value="lib"/>
+			<!--<jvmarg value="-Djava.security.manager"/>-->
+            <sysproperty key="jdcp.home" value="."/>
+            <sysproperty key="java.library.path" value="$lib"/>
 			<sysproperty key="java.security.auth.login.config" value="etc/login.config"/>
 			<sysproperty key="java.security.policy" value="etc/policy"/>
 			<sysproperty key="log4j.configuration" value="file:./etc/log4j.properties"/>

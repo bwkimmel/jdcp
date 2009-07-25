@@ -59,6 +59,9 @@ public interface JobService extends Remote {
 	 * @return The <code>TaskWorker</code> to use to process tasks for the job
 	 * 		with the specified <code>UUID</code>, or <code>null</code> if that
 	 * 		job is no longer available.
+	 * @throws DelegationException If this <code>JobService</code> could not
+	 * 		communicate with the provider of the <code>TaskWorker</code> being
+	 * 		requested.
 	 * @throws IllegalArgumentException If there is no job on the server with
 	 * 		the specified <code>UUID</code>.
 	 * @throws SecurityException If the caller does not have permission to
@@ -66,7 +69,8 @@ public interface JobService extends Remote {
 	 * @throws RemoteException If a communication error occurs.
 	 */
 	Serialized<TaskWorker> getTaskWorker(UUID jobId)
-			throws IllegalArgumentException, SecurityException, RemoteException;
+			throws DelegationException, IllegalArgumentException,
+			SecurityException, RemoteException;
 
 	/**
 	 * Gets a task to perform.
@@ -184,11 +188,15 @@ public interface JobService extends Remote {
 	 * 		obtain.
 	 * @param jobId The <code>UUID</code> identifying the job for which to
 	 * 		get the class digest.
+	 * @throws DelegationException If this <code>JobService</code> could not
+	 * 		communicate with the provider of the class whose digest is being
+	 * 		requested.
 	 * @throws SecurityException If the caller does not have permission to
 	 * 		obtain class digests.
 	 * @throws RemoteException If a communication error occurs.
 	 */
-	byte[] getClassDigest(String name, UUID jobId) throws SecurityException, RemoteException;
+	byte[] getClassDigest(String name, UUID jobId) throws DelegationException,
+			SecurityException, RemoteException;
 
 	/**
 	 * Gets the MD5 digest for the most recent definition of the given class.
@@ -196,6 +204,9 @@ public interface JobService extends Remote {
 	 * 		obtain.
 	 * @param jobId The <code>UUID</code> identifying the job for which to
 	 * 		get the class digest.
+	 * @throws DelegationException If this <code>JobService</code> could not
+	 * 		communicate with the provider of the class whose digest is being
+	 * 		requested.
 	 * @throws SecurityException If the caller does not have permission to
 	 * 		obtain class digests.
 	 * @throws RemoteException If a communication error occurs.
@@ -209,11 +220,15 @@ public interface JobService extends Remote {
 	 * 		obtain.
 	 * @param jobId The <code>UUID</code> identifying the job for which to
 	 * 		get the class definition.
+	 * @throws DelegationException If this <code>JobService</code> could not
+	 * 		communicate with the provider of the class whose definition is
+	 * 		being requested.
 	 * @throws SecurityException If the caller does not have permission to
 	 * 		obtain class definitions.
 	 * @throws RemoteException If a communication error occurs.
 	 */
-	byte[] getClassDefinition(String name, UUID jobId) throws SecurityException, RemoteException;
+	byte[] getClassDefinition(String name, UUID jobId)
+			throws DelegationException, SecurityException, RemoteException;
 
 	/**
 	 * Sets the class definition for the specified class.

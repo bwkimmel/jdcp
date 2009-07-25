@@ -25,7 +25,11 @@
 
 package ca.eandb.jdcp.hub;
 
+import java.rmi.ConnectException;
+import java.rmi.ConnectIOException;
+import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
+import java.rmi.UnknownHostException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.BitSet;
@@ -40,6 +44,7 @@ import ca.eandb.jdcp.job.ParallelizableJob;
 import ca.eandb.jdcp.job.TaskDescription;
 import ca.eandb.jdcp.job.TaskWorker;
 import ca.eandb.jdcp.remote.AuthenticationService;
+import ca.eandb.jdcp.remote.DelegationException;
 import ca.eandb.jdcp.remote.JobService;
 import ca.eandb.util.rmi.Serialized;
 
@@ -70,18 +75,31 @@ final class ServiceWrapper implements JobService {
 	}
 
 	private interface ServiceOperation<T> {
-		T run(JobService service) throws RemoteException, SecurityException;
+		T run(JobService service) throws Exception;
 	};
 
-	private <T> T run(ServiceOperation<T> operation) throws RemoteException {
+	private <T> T run(ServiceOperation<T> operation) throws DelegationException {
 		if (service == null) {
 			service = connect(host, username, password);
 		}
 		try {
 			return operation.run(service);
-		} catch (RemoteException e) {
-			service = connect(host, username, password);
+		} catch (NoSuchObjectException e) {
+			logger.error("Lost connection", e);
+		} catch (ConnectException e) {
+			logger.error("Lost connection", e);
+		} catch (ConnectIOException e) {
+			logger.error("Lost connection", e);
+		} catch (UnknownHostException e) {
+			logger.error("Lost connection", e);
+		} catch (Exception e) {
+			throw new DelegationException("Error occurred delegating to server", e);
+		}
+		service = connect(host, username, password);
+		try {
 			return operation.run(service);
+		} catch (Exception e) {
+			throw new DelegationException("Error occurred delegating to server", e);
 		}
 	}
 
@@ -91,7 +109,8 @@ final class ServiceWrapper implements JobService {
 		idleUntil = cal.getTime();
 	}
 
-	private synchronized JobService connect(String host, String username, String password) {
+	private synchronized JobService connect(String host, String username,
+			String password) throws DelegationException {
 		Date now = new Date();
 		if (now.after(idleUntil)) {
 			try {
@@ -101,10 +120,10 @@ final class ServiceWrapper implements JobService {
 			} catch (Exception e) {
 				logger.error("Job service not found at remote host.", e);
 				idle();
-				throw new RuntimeException("Could not connect to remote host", e);
+				throw new DelegationException("Could not connect to remote host", e);
 			}
 		} else {
-			throw new RuntimeException("Connection to remote host is down.");
+			throw new DelegationException("Connection to remote host is down.");
 		}
 	}
 
@@ -128,7 +147,7 @@ final class ServiceWrapper implements JobService {
 	 * @see ca.eandb.jdcp.remote.JobService#getClassDefinition(java.lang.String, java.util.UUID)
 	 */
 	public byte[] getClassDefinition(final String name, final UUID jobId)
-			throws SecurityException, RemoteException {
+			throws DelegationException {
 		return run(new ServiceOperation<byte[]>() {
 			public byte[] run(JobService service) throws RemoteException,
 					SecurityException {
@@ -141,7 +160,7 @@ final class ServiceWrapper implements JobService {
 	 * @see ca.eandb.jdcp.remote.JobService#getClassDigest(java.lang.String, java.util.UUID)
 	 */
 	public byte[] getClassDigest(final String name, final UUID jobId)
-			throws SecurityException, RemoteException {
+			throws DelegationException {
 		return run(new ServiceOperation<byte[]>() {
 			public byte[] run(JobService service) throws RemoteException,
 					SecurityException {
@@ -162,7 +181,7 @@ final class ServiceWrapper implements JobService {
 	 * @see ca.eandb.jdcp.remote.JobService#getFinishedTasks(java.util.UUID[], int[])
 	 */
 	public BitSet getFinishedTasks(final UUID[] jobIds, final int[] taskIds)
-			throws IllegalArgumentException, SecurityException, RemoteException {
+			throws DelegationException {
 		return run(new ServiceOperation<BitSet>() {
 			public BitSet run(JobService service) throws RemoteException,
 					SecurityException {
@@ -175,7 +194,7 @@ final class ServiceWrapper implements JobService {
 	 * @see ca.eandb.jdcp.remote.JobService#getTaskWorker(java.util.UUID)
 	 */
 	public Serialized<TaskWorker> getTaskWorker(final UUID jobId)
-			throws IllegalArgumentException, SecurityException, RemoteException {
+			throws DelegationException {
 		return run(new ServiceOperation<Serialized<TaskWorker>>() {
 			public Serialized<TaskWorker> run(JobService service) throws RemoteException,
 					SecurityException {
@@ -188,7 +207,7 @@ final class ServiceWrapper implements JobService {
 	 * @see ca.eandb.jdcp.remote.JobService#reportException(java.util.UUID, int, java.lang.Exception)
 	 */
 	public void reportException(final UUID jobId, final int taskId, final Exception e)
-			throws SecurityException, RemoteException {
+			throws DelegationException {
 		run(new ServiceOperation<Object>() {
 			public Object run(JobService service) throws RemoteException,
 					SecurityException {
@@ -201,8 +220,7 @@ final class ServiceWrapper implements JobService {
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.remote.JobService#requestTask()
 	 */
-	public TaskDescription requestTask() throws SecurityException,
-			RemoteException {
+	public TaskDescription requestTask() throws DelegationException {
 		return run(new ServiceOperation<TaskDescription>() {
 			public TaskDescription run(JobService service) throws RemoteException,
 					SecurityException {
@@ -265,8 +283,7 @@ final class ServiceWrapper implements JobService {
 	 * @see ca.eandb.jdcp.remote.JobService#submitTaskResults(java.util.UUID, int, ca.eandb.util.rmi.Serialized)
 	 */
 	public void submitTaskResults(final UUID jobId, final int taskId,
-			final Serialized<Object> results) throws SecurityException,
-			RemoteException {
+			final Serialized<Object> results) throws DelegationException {
 		run(new ServiceOperation<Object>() {
 			public Object run(JobService service) throws RemoteException,
 					SecurityException {

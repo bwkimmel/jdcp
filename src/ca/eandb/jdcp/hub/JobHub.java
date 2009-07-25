@@ -136,15 +136,7 @@ public final class JobHub implements JobService {
 		if (info == null) {
 			throw new IllegalArgumentException("No route for specified job ID");
 		}
-		try {
-			return info.getClassDefinition(name, jobId);
-		} catch (SecurityException e) {
-			logger.error("Could not contact server for class definition", e);
-			throw new RuntimeException("Could not contact server for class definition", e);
-		} catch (RemoteException e) {
-			logger.error("Could not contact server for class definition", e);
-			throw new RuntimeException("Could not contact server for class definition", e);
-		}
+		return info.getClassDefinition(name, jobId);
 	}
 
 	/* (non-Javadoc)
@@ -155,15 +147,7 @@ public final class JobHub implements JobService {
 		if (info == null) {
 			throw new IllegalArgumentException("No route for specified job ID");
 		}
-		try {
-			return info.getClassDigest(name, jobId);
-		} catch (SecurityException e) {
-			logger.error("Could not contact server for class digest", e);
-			throw new RuntimeException("Could not contact server for class digest", e);
-		} catch (RemoteException e) {
-			logger.error("Could not contact server for class digest", e);
-			throw new RuntimeException("Could not contact server for class digest", e);
-		}
+		return info.getClassDigest(name, jobId);
 	}
 
 	/* (non-Javadoc)
@@ -195,15 +179,7 @@ public final class JobHub implements JobService {
 			throw new IllegalArgumentException("No route for specified job id");
 		}
 
-		try {
-			return info.getTaskWorker(jobId);
-		} catch (SecurityException e) {
-			logger.error("Could not contact server for task worker", e);
-			throw new RuntimeException("Could not contact server for task worker", e);
-		} catch (RemoteException e) {
-			logger.error("Could not contact server for task worker", e);
-			throw new RuntimeException("Could not contact server for task worker", e);
-		}
+		return info.getTaskWorker(jobId);
 	}
 
 	/* (non-Javadoc)
@@ -217,9 +193,7 @@ public final class JobHub implements JobService {
 				public void run() {
 					try {
 						info.reportException(jobId, taskId, e);
-					} catch (SecurityException e1) {
-						logger.error("Cannot report exception", e1);
-					} catch (RemoteException e1) {
+					} catch (Exception e1) {
 						logger.error("Cannot report exception", e1);
 					}
 				}
@@ -243,9 +217,7 @@ public final class JobHub implements JobService {
 					routes.put(jobId, info);
 					return task;
 				}
-			} catch (SecurityException e) {
-				logger.error("Failed to request task from server", e);
-			} catch (RemoteException e) {
+			} catch (Exception e) {
 				logger.error("Failed to request task from server", e);
 			}
 		}
@@ -270,9 +242,7 @@ public final class JobHub implements JobService {
 				public void run() {
 					try {
 						info.submitTaskResults(jobId, taskId, results);
-					} catch (SecurityException e) {
-						logger.error("Cannot submit task results", e);
-					} catch (RemoteException e) {
+					} catch (Exception e) {
 						logger.error("Cannot submit task results", e);
 					}
 				}

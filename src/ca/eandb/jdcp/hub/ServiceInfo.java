@@ -25,7 +25,6 @@
 
 package ca.eandb.jdcp.hub;
 
-import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -41,7 +40,6 @@ import org.apache.log4j.Logger;
 
 import ca.eandb.jdcp.job.TaskDescription;
 import ca.eandb.jdcp.job.TaskWorker;
-import ca.eandb.jdcp.remote.JobService;
 import ca.eandb.util.UnexpectedException;
 import ca.eandb.util.rmi.Serialized;
 
@@ -53,7 +51,7 @@ final class ServiceInfo {
 
 	private static final Logger logger = Logger.getLogger(ServiceInfo.class);
 
-	private final JobService service;
+	private final ServiceWrapper service;
 	private final Map<UUID, JobInfo> jobs = new HashMap<UUID, JobInfo>();
 	private boolean lastPollOk = true;
 	private final DataSource dataSource;
@@ -128,14 +126,12 @@ final class ServiceInfo {
 		return job;
 	}
 
-	public byte[] getClassDefinition(String name, UUID jobId)
-			throws SecurityException, RemoteException {
+	public byte[] getClassDefinition(String name, UUID jobId) {
 		JobInfo job = getJobInfo(jobId);
 		return job.getClassDefinition(name);
 	}
 
-	public byte[] getClassDigest(String name, UUID jobId)
-			throws SecurityException, RemoteException {
+	public byte[] getClassDigest(String name, UUID jobId) {
 		JobInfo job = getJobInfo(jobId);
 		return job.getClassDigest(name);
 	}
@@ -146,19 +142,17 @@ final class ServiceInfo {
 	}
 
 	public Serialized<TaskWorker> getTaskWorker(UUID jobId)
-			throws IllegalArgumentException, SecurityException, RemoteException {
+			throws IllegalArgumentException {
 		JobInfo job = getJobInfo(jobId);
 		return job.getTaskWorker();
 	}
 
-	public void reportException(UUID jobId, int taskId, Exception e)
-			throws SecurityException, RemoteException {
+	public void reportException(UUID jobId, int taskId, Exception e) {
 		JobInfo job = getJobInfo(jobId);
 		job.reportException(taskId, e);
 	}
 
-	public TaskDescription requestTask() throws SecurityException,
-			RemoteException {
+	public TaskDescription requestTask() {
 		TaskDescription task = null;
 		if (!isIdle()) {
 			task = service.requestTask();
@@ -180,8 +174,7 @@ final class ServiceInfo {
 	}
 
 	public void submitTaskResults(UUID jobId, int taskId,
-			Serialized<Object> results) throws SecurityException,
-			RemoteException {
+			Serialized<Object> results) {
 		JobInfo job = getJobInfo(jobId);
 		job.submitTaskResults(taskId, results);
 	}

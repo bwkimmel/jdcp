@@ -51,6 +51,7 @@ import org.apache.log4j.Logger;
 
 import ca.eandb.jdcp.job.TaskDescription;
 import ca.eandb.jdcp.job.TaskWorker;
+import ca.eandb.jdcp.remote.DelegationException;
 import ca.eandb.util.UnexpectedException;
 import ca.eandb.util.classloader.ClassLoaderStrategy;
 import ca.eandb.util.classloader.StrategyClassLoader;
@@ -542,6 +543,8 @@ public final class ThreadServiceWorker implements Runnable {
 						TaskWorker worker;
 						try {
 							worker = getTaskWorker(jobId);
+						} catch (DelegationException e) {
+							worker = null;
 						} catch (ClassNotFoundException e) {
 							service.reportException(jobId, 0, e);
 							worker = null;
@@ -560,6 +563,8 @@ public final class ThreadServiceWorker implements Runnable {
 						try {
 							Object task = taskDesc.getTask().deserialize(loader);
 							results = worker.performTask(task, monitor);
+						} catch (DelegationException e) {
+							results = null;
 						} catch (Exception e) {
 							service.reportException(jobId, taskId, e);
 							results = null;
