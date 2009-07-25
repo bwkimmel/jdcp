@@ -74,7 +74,7 @@ public final class JobHub implements JobService {
 
 	private final Map<String, ServiceInfo> hosts = new HashMap<String, ServiceInfo>();
 
-	private final ScheduledExecutorService activeTaskPoller = Executors.newScheduledThreadPool(1, new BackgroundThreadFactory());
+	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1, new BackgroundThreadFactory());
 
 	private final Executor executor = Executors.newCachedThreadPool(new BackgroundThreadFactory());
 
@@ -87,7 +87,7 @@ public final class JobHub implements JobService {
 				pollActiveTasks();
 			}
 		};
-		activeTaskPoller.scheduleAtFixedRate(poller, POLLING_INTERVAL,
+		scheduler.scheduleAtFixedRate(poller, POLLING_INTERVAL,
 				POLLING_INTERVAL, POLLING_UNITS);
 	}
 
@@ -102,7 +102,7 @@ public final class JobHub implements JobService {
 	}
 
 	public void shutdown() {
-		activeTaskPoller.shutdown();
+		scheduler.shutdown();
 	}
 
 	public synchronized void connect(final String hostname, final String username, final String password) {
@@ -125,6 +125,7 @@ public final class JobHub implements JobService {
 					routes.remove(entry.getKey());
 				}
 			}
+			info.shutdown();
 		}
 	}
 

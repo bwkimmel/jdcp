@@ -33,7 +33,6 @@ import java.rmi.UnknownHostException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.BitSet;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
@@ -56,7 +55,7 @@ final class ServiceWrapper implements JobService {
 
 	private static final Logger logger = Logger.getLogger(ServiceWrapper.class);
 
-	private static final int RECONNECT_INTERVAL = 60;
+	private static final long RECONNECT_INTERVAL = 60000;
 
 	private final String host;
 
@@ -68,10 +67,48 @@ final class ServiceWrapper implements JobService {
 
 	private Date idleUntil = new Date(0);
 
+	private final Thread keepAlive;
+
+	private boolean shutdown = false;
+
 	public ServiceWrapper(String host, String username, String password) {
 		this.host = host;
 		this.username = username;
 		this.password = password;
+
+		this.keepAlive = new Thread(new Runnable() {
+			public void run() {
+				keepAlive();
+			}
+		});
+		keepAlive.start();
+	}
+
+	public void shutdown() {
+		synchronized (keepAlive) {
+			shutdown = true;
+			keepAlive.interrupt();
+		}
+	}
+
+	private void keepAlive() {
+		while (!shutdown) {
+			while (service == null && !shutdown) {
+				service = connect(host, username, password);
+				try {
+					Thread.sleep(RECONNECT_INTERVAL);
+				} catch (InterruptedException e) {
+					/* nothing to do. */
+				}
+			}
+			try {
+				synchronized (keepAlive) {
+					keepAlive.wait();
+				}
+			} catch (InterruptedException e) {
+				/* nothing to do. */
+			}
+		}
 	}
 
 	private interface ServiceOperation<T> {
@@ -79,40 +116,30 @@ final class ServiceWrapper implements JobService {
 	};
 
 	private <T> T run(ServiceOperation<T> operation) throws DelegationException {
-		synchronized (this) {
-			if (service == null) {
-				service = connect(host, username, password);
+		JobService service = this.service;
+		if (service != null) {
+			try {
+				return operation.run(service);
+			} catch (NoSuchObjectException e) {
+				service = null;
+				logger.error("Lost connection", e);
+			} catch (ConnectException e) {
+				service = null;
+				logger.error("Lost connection", e);
+			} catch (ConnectIOException e) {
+				service = null;
+				logger.error("Lost connection", e);
+			} catch (UnknownHostException e) {
+				service = null;
+				logger.error("Lost connection", e);
+			} catch (Exception e) {
+				throw new DelegationException("Error occurred delegating to server", e);
 			}
 		}
-		try {
-			return operation.run(service);
-		} catch (NoSuchObjectException e) {
-			service = null;
-			logger.error("Lost connection", e);
-		} catch (ConnectException e) {
-			service = null;
-			logger.error("Lost connection", e);
-		} catch (ConnectIOException e) {
-			service = null;
-			logger.error("Lost connection", e);
-		} catch (UnknownHostException e) {
-			service = null;
-			logger.error("Lost connection", e);
-		} catch (Exception e) {
-			throw new DelegationException("Error occurred delegating to server", e);
+		synchronized (keepAlive) {
+			keepAlive.notify();
 		}
-		service = connect(host, username, password);
-		try {
-			return operation.run(service);
-		} catch (Exception e) {
-			throw new DelegationException("Error occurred delegating to server", e);
-		}
-	}
-
-	private void idle() {
-		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.SECOND, RECONNECT_INTERVAL);
-		idleUntil = cal.getTime();
+		throw new DelegationException("No connection to server");
 	}
 
 	private synchronized JobService connect(String host, String username,
@@ -125,7 +152,6 @@ final class ServiceWrapper implements JobService {
 				return auth.authenticate(username, password);
 			} catch (Exception e) {
 				logger.error("Job service not found at remote host.", e);
-				idle();
 				throw new DelegationException("Could not connect to remote host", e);
 			}
 		} else {

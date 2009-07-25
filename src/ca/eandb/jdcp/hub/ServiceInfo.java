@@ -66,6 +66,9 @@ final class ServiceInfo {
 	public static void prepareDataSource(DataSource ds) throws SQLException {
 		JobInfo.prepareDataSource(ds);
 	}
+	public void shutdown() {
+		service.shutdown();
+	}
 
 	public void pollActiveTasks() {
 		ArrayList<UUID> jobIdList = new ArrayList<UUID>();
