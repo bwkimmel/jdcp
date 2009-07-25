@@ -93,7 +93,8 @@ public final class WorkerState {
 			@OptionArgument("ncpus") int numberOfCpus,
 			@OptionArgument("host") final String host,
 			@OptionArgument("username") final String username,
-			@OptionArgument("password") final String password
+			@OptionArgument("password") final String password,
+			@OptionArgument(value="nodb", shortKey='i') final boolean internal
 			) {
 
 		int availableCpus = Runtime.getRuntime().availableProcessors();
@@ -131,17 +132,19 @@ public final class WorkerState {
 
 		logger.info("Preparing data source");
 
-		EmbeddedDataSource ds = null;
-		try {
-			Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-			ds = new EmbeddedDataSource();
-			ds.setConnectionAttributes("create=true");
-			ds.setDatabaseName("classes");
-			worker.setDataSource(ds);
-		} catch (ClassNotFoundException e) {
-			logger.error("Could not locate database driver.", e);
-		} catch (SQLException e) {
-			logger.error("Error occurred while initializing data source.", e);
+		if (!internal) {
+			EmbeddedDataSource ds = null;
+			try {
+				Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+				ds = new EmbeddedDataSource();
+				ds.setConnectionAttributes("create=true");
+				ds.setDatabaseName("classes");
+				worker.setDataSource(ds);
+			} catch (ClassNotFoundException e) {
+				logger.error("Could not locate database driver.", e);
+			} catch (SQLException e) {
+				logger.error("Error occurred while initializing data source.", e);
+			}
 		}
 
 		workerThread = new Thread(worker);
