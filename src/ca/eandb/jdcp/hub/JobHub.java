@@ -204,21 +204,28 @@ public final class JobHub implements JobService {
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.remote.JobService#requestTask()
 	 */
-	public synchronized TaskDescription requestTask() {
+	public TaskDescription requestTask() {
 		int n = services.size();
-		for (int i = 0; i < n; i++) {
-			ServiceInfo info = services.remove();
-			services.add(info);
-
-			try {
-				TaskDescription task = info.requestTask();
-				if (task != null) {
-					UUID jobId = task.getJobId();
-					routes.put(jobId, info);
-					return task;
+		if (n > 0) {
+			ServiceInfo[] serv;
+			synchronized (this) {
+				serv = (ServiceInfo[]) services.toArray(new ServiceInfo[n]);
+			}
+			for (ServiceInfo info : serv) {
+				try {
+					synchronized (this) {
+						services.remove(info);
+						services.add(info);
+					}
+					TaskDescription task = info.requestTask();
+					if (task != null) {
+						UUID jobId = task.getJobId();
+						routes.put(jobId, info);
+						return task;
+					}
+				} catch (Exception e) {
+					logger.error("Failed to request task from server", e);
 				}
-			} catch (Exception e) {
-				logger.error("Failed to request task from server", e);
 			}
 		}
 		return idleTask;
