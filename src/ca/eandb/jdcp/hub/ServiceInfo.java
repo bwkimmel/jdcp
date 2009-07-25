@@ -60,8 +60,8 @@ final class ServiceInfo {
 
 	private Date idleUntil = new Date(0);
 
-	public ServiceInfo(JobService service, DataSource dataSource) {
-		this.service = service;
+	public ServiceInfo(String host, String username, String password, DataSource dataSource) {
+		this.service = new ServiceWrapper(host, username, password);
 		this.dataSource = dataSource;
 	}
 
@@ -73,7 +73,11 @@ final class ServiceInfo {
 		ArrayList<UUID> jobIdList = new ArrayList<UUID>();
 		ArrayList<Integer> taskIdList = new ArrayList<Integer>();
 		for (JobInfo job : jobs.values()) {
-			job.getIncompleteTasks(jobIdList, taskIdList);
+			UUID jobId = job.getJobId();
+			for (int taskId : job.getActiveTasks()) {
+				jobIdList.add(jobId);
+				taskIdList.add(taskId);
+			}
 		}
 		if (jobIdList.size() > 0) {
 			UUID[] jobIds = (UUID[]) jobIdList.toArray(new UUID[jobIdList.size()]);
@@ -85,7 +89,7 @@ final class ServiceInfo {
 				BitSet finished = service.getFinishedTasks(jobIds, taskIds);
 				for (int i = finished.nextSetBit(0); i >= 0; i = finished.nextSetBit(i + 1)) {
 					JobInfo job = jobs.get(jobIds[i]);
-					job.setTaskComplete(taskIds[i]);
+					job.removeTask(taskIds[i]);
 				}
 				lastPollOk = true;
 			} catch (Exception e) {

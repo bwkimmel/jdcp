@@ -25,10 +25,7 @@
 
 package ca.eandb.jdcp.hub;
 
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.sql.SQLException;
 import java.util.BitSet;
 import java.util.HashMap;
@@ -38,11 +35,11 @@ import java.util.Queue;
 import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.Map.Entry;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import javax.security.auth.login.LoginException;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
@@ -51,10 +48,7 @@ import ca.eandb.jdcp.job.JobExecutionException;
 import ca.eandb.jdcp.job.ParallelizableJob;
 import ca.eandb.jdcp.job.TaskDescription;
 import ca.eandb.jdcp.job.TaskWorker;
-import ca.eandb.jdcp.remote.AuthenticationService;
 import ca.eandb.jdcp.remote.JobService;
-import ca.eandb.jdcp.worker.JobServiceFactory;
-import ca.eandb.jdcp.worker.ReconnectingJobService;
 import ca.eandb.util.concurrent.BackgroundThreadFactory;
 import ca.eandb.util.rmi.Serialized;
 
@@ -67,8 +61,6 @@ public final class JobHub implements JobService {
 	private static final Logger logger = Logger.getLogger(JobHub.class);
 
 	private static final int DEFAULT_IDLE_SECONDS = 10;
-
-	private static final int RECONNECT_INTERVAL = 60;
 
 	private static final long POLLING_INTERVAL = 10;
 
@@ -83,6 +75,8 @@ public final class JobHub implements JobService {
 	private final Map<String, ServiceInfo> hosts = new HashMap<String, ServiceInfo>();
 
 	private final ScheduledExecutorService activeTaskPoller = Executors.newScheduledThreadPool(1, new BackgroundThreadFactory());
+
+	private final Executor executor = Executors.newCachedThreadPool(new BackgroundThreadFactory());
 
 	private final DataSource dataSource;
 
@@ -115,13 +109,8 @@ public final class JobHub implements JobService {
 		if (hosts.containsKey(hostname)) {
 			disconnect(hostname);
 		}
-		JobServiceFactory serviceFactory = new JobServiceFactory() {
-			public JobService connect() {
-				return waitForService(hostname, username, password, RECONNECT_INTERVAL);
-			}
-		};
-		JobService service = new ReconnectingJobService(serviceFactory);
-		ServiceInfo info = new ServiceInfo(service, dataSource);
+		ServiceInfo info = new ServiceInfo(hostname, username, password,
+				dataSource);
 		hosts.put(hostname, info);
 		services.add(info);
 	}
@@ -139,64 +128,49 @@ public final class JobHub implements JobService {
 		}
 	}
 
-	private JobService waitForService(String host, String username, String password, int retryInterval) {
-		JobService service = null;
-		while (true) {
-			service = doConnect(host, username, password);
-			if (service != null) {
-				break;
-			}
-
-			for (int i = retryInterval; i > 0; i--) {
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					return null;
-				}
-			}
-		}
-		return service;
-	}
-
-	private JobService doConnect(String host, String username, String password) {
-		JobService service = null;
-		try {
-			Registry registry = LocateRegistry.getRegistry(host, 5327);
-			AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
-			service = auth.authenticate(username, password);
-		} catch (NotBoundException e) {
-			logger.error("Job service not found at remote host.", e);
-		} catch (RemoteException e) {
-			logger.error("Could not connect to job service.", e);
-		} catch (LoginException e) {
-			logger.error("Login failed.", e);
-		}
-		return service;
-	}
-
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.remote.JobService#getClassDefinition(java.lang.String, java.util.UUID)
 	 */
-	public byte[] getClassDefinition(String name, UUID jobId)
-			throws SecurityException, RemoteException {
+	public byte[] getClassDefinition(String name, UUID jobId) {
 		ServiceInfo info = routes.get(jobId);
-		return (info != null) ? info.getClassDefinition(name, jobId) : null;
+		if (info == null) {
+			throw new IllegalArgumentException("No route for specified job ID");
+		}
+		try {
+			return info.getClassDefinition(name, jobId);
+		} catch (SecurityException e) {
+			logger.error("Could not contact server for class definition", e);
+			throw new RuntimeException("Could not contact server for class definition", e);
+		} catch (RemoteException e) {
+			logger.error("Could not contact server for class definition", e);
+			throw new RuntimeException("Could not contact server for class definition", e);
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.remote.JobService#getClassDigest(java.lang.String, java.util.UUID)
 	 */
-	public byte[] getClassDigest(String name, UUID jobId)
-			throws SecurityException, RemoteException {
+	public byte[] getClassDigest(String name, UUID jobId) {
 		ServiceInfo info = routes.get(jobId);
-		return (info != null) ? info.getClassDigest(name, jobId) : null;
+		if (info == null) {
+			throw new IllegalArgumentException("No route for specified job ID");
+		}
+		try {
+			return info.getClassDigest(name, jobId);
+		} catch (SecurityException e) {
+			logger.error("Could not contact server for class digest", e);
+			throw new RuntimeException("Could not contact server for class digest", e);
+		} catch (RemoteException e) {
+			logger.error("Could not contact server for class digest", e);
+			throw new RuntimeException("Could not contact server for class digest", e);
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.remote.JobService#getFinishedTasks(java.util.UUID[], int[])
 	 */
 	public BitSet getFinishedTasks(UUID[] jobIds, int[] taskIds)
-			throws IllegalArgumentException, SecurityException, RemoteException {
+			throws IllegalArgumentException {
 		if (jobIds == null || taskIds == null) {
 			return null;
 		}
@@ -215,37 +189,64 @@ public final class JobHub implements JobService {
 	 * @see ca.eandb.jdcp.remote.JobService#getTaskWorker(java.util.UUID)
 	 */
 	public Serialized<TaskWorker> getTaskWorker(UUID jobId)
-			throws IllegalArgumentException, SecurityException, RemoteException {
+			throws IllegalArgumentException {
 		ServiceInfo info = routes.get(jobId);
-		return (info != null) ? info.getTaskWorker(jobId) : null;
+		if (info == null) {
+			throw new IllegalArgumentException("No route for specified job id");
+		}
+
+		try {
+			return info.getTaskWorker(jobId);
+		} catch (SecurityException e) {
+			logger.error("Could not contact server for task worker", e);
+			throw new RuntimeException("Could not contact server for task worker", e);
+		} catch (RemoteException e) {
+			logger.error("Could not contact server for task worker", e);
+			throw new RuntimeException("Could not contact server for task worker", e);
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.remote.JobService#reportException(java.util.UUID, int, java.lang.Exception)
 	 */
-	public void reportException(UUID jobId, int taskId, Exception e)
-			throws SecurityException, RemoteException {
-		ServiceInfo info = routes.get(jobId);
+	public void reportException(final UUID jobId, final int taskId,
+			final Exception e) {
+		final ServiceInfo info = routes.get(jobId);
 		if (info != null) {
-			info.reportException(jobId, taskId, e);
+			executor.execute(new Runnable() {
+				public void run() {
+					try {
+						info.reportException(jobId, taskId, e);
+					} catch (SecurityException e1) {
+						logger.error("Cannot report exception", e1);
+					} catch (RemoteException e1) {
+						logger.error("Cannot report exception", e1);
+					}
+				}
+			});
 		}
 	}
 
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.remote.JobService#requestTask()
 	 */
-	public synchronized TaskDescription requestTask() throws SecurityException,
-			RemoteException {
+	public synchronized TaskDescription requestTask() {
 		int n = services.size();
 		for (int i = 0; i < n; i++) {
 			ServiceInfo info = services.remove();
 			services.add(info);
 
-			TaskDescription task = info.requestTask();
-			if (task != null) {
-				UUID jobId = task.getJobId();
-				routes.put(jobId, info);
-				return task;
+			try {
+				TaskDescription task = info.requestTask();
+				if (task != null) {
+					UUID jobId = task.getJobId();
+					routes.put(jobId, info);
+					return task;
+				}
+			} catch (SecurityException e) {
+				logger.error("Failed to request task from server", e);
+			} catch (RemoteException e) {
+				logger.error("Failed to request task from server", e);
 			}
 		}
 		return idleTask;
@@ -254,19 +255,29 @@ public final class JobHub implements JobService {
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.remote.JobService#setIdleTime(int)
 	 */
-	public void setIdleTime(int idleSeconds) throws IllegalArgumentException,
-			SecurityException, RemoteException {
+	public void setIdleTime(int idleSeconds) throws IllegalArgumentException {
 		idleTask = new TaskDescription(null, 0, idleSeconds);
 	}
 
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.remote.JobService#submitTaskResults(java.util.UUID, int, ca.eandb.util.rmi.Serialized)
 	 */
-	public void submitTaskResults(UUID jobId, int taskId,
-			Serialized<Object> results) throws SecurityException,
-			RemoteException {
-		ServiceInfo info = routes.get(jobId);
-		info.submitTaskResults(jobId, taskId, results);
+	public void submitTaskResults(final UUID jobId, final int taskId,
+			final Serialized<Object> results) {
+		final ServiceInfo info = routes.get(jobId);
+		if (info != null) {
+			executor.execute(new Runnable() {
+				public void run() {
+					try {
+						info.submitTaskResults(jobId, taskId, results);
+					} catch (SecurityException e) {
+						logger.error("Cannot submit task results", e);
+					} catch (RemoteException e) {
+						logger.error("Cannot submit task results", e);
+					}
+				}
+			});
+		}
 	}
 
 	///////////////////////////////////////////////////////////////////////////

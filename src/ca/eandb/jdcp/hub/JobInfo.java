@@ -28,9 +28,8 @@ package ca.eandb.jdcp.hub;
 import java.nio.ByteBuffer;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.sql.DataSource;
@@ -53,7 +52,7 @@ final class JobInfo {
 
 	private final UUID id;
 	private final JobService service;
-	private final Map<Integer, TaskInfo> tasks = new HashMap<Integer, TaskInfo>();
+	private final Set<Integer> activeTaskIds = new HashSet<Integer>();
 	private Serialized<TaskWorker> worker = null;
 	private final CachingJobServiceClassLoaderStrategy classCache;
 
@@ -65,6 +64,10 @@ final class JobInfo {
 
 	public static void prepareDataSource(DataSource ds) throws SQLException {
 		DbCachingJobServiceClassLoaderStrategy.prepareDataSource(ds);
+	}
+
+	public UUID getJobId() {
+		return id;
 	}
 
 	public byte[] getClassDigest(String name) {
@@ -92,43 +95,40 @@ final class JobInfo {
 	}
 
 	public void submitTaskResults(int taskId, Serialized<Object> results) {
-		TaskInfo task = tasks.get(taskId);
-		if (task != null) {
-			task.submitTaskResults(results);
+		try {
+			service.submitTaskResults(id, taskId, results);
+			activeTaskIds.remove(taskId);
+		} catch (SecurityException e) {
+			logger.error("Cannot submit task results", e);
+		} catch (RemoteException e) {
+			logger.error("Cannot submit task results", e);
 		}
 	}
 
 	public void reportException(int taskId, Exception e) {
-		TaskInfo task = tasks.get(taskId);
-		if (task != null) {
-			task.reportException(e);
+		try {
+			service.reportException(id, taskId, e);
+		} catch (SecurityException e1) {
+			logger.error("Could not report exception", e1);
+		} catch (RemoteException e1) {
+			logger.error("Could not report exception", e1);
 		}
 	}
 
 	public boolean isTaskComplete(int taskId) {
-		TaskInfo task = tasks.get(taskId);
-		return (task == null) || task.isComplete();
+		return !activeTaskIds.contains(taskId);
 	}
 
 	public void registerTask(int taskId) {
-		TaskInfo task = new TaskInfo(id, taskId, service);
-		tasks.put(taskId, task);
+		activeTaskIds.add(taskId);
 	}
 
-	public synchronized void getIncompleteTasks(Collection<UUID> jobIds, Collection<Integer> taskIds) {
-		for (TaskInfo task : tasks.values()) {
-			if (!task.isComplete()) {
-				jobIds.add(id);
-				taskIds.add(task.getTaskId());
-			}
-		}
+	public void removeTask(int taskId) {
+		activeTaskIds.remove(taskId);
 	}
 
-	public void setTaskComplete(int taskId) {
-		TaskInfo task = tasks.get(taskId);
-		if (task != null) {
-			task.setComplete();
-		}
+	public Set<Integer> getActiveTasks() {
+		return activeTaskIds;
 	}
 
 }
