@@ -52,6 +52,8 @@ import org.apache.log4j.Logger;
 import ca.eandb.jdcp.job.TaskDescription;
 import ca.eandb.jdcp.job.TaskWorker;
 import ca.eandb.jdcp.remote.DelegationException;
+import ca.eandb.jdcp.worker.policy.BlockingCourtesyMonitor;
+import ca.eandb.jdcp.worker.policy.UnconditionalCourtesyMonitor;
 import ca.eandb.util.UnexpectedException;
 import ca.eandb.util.classloader.ClassLoaderStrategy;
 import ca.eandb.util.classloader.StrategyClassLoader;
@@ -70,14 +72,12 @@ public final class ThreadServiceWorker implements Runnable {
 	/**
 	 * Initializes the address of the master and the amount of time to idle
 	 * when no task is available.
-	 * @param masterHost The URL of the master.
-	 * @param idleTime The time (in seconds) to idle when no task is
-	 * 		available.
-	 * @param executor The <code>Executor</code> to use to process tasks.
 	 * @param monitorFactory The <code>ProgressMonitorFactory</code> to use to
 	 * 		create <code>ProgressMonitor</code>s for worker tasks.
+	 * @param courtesyMonitor The <code>CourtesyMonitor</code> to use to
+	 * 		determine whether tasks should be allowed to run.
 	 */
-	public ThreadServiceWorker(JobServiceFactory serviceFactory, ThreadFactory threadFactory, ProgressMonitorFactory monitorFactory) {
+	public ThreadServiceWorker(JobServiceFactory serviceFactory, ThreadFactory threadFactory, ProgressMonitorFactory monitorFactory, BlockingCourtesyMonitor courtesyMonitor) {
 
 		assert(maxWorkers > 0);
 
@@ -85,7 +85,18 @@ public final class ThreadServiceWorker implements Runnable {
 		this.executor = Executors.newCachedThreadPool(threadFactory);
 		this.maxWorkers = Runtime.getRuntime().availableProcessors();
 		this.monitorFactory = monitorFactory;
+		this.courtesyMonitor = courtesyMonitor;
 
+	}
+
+	/**
+	 * Initializes the address of the master and the amount of time to idle
+	 * when no task is available.
+	 * @param monitorFactory The <code>ProgressMonitorFactory</code> to use to
+	 * 		create <code>ProgressMonitor</code>s for worker tasks.
+	 */
+	public ThreadServiceWorker(JobServiceFactory serviceFactory, ThreadFactory threadFactory, ProgressMonitorFactory monitorFactory) {
+		this(serviceFactory, threadFactory, monitorFactory, new UnconditionalCourtesyMonitor());
 	}
 
 	/**
@@ -233,6 +244,9 @@ public final class ThreadServiceWorker implements Runnable {
 	 * 		for an available worker.
 	 */
 	private Worker getWorker() throws InterruptedException {
+		while (!courtesyMonitor.allowTasksToRun()) {
+			courtesyMonitor.waitFor();
+		}
 		while (numWorkers > maxWorkers) {
 			workerQueue.take();
 			numWorkers--;
@@ -779,6 +793,22 @@ public final class ThreadServiceWorker implements Runnable {
 		}
 
 		/**
+		 * Waits until the <code>CourtesyMonitor</code> says its okay to
+		 * proceed.
+		 */
+		private void waitForCourtesyMonitor() {
+			if (!courtesyMonitor.allowTasksToRun()) {
+				monitor.notifyStatusChanged("Suspended");
+				do {
+					try {
+						courtesyMonitor.waitFor();
+					} catch (InterruptedException e) {}
+				} while (!courtesyMonitor.allowTasksToRun());
+				monitor.notifyStatusChanged("Resumed");
+			}
+		}
+
+		/**
 		 * Resets the local cancel pending flag.
 		 */
 		public void reset() {
@@ -840,6 +870,7 @@ public final class ThreadServiceWorker implements Runnable {
 		 * @see ca.eandb.util.progress.ProgressMonitor#notifyIndeterminantProgress()
 		 */
 		public boolean notifyIndeterminantProgress() {
+			waitForCourtesyMonitor();
 			return monitor.notifyIndeterminantProgress()
 					&& !isLocalCancelPending();
 		}
@@ -848,6 +879,7 @@ public final class ThreadServiceWorker implements Runnable {
 		 * @see ca.eandb.util.progress.ProgressMonitor#notifyProgress(int, int)
 		 */
 		public boolean notifyProgress(int value, int maximum) {
+			waitForCourtesyMonitor();
 			return monitor.notifyProgress(value, maximum)
 				&& !isLocalCancelPending();
 		}
@@ -856,6 +888,7 @@ public final class ThreadServiceWorker implements Runnable {
 		 * @see ca.eandb.util.progress.ProgressMonitor#notifyProgress(double)
 		 */
 		public boolean notifyProgress(double progress) {
+			waitForCourtesyMonitor();
 			return monitor.notifyProgress(progress)
 				&& !isLocalCancelPending();
 		}
@@ -864,6 +897,7 @@ public final class ThreadServiceWorker implements Runnable {
 		 * @see ca.eandb.util.progress.ProgressMonitor#notifyStatusChanged(java.lang.String)
 		 */
 		public void notifyStatusChanged(String status) {
+			waitForCourtesyMonitor();
 			monitor.notifyStatusChanged(status);
 		}
 
@@ -880,6 +914,12 @@ public final class ThreadServiceWorker implements Runnable {
 	 * <code>ProgressMonitor</code>s for worker tasks.
 	 */
 	private final ProgressMonitorFactory monitorFactory;
+
+	/**
+	 * The <code>CourtesyMonitor</code> to use to determine if we should be
+	 * allowed to run tasks.
+	 */
+	private final BlockingCourtesyMonitor courtesyMonitor;
 
 	/**
 	 * The <code>JobService</code> to obtain tasks from and submit
