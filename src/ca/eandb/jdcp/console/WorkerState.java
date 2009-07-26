@@ -130,9 +130,8 @@ public final class WorkerState {
 
 		taskProgressStates = monitorFactory.getProgressStates();
 
-		logger.info("Preparing data source");
-
 		if (!internal) {
+			logger.info("Preparing data source");
 			EmbeddedDataSource ds = null;
 			try {
 				Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
