@@ -29,7 +29,7 @@ package ca.eandb.jdcp.worker.policy;
  * A <code>CourtesyMonitor</code> that always allows tasks to run.
  * @author Brad Kimmel
  */
-public final class UnconditionalCourtesyMonitor implements BlockingCourtesyMonitor {
+public final class UnconditionalCourtesyMonitor implements CourtesyMonitor {
 
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.worker.policy.CourtesyMonitor#allowTasksToRun()

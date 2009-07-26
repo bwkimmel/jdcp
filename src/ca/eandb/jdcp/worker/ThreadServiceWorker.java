@@ -52,7 +52,7 @@ import org.apache.log4j.Logger;
 import ca.eandb.jdcp.job.TaskDescription;
 import ca.eandb.jdcp.job.TaskWorker;
 import ca.eandb.jdcp.remote.DelegationException;
-import ca.eandb.jdcp.worker.policy.BlockingCourtesyMonitor;
+import ca.eandb.jdcp.worker.policy.CourtesyMonitor;
 import ca.eandb.jdcp.worker.policy.UnconditionalCourtesyMonitor;
 import ca.eandb.util.UnexpectedException;
 import ca.eandb.util.classloader.ClassLoaderStrategy;
@@ -77,7 +77,7 @@ public final class ThreadServiceWorker implements Runnable {
 	 * @param courtesyMonitor The <code>CourtesyMonitor</code> to use to
 	 * 		determine whether tasks should be allowed to run.
 	 */
-	public ThreadServiceWorker(JobServiceFactory serviceFactory, ThreadFactory threadFactory, ProgressMonitorFactory monitorFactory, BlockingCourtesyMonitor courtesyMonitor) {
+	public ThreadServiceWorker(JobServiceFactory serviceFactory, ThreadFactory threadFactory, ProgressMonitorFactory monitorFactory, CourtesyMonitor courtesyMonitor) {
 
 		assert(maxWorkers > 0);
 
@@ -919,7 +919,7 @@ public final class ThreadServiceWorker implements Runnable {
 	 * The <code>CourtesyMonitor</code> to use to determine if we should be
 	 * allowed to run tasks.
 	 */
-	private final BlockingCourtesyMonitor courtesyMonitor;
+	private final CourtesyMonitor courtesyMonitor;
 
 	/**
 	 * The <code>JobService</code> to obtain tasks from and submit

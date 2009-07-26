@@ -27,25 +27,26 @@ package ca.eandb.jdcp.worker.policy;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
  * @author Brad
  *
  */
-public final class PollingCourtesyMonitor implements BlockingCourtesyMonitor {
+public abstract class PollingCourtesyMonitor implements CourtesyMonitor {
 
 	private static final int CORE_THREAD_POOL_SIZE = 2;
 
 	private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(CORE_THREAD_POOL_SIZE);
 
-	private final CourtesyMonitor inner;
+	private ScheduledFuture<?> future = null;
 
 	private boolean allow = true;
 
 	private final Runnable poll = new Runnable() {
 		public void run() {
-			allow = inner.allowTasksToRun();
+			allow = poll();
 			synchronized (PollingCourtesyMonitor.this) {
 				if (allow) {
 					PollingCourtesyMonitor.this.notifyAll();
@@ -54,29 +55,37 @@ public final class PollingCourtesyMonitor implements BlockingCourtesyMonitor {
 		}
 	};
 
-	public PollingCourtesyMonitor(long initialDelay, long period, TimeUnit unit, CourtesyMonitor inner) {
-		this.inner = inner;
+	public synchronized void stopPolling() {
+		future.cancel(true);
+	}
+
+	public synchronized void startPolling(long initialDelay, long period, TimeUnit unit) {
+		if (future != null) {
+			stopPolling();
+		}
 		executor.scheduleAtFixedRate(poll, initialDelay, period, unit);
 	}
 
-	public PollingCourtesyMonitor(long period, TimeUnit unit, CourtesyMonitor inner) {
-		this(0, period, unit, inner);
+	public void startPolling(long period, TimeUnit unit) {
+		startPolling(0, period, unit);
 	}
 
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.worker.policy.CourtesyMonitor#allowTasksToRun()
 	 */
-	public boolean allowTasksToRun() {
+	public final boolean allowTasksToRun() {
 		return allow;
 	}
 
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.worker.policy.BlockingCourtesyMonitor#waitFor()
 	 */
-	public synchronized void waitFor() throws InterruptedException {
+	public final synchronized void waitFor() throws InterruptedException {
 		if (!allow) {
 			wait();
 		}
 	}
+
+	protected abstract boolean poll();
 
 }

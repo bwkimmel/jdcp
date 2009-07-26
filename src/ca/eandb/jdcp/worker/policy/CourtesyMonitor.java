@@ -41,4 +41,10 @@ public interface CourtesyMonitor {
 	 */
 	boolean allowTasksToRun();
 
+	/**
+	 * Waits until tasks are allowed to run.
+	 * @throws InterruptedException If this thread was interrupted.
+	 */
+	void waitFor() throws InterruptedException;
+
 }

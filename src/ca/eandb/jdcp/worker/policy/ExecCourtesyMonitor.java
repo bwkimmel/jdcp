@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
  * @author Brad
  *
  */
-public final class ExecCourtesyMonitor implements CourtesyMonitor {
+public final class ExecCourtesyMonitor extends PollingCourtesyMonitor {
 
 	private static final Logger logger = Logger.getLogger(ExecCourtesyMonitor.class);
 
@@ -52,9 +52,9 @@ public final class ExecCourtesyMonitor implements CourtesyMonitor {
 	}
 
 	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.policy.CourtesyMonitor#allowTasksToRun()
+	 * @see ca.eandb.jdcp.worker.policy.PollingCourtesyMonitor#poll()
 	 */
-	public boolean allowTasksToRun() {
+	public boolean poll() {
 		try {
 			Process process = Runtime.getRuntime().exec(command, null,
 					workingDirectory);
