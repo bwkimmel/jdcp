@@ -64,8 +64,16 @@ public abstract class CachingJobServiceClassLoaderStrategy implements ClassLoade
 	 */
 	private Map<String, byte[]> digestLookup = Collections.synchronizedMap(new HashMap<String, byte[]>());
 
+	/**
+	 * A <code>Map</code> to store the names of the classes whose digests are
+	 * currently pending lookup.
+	 */
 	private Map<String, String> pendingDigest = new HashMap<String, String>();
 
+	/**
+	 * A <code>Map</code> to store the names of the classes whose definitions
+	 * are currently pending lookup.
+	 */
 	private Map<String, String> pendingDef = new HashMap<String, String>();
 
 	/**
