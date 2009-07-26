@@ -30,6 +30,7 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 
 import javax.sql.DataSource;
 
@@ -50,14 +51,24 @@ final class JobInfo {
 	private Serialized<TaskWorker> worker = null;
 	private final CachingJobServiceClassLoaderStrategy classCache;
 
-	public JobInfo(UUID id, ServiceWrapper service, DataSource dataSource) {
+	public JobInfo(UUID id, ServiceWrapper service, DataSource dataSource, Executor executor) {
 		this.id = id;
 		this.service = service;
 		this.classCache = new DbCachingJobServiceClassLoaderStrategy(service, id, dataSource);
+
+		initTaskWorker(executor);
 	}
 
 	public static void prepareDataSource(DataSource ds) throws SQLException {
 		DbCachingJobServiceClassLoaderStrategy.prepareDataSource(ds);
+	}
+
+	private void initTaskWorker(Executor executor) {
+		executor.execute(new Runnable() {
+			public void run() {
+				getTaskWorker();
+			}
+		});
 	}
 
 	public UUID getJobId() {

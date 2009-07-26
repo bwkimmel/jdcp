@@ -31,8 +31,11 @@ import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 
 import javax.sql.DataSource;
 
@@ -51,16 +54,46 @@ final class ServiceInfo {
 
 	private static final Logger logger = Logger.getLogger(ServiceInfo.class);
 
+	private final Executor executor;
 	private final ServiceWrapper service;
 	private final Map<UUID, JobInfo> jobs = new HashMap<UUID, JobInfo>();
 	private boolean lastPollOk = true;
 	private final DataSource dataSource;
+	private final Queue<TaskDescription> pendingTasks = new LinkedList<TaskDescription>();
+
+	private final Runnable getNextTask = new Runnable() {
+		public void run() {
+			TaskDescription task = null;
+			if (!isIdle()) {
+				task = service.requestTask();
+				UUID jobId = task.getJobId();
+				if (jobId == null) {
+					try {
+						int seconds = (Integer) task.getTask().deserialize();
+						idle(seconds);
+					} catch (ClassNotFoundException e) {
+						throw new UnexpectedException(e);
+					}
+					task = null;
+				} else {
+					JobInfo job = getJobInfo(jobId);
+					job.registerTask(task.getTaskId());
+				}
+			}
+			if (task != null) {
+				synchronized (pendingTasks) {
+					pendingTasks.add(task);
+				}
+			}
+		}
+	};
 
 	private Date idleUntil = new Date(0);
 
-	public ServiceInfo(String host, String username, String password, DataSource dataSource) {
+	public ServiceInfo(String host, String username, String password, DataSource dataSource, Executor executor) {
 		this.service = new ServiceWrapper(host, username, password);
 		this.dataSource = dataSource;
+		this.executor = executor;
 	}
 
 	public static void prepareDataSource(DataSource ds) throws SQLException {
@@ -123,7 +156,7 @@ final class ServiceInfo {
 	private synchronized JobInfo getJobInfo(UUID id) {
 		JobInfo job = jobs.get(id);
 		if (job == null) {
-			job = new JobInfo(id, service, dataSource);
+			job = new JobInfo(id, service, dataSource, executor);
 			jobs.put(id, job);
 		}
 		return job;
@@ -155,25 +188,11 @@ final class ServiceInfo {
 		job.reportException(taskId, e);
 	}
 
-	public TaskDescription requestTask() {
-		TaskDescription task = null;
-		if (!isIdle()) {
-			task = service.requestTask();
-			UUID jobId = task.getJobId();
-			if (jobId == null) {
-				try {
-					int seconds = (Integer) task.getTask().deserialize();
-					idle(seconds);
-				} catch (ClassNotFoundException e) {
-					throw new UnexpectedException(e);
-				}
-				task = null;
-			} else {
-				JobInfo job = getJobInfo(jobId);
-				job.registerTask(task.getTaskId());
-			}
+	public synchronized TaskDescription requestTask() {
+		executor.execute(getNextTask);
+		synchronized (pendingTasks) {
+			return pendingTasks.poll();
 		}
-		return task;
 	}
 
 	public void submitTaskResults(UUID jobId, int taskId,

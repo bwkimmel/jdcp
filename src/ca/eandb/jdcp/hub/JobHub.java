@@ -110,7 +110,7 @@ public final class JobHub implements JobService {
 			disconnect(hostname);
 		}
 		ServiceInfo info = new ServiceInfo(hostname, username, password,
-				dataSource);
+				dataSource, executor);
 		hosts.put(hostname, info);
 		services.add(info);
 	}
