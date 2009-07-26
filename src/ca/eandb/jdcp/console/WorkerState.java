@@ -25,6 +25,7 @@
 
 package ca.eandb.jdcp.console;
 
+import java.io.File;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -34,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import javax.security.auth.login.LoginException;
 
@@ -44,6 +46,9 @@ import ca.eandb.jdcp.remote.AuthenticationService;
 import ca.eandb.jdcp.remote.JobService;
 import ca.eandb.jdcp.worker.JobServiceFactory;
 import ca.eandb.jdcp.worker.ThreadServiceWorker;
+import ca.eandb.jdcp.worker.policy.CourtesyMonitor;
+import ca.eandb.jdcp.worker.policy.ExecCourtesyMonitor;
+import ca.eandb.jdcp.worker.policy.UnconditionalCourtesyMonitor;
 import ca.eandb.util.args.CommandArgument;
 import ca.eandb.util.args.OptionArgument;
 import ca.eandb.util.concurrent.BackgroundThreadFactory;
@@ -61,6 +66,8 @@ public final class WorkerState {
 
 	/** The interval between connection attempts (in seconds). */
 	private static final int RECONNECT_INTERVAL = 60;
+
+	private static final long DEFAULT_COURTESY_POLLING_INTERVAL = 10;
 
 	/** The list of <code>ProgressMonitor</code>s for each worker thread. */
 	private List<ProgressState> taskProgressStates = null;
@@ -94,7 +101,10 @@ public final class WorkerState {
 			@OptionArgument("host") final String host,
 			@OptionArgument("username") final String username,
 			@OptionArgument("password") final String password,
-			@OptionArgument(value="nodb", shortKey='i') final boolean internal
+			@OptionArgument(value="nodb", shortKey='i') final boolean internal,
+			@OptionArgument("courtesy") final String courtesyCommand,
+			@OptionArgument(value="courtesyWorkingDirectory", shortKey='W') File courtesyWorkingDirectory,
+			@OptionArgument(value="courtesyPollingInterval", shortKey='P') long courtesyPollingInterval
 			) {
 
 		int availableCpus = Runtime.getRuntime().availableProcessors();
@@ -123,9 +133,22 @@ public final class WorkerState {
 			}
 		};
 
+		CourtesyMonitor courtesyMonitor;
+		if (!courtesyCommand.equals("")) {
+			logger.info("Initializing courtesy monitor");
+			if (courtesyPollingInterval == 0) {
+				courtesyPollingInterval = DEFAULT_COURTESY_POLLING_INTERVAL;
+			}
+			ExecCourtesyMonitor exec = new ExecCourtesyMonitor(courtesyCommand, courtesyWorkingDirectory);
+			exec.startPolling(courtesyPollingInterval, TimeUnit.SECONDS);
+			courtesyMonitor = exec;
+		} else {
+			courtesyMonitor = new UnconditionalCourtesyMonitor();
+		}
+
 		ThreadFactory threadFactory = new BackgroundThreadFactory();
 		ProgressStateFactory monitorFactory = new ProgressStateFactory();
-		worker = new ThreadServiceWorker(serviceFactory, threadFactory, monitorFactory);
+		worker = new ThreadServiceWorker(serviceFactory, threadFactory, monitorFactory, courtesyMonitor);
 		worker.setMaxWorkers(numberOfCpus);
 
 		taskProgressStates = monitorFactory.getProgressStates();
