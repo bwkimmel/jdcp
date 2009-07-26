@@ -25,11 +25,13 @@
 
 package ca.eandb.jdcp.worker;
 
+import java.io.EOFException;
 import java.rmi.ConnectException;
 import java.rmi.ConnectIOException;
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.rmi.UnknownHostException;
+import java.rmi.UnmarshalException;
 import java.util.BitSet;
 import java.util.UUID;
 
@@ -332,6 +334,12 @@ public final class ReconnectingJobService implements JobService {
 				logger.error("Lost connection", e);
 			} catch (UnknownHostException e) {
 				logger.error("Lost connection", e);
+			} catch (UnmarshalException e) {
+				if (e.getCause() instanceof EOFException) {
+					logger.error("Lost connection", e);
+				} else {
+					throw e;
+				}
 			}
 		}
 	}

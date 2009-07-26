@@ -25,11 +25,13 @@
 
 package ca.eandb.jdcp.hub;
 
+import java.io.EOFException;
 import java.rmi.ConnectException;
 import java.rmi.ConnectIOException;
 import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.rmi.UnknownHostException;
+import java.rmi.UnmarshalException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.BitSet;
@@ -132,6 +134,13 @@ final class ServiceWrapper implements JobService {
 			} catch (UnknownHostException e) {
 				service = null;
 				logger.error("Lost connection", e);
+			} catch (UnmarshalException e) {
+				if (e.getCause() instanceof EOFException) {
+					service = null;
+					logger.error("Lost connection", e);
+				} else {
+					throw new DelegationException("Error occurred delegating to server", e);
+				}
 			} catch (Exception e) {
 				throw new DelegationException("Error occurred delegating to server", e);
 			}
