@@ -147,7 +147,7 @@ final class ServiceInfo {
 			idleUntil = cal.getTime();
 		} else {
 			Date idleTime = cal.getTime();
-			if (idleTime.before(idleUntil)) {
+			if (idleTime.after(idleUntil)) {
 				idleUntil = idleTime;
 			}
 		}
