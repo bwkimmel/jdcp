@@ -33,7 +33,7 @@ package ca.eandb.jdcp.worker.policy;
 public abstract class AsyncCourtesyMonitor implements CourtesyMonitor {
 
 	/** A flag indicating if tasks should be allowed to run. */
-	private boolean allow;
+	private boolean allow = true;
 
 	/**
 	 * Sets whether tasks should be allowed to run.
