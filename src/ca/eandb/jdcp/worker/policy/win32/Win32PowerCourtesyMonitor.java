@@ -36,8 +36,10 @@ import ca.eandb.jdcp.worker.policy.win32.W32API.HWND;
 import ca.eandb.jdcp.worker.policy.win32.W32API.LPARAM;
 import ca.eandb.jdcp.worker.policy.win32.W32API.LRESULT;
 import ca.eandb.jdcp.worker.policy.win32.W32API.WPARAM;
+import ca.eandb.util.UnexpectedException;
 
 import com.sun.jna.Native;
+import com.sun.jna.Platform;
 
 /**
  * A <code>CourtesyMonitor</code> that monitors the power status of this
@@ -66,7 +68,7 @@ public final class Win32PowerCourtesyMonitor extends AsyncCourtesyMonitor {
 
 	/** Receives WM_POWERBROADCAST messages from Windows. */
 	@SuppressWarnings("unused")
-	private final PowerBroadcastMonitor monitor = new PowerBroadcastMonitor();
+	private final PowerBroadcastMonitor monitor;
 
 	/**
 	 * A <code>WindowProc</code> for receiving WM_POWERBROADCAST messages
@@ -120,6 +122,10 @@ public final class Win32PowerCourtesyMonitor extends AsyncCourtesyMonitor {
 	 * Creates a <code>Win32PowerCourtesyMonitor</code>.
 	 */
 	public Win32PowerCourtesyMonitor() {
+		if (!Platform.isWindows()) {
+			throw new UnexpectedException("This class requires Windows");
+		}
+		monitor = new PowerBroadcastMonitor();
 		poll();
 	}
 
