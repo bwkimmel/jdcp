@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
  * @author Brad
  *
  */
-public abstract class PollingCourtesyMonitor implements CourtesyMonitor {
+public abstract class PollingCourtesyMonitor extends AsyncCourtesyMonitor {
 
 	private static final int CORE_THREAD_POOL_SIZE = 2;
 
@@ -42,21 +42,15 @@ public abstract class PollingCourtesyMonitor implements CourtesyMonitor {
 
 	private ScheduledFuture<?> future = null;
 
-	private boolean allow = true;
-
 	private final Runnable poll = new Runnable() {
 		public void run() {
-			allow = poll();
-			synchronized (PollingCourtesyMonitor.this) {
-				if (allow) {
-					PollingCourtesyMonitor.this.notifyAll();
-				}
-			}
+			allow(poll());
 		}
 	};
 
 	public synchronized void stopPolling() {
 		future.cancel(true);
+		allow();
 	}
 
 	public synchronized void startPolling(long initialDelay, long period, TimeUnit unit) {
@@ -68,22 +62,6 @@ public abstract class PollingCourtesyMonitor implements CourtesyMonitor {
 
 	public void startPolling(long period, TimeUnit unit) {
 		startPolling(0, period, unit);
-	}
-
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.policy.CourtesyMonitor#allowTasksToRun()
-	 */
-	public final boolean allowTasksToRun() {
-		return allow;
-	}
-
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.policy.BlockingCourtesyMonitor#waitFor()
-	 */
-	public final synchronized void waitFor() throws InterruptedException {
-		if (!allow) {
-			wait();
-		}
 	}
 
 	protected abstract boolean poll();
