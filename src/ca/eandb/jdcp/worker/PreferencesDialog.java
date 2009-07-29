@@ -42,6 +42,9 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * @author Brad
@@ -52,6 +55,11 @@ public final class PreferencesDialog extends JDialog {
 	private static final Preferences pref = Preferences.userNodeForPackage(MainWindow.class);  //  @jve:decl-index=0:
 
 	private static final long serialVersionUID = 1L;
+
+	private static final String FORMAT_BATTERY_LIFE_WHILE_CHARGING = "While charging battery, suspend until battery life exceeds %d%%";
+
+	private static final String FORMAT_BATTERY_LIFE = "Suspend when battery life drops below %d%%";
+
 	private JPanel jContentPane = null;
 	private JPanel buttonPanel = null;
 	private JPanel mainPanel = null;
@@ -61,6 +69,16 @@ public final class PreferencesDialog extends JDialog {
 	private boolean cancelled;
 	private JCheckBox limitCpusCheckBox;
 	private JFormattedTextField maxCpusTextField;
+
+	private JCheckBox requireACCheckBox;
+
+	private JSlider minBatteryLifeSlider;
+
+	private JSlider minBatteryLifeWhileChargingSlider;
+
+	private JLabel minBatteryLifeLabel;
+
+	private JLabel minBatteryLifeWhileChargingLabel;
 
 	/**
 	 * @param owner
@@ -89,6 +107,13 @@ public final class PreferencesDialog extends JDialog {
 		return cancelled;
 	}
 
+	public void setPowerSettingsEnabled(boolean enabled) {
+		boolean requireAC = getRequireACCheckBox().isSelected();
+		getRequireACCheckBox().setEnabled(enabled);
+		getMinBatteryLifeSlider().setEnabled(!requireAC && enabled);
+		getMinBatteryLifeWhileChargingSlider().setEnabled(enabled);
+	}
+
 	/**
 	 * Updates the form elements based on preferences.
 	 */
@@ -106,6 +131,23 @@ public final class PreferencesDialog extends JDialog {
 			getMaxCpusTextField().setValue(maxCpus);
 			getMaxCpusTextField().setEnabled(true);
 		}
+
+		if (getRequireACCheckBox().isEnabled()) {
+			boolean requireAC = pref.getBoolean("requireAC", false);
+			int minBattLife = pref.getInt("minBattLife", 0);
+			int minBattLifeWhileChg = pref.getInt("minBattLifeWhileChg", 0);
+			getRequireACCheckBox().setSelected(requireAC);
+			getMinBatteryLifeSlider().setEnabled(!requireAC);
+			getMinBatteryLifeSlider().setValue(minBattLife);
+			getMinBatteryLifeWhileChargingSlider().setValue(minBattLifeWhileChg);
+		} else {
+			getRequireACCheckBox().setSelected(false);
+			getMinBatteryLifeSlider().setValue(0);
+			getMinBatteryLifeWhileChargingSlider().setValue(0);
+			getRequireACCheckBox().setEnabled(false);
+			getMinBatteryLifeSlider().setEnabled(false);
+			getMinBatteryLifeWhileChargingSlider().setEnabled(false);
+		}
 	}
 
 	/**
@@ -121,6 +163,13 @@ public final class PreferencesDialog extends JDialog {
 		} else {
 			pref.putInt("maxCpus", 0);
 		}
+
+		boolean requireAC = getRequireACCheckBox().isSelected();
+		int minBattLife = getMinBatteryLifeSlider().getValue();
+		int minBattLifeWhileChg = getMinBatteryLifeWhileChargingSlider().getValue();
+		pref.putBoolean("requireAC", requireAC);
+		pref.putInt("minBattLife", minBattLife);
+		pref.putInt("minBattLifeWhileChg", minBattLifeWhileChg);
 	}
 
 	/**
@@ -129,7 +178,7 @@ public final class PreferencesDialog extends JDialog {
 	 * @return void
 	 */
 	private void initialize() {
-		this.setSize(300, 200);
+		this.setSize(480, 320);
 		this.setTitle("Preferences");
 		this.setContentPane(getJContentPane());
 	}
@@ -266,10 +315,96 @@ public final class PreferencesDialog extends JDialog {
 			c.gridy = 3;
 			c.gridwidth = 2;
 			c.weightx = 1.0D;
+			c.weighty = 0.0D;
+			mainPanel.add(getRequireACCheckBox(), c);
+
+			c.gridx = 0;
+			c.gridy = 4;
+			c.gridwidth = 2;
+			c.weightx = 1.0D;
+			c.weighty = 0.0D;
+			mainPanel.add(getMinBatteryLifeLabel(), c);
+
+			c.gridx = 0;
+			c.gridy = 5;
+			c.gridwidth = 2;
+			c.weightx = 1.0D;
+			c.weighty = 0.0D;
+			mainPanel.add(getMinBatteryLifeSlider(), c);
+
+			c.gridx = 0;
+			c.gridy = 6;
+			c.gridwidth = 2;
+			c.weightx = 1.0D;
+			c.weighty = 0.0D;
+			mainPanel.add(getMinBatteryLifeWhileChargingLabel(), c);
+
+			c.gridx = 0;
+			c.gridy = 7;
+			c.gridwidth = 2;
+			c.weightx = 1.0D;
+			c.weighty = 0.0D;
+			mainPanel.add(getMinBatteryLifeWhileChargingSlider(), c);
+
+			c.gridx = 0;
+			c.gridy = 8;
+			c.gridwidth = 2;
+			c.weightx = 1.0D;
 			c.weighty = 1.0D;
 			mainPanel.add(new JPanel(), c);
 		}
 		return mainPanel;
+	}
+
+	private JSlider getMinBatteryLifeSlider() {
+		if (minBatteryLifeSlider == null) {
+			minBatteryLifeSlider = new JSlider(0, 100);
+			minBatteryLifeSlider.addChangeListener(new ChangeListener() {
+				public void stateChanged(ChangeEvent e) {
+					getMinBatteryLifeLabel().setText(String.format(FORMAT_BATTERY_LIFE, minBatteryLifeSlider.getValue()));
+				}
+			});
+		}
+		return minBatteryLifeSlider;
+	}
+
+	private JSlider getMinBatteryLifeWhileChargingSlider() {
+		if (minBatteryLifeWhileChargingSlider == null) {
+			minBatteryLifeWhileChargingSlider = new JSlider(0, 100);
+			minBatteryLifeWhileChargingSlider.addChangeListener(new ChangeListener() {
+				public void stateChanged(ChangeEvent e) {
+					getMinBatteryLifeWhileChargingLabel().setText(String.format(FORMAT_BATTERY_LIFE_WHILE_CHARGING, minBatteryLifeWhileChargingSlider.getValue()));
+				}
+			});
+		}
+		return minBatteryLifeWhileChargingSlider;
+	}
+
+	private JLabel getMinBatteryLifeLabel() {
+		if (minBatteryLifeLabel == null) {
+			minBatteryLifeLabel = new JLabel(String.format(FORMAT_BATTERY_LIFE, getMinBatteryLifeSlider().getValue()));
+		}
+		return minBatteryLifeLabel;
+	}
+
+	private JLabel getMinBatteryLifeWhileChargingLabel() {
+		if (minBatteryLifeWhileChargingLabel == null) {
+			minBatteryLifeWhileChargingLabel = new JLabel(String.format(FORMAT_BATTERY_LIFE_WHILE_CHARGING, getMinBatteryLifeWhileChargingSlider().getValue()));
+		}
+		return minBatteryLifeWhileChargingLabel;
+	}
+
+	private JCheckBox getRequireACCheckBox() {
+		if (requireACCheckBox == null) {
+			requireACCheckBox = new JCheckBox("Suspend when A/C power is disconnected");
+			requireACCheckBox.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					getMinBatteryLifeSlider().setEnabled(
+							!requireACCheckBox.isSelected());
+				}
+			});
+		}
+		return requireACCheckBox;
 	}
 
 	/**

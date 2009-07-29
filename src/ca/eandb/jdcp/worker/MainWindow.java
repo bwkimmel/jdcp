@@ -78,6 +78,10 @@ import org.apache.log4j.PatternLayout;
 import ca.eandb.jdcp.JdcpUtil;
 import ca.eandb.jdcp.remote.AuthenticationService;
 import ca.eandb.jdcp.remote.JobService;
+import ca.eandb.jdcp.worker.policy.CourtesyMonitor;
+import ca.eandb.jdcp.worker.policy.CourtesyMonitorFactory;
+import ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor;
+import ca.eandb.jdcp.worker.policy.UnconditionalCourtesyMonitor;
 import ca.eandb.util.args.ArgumentProcessor;
 import ca.eandb.util.args.BooleanFieldOption;
 import ca.eandb.util.args.IntegerFieldOption;
@@ -107,6 +111,8 @@ public final class MainWindow extends JFrame {
 	private ThreadServiceWorker worker = null;
 	private Thread workerThread = null;
 	private final Options options;
+	private final PowerCourtesyMonitor powerMonitor = CourtesyMonitorFactory.INSTANCE
+			.createPowerCourtesyMonitor();
 
 	/**
 	 * Container class for command line options.
@@ -362,6 +368,7 @@ public final class MainWindow extends JFrame {
 		final PreferencesDialog dialog = new PreferencesDialog(this);
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
+				dialog.setPowerSettingsEnabled(powerMonitor != null);
 				dialog.setVisible(true);
 				if (!dialog.isCancelled()) {
 					onPreferencesChanged();
@@ -377,6 +384,17 @@ public final class MainWindow extends JFrame {
 			maxCpus = availableCpus;
 		}
 		worker.setMaxWorkers(maxCpus);
+
+		if (powerMonitor != null) {
+			boolean requireAC = pref.getBoolean("requireAC", false);
+			int minBattLife = pref.getInt("minBattLife", 0);
+			int minBattLifeWhileChg = pref.getInt("minBattLifeWhileChg", 0);
+			minBattLife = Math.min(Math.max(minBattLife, 0), 100);
+			minBattLifeWhileChg = Math.min(Math.max(minBattLifeWhileChg, 0), 100);
+			powerMonitor.setRequireAC(requireAC);
+			powerMonitor.setMinBatteryLifePercent(minBattLife);
+			powerMonitor.setMinBatteryLifePercentWhileCharging(minBattLifeWhileChg);
+		}
 	}
 
 	private void changeConnection() {
@@ -528,9 +546,11 @@ public final class MainWindow extends JFrame {
 
 		setStatus("Starting worker...");
 
+		CourtesyMonitor courtesyMonitor = (powerMonitor != null) ? powerMonitor
+				: new UnconditionalCourtesyMonitor();
 		ThreadFactory threadFactory = new BackgroundThreadFactory();
 		worker = new ThreadServiceWorker(serviceFactory, threadFactory,
-				getProgressPanel());
+				getProgressPanel(), courtesyMonitor);
 		worker.setMaxWorkers(options.numberOfCpus);
 
 		setStatus("Preparing data source...");
@@ -547,6 +567,8 @@ public final class MainWindow extends JFrame {
 		} catch (SQLException e) {
 			logger.error("Error occurred while initializing data source.", e);
 		}
+
+		onPreferencesChanged();
 
 		workerThread = new Thread(worker);
 		workerThread.start();

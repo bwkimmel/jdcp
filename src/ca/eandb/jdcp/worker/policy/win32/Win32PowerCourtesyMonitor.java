@@ -30,6 +30,7 @@ import java.awt.Window;
 import javax.swing.JWindow;
 
 import ca.eandb.jdcp.worker.policy.AsyncCourtesyMonitor;
+import ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor;
 import ca.eandb.jdcp.worker.policy.win32.Kernel32.SYSTEM_POWER_STATUS;
 import ca.eandb.jdcp.worker.policy.win32.User32.WindowProc;
 import ca.eandb.jdcp.worker.policy.win32.W32API.HWND;
@@ -46,7 +47,8 @@ import com.sun.jna.Platform;
  * machine.
  * @author Brad Kimmel
  */
-public final class Win32PowerCourtesyMonitor extends AsyncCourtesyMonitor {
+public final class Win32PowerCourtesyMonitor extends AsyncCourtesyMonitor
+		implements PowerCourtesyMonitor {
 
 	/**
 	 * A value indicating whether tasks should run only if A/C power is
@@ -58,13 +60,13 @@ public final class Win32PowerCourtesyMonitor extends AsyncCourtesyMonitor {
 	 * This value sets the battery life percentage below which tasks will be
 	 * suspended.  If {@link #requireAC} is set, this value has no effect.
 	 */
-	private byte minBatteryLifePercent = 0;
+	private int minBatteryLifePercent = 0;
 
 	/**
 	 * This value sets the battery life percentage below which tasks will be
 	 * suspended while the battery is charging.
 	 */
-	private byte minBatteryLifePercentWhileCharging = 0;
+	private int minBatteryLifePercentWhileCharging = 0;
 
 	/** Receives WM_POWERBROADCAST messages from Windows. */
 	@SuppressWarnings("unused")
@@ -109,7 +111,7 @@ public final class Win32PowerCourtesyMonitor extends AsyncCourtesyMonitor {
 			// CourtesyMonitor.
 			if (uMsg == User32.WM_POWERBROADCAST
 					&& wParam.intValue() == User32.PBT_APMPOWERSTATUSCHANGE) {
-				poll();
+				update();
 			}
 
 			// Delegate other messages to the original WindowProc.
@@ -126,57 +128,57 @@ public final class Win32PowerCourtesyMonitor extends AsyncCourtesyMonitor {
 			throw new UnexpectedException("This class requires Windows");
 		}
 		monitor = new PowerBroadcastMonitor();
-		poll();
+		update();
 	}
 
-	/**
-	 * @return the requireAC
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.worker.policy.win32.PowerCourtesyMonitor#isRequireAC()
 	 */
 	public synchronized final boolean isRequireAC() {
 		return requireAC;
 	}
 
-	/**
-	 * @param requireAC the requireAC to set
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.worker.policy.win32.PowerCourtesyMonitor#setRequireAC(boolean)
 	 */
 	public synchronized final void setRequireAC(boolean requireAC) {
 		this.requireAC = requireAC;
 	}
 
-	/**
-	 * @return the minBatteryLifePercent
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.worker.policy.win32.PowerCourtesyMonitor#getMinBatteryLifePercent()
 	 */
-	public synchronized final byte getMinBatteryLifePercent() {
+	public synchronized final int getMinBatteryLifePercent() {
 		return minBatteryLifePercent;
 	}
 
-	/**
-	 * @param minBatteryLifePercent the minBatteryLifePercent to set
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.worker.policy.win32.PowerCourtesyMonitor#setMinBatteryLifePercent(byte)
 	 */
 	public synchronized final void setMinBatteryLifePercent(
-			byte minBatteryLifePercent) {
+			int minBatteryLifePercent) {
 		this.minBatteryLifePercent = minBatteryLifePercent;
 	}
 
-	/**
-	 * @return the minBatteryLifePercentWhileCharging
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.worker.policy.win32.PowerCourtesyMonitor#getMinBatteryLifePercentWhileCharging()
 	 */
-	public synchronized final byte getMinBatteryLifePercentWhileCharging() {
+	public synchronized final int getMinBatteryLifePercentWhileCharging() {
 		return minBatteryLifePercentWhileCharging;
 	}
 
-	/**
-	 * @param minBatteryLifePercentWhileCharging the minBatteryLifePercentWhileCharging to set
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.worker.policy.win32.PowerCourtesyMonitor#setMinBatteryLifePercentWhileCharging(byte)
 	 */
 	public synchronized final void setMinBatteryLifePercentWhileCharging(
-			byte minBatteryLifePercentWhileCharging) {
+			int minBatteryLifePercentWhileCharging) {
 		this.minBatteryLifePercentWhileCharging = minBatteryLifePercentWhileCharging;
 	}
 
 	/**
 	 * Updates the state of this <code>CourtesyMonitor</code>.
 	 */
-	private synchronized void poll() {
+	public synchronized void update() {
 		SYSTEM_POWER_STATUS status = new SYSTEM_POWER_STATUS();
 		Kernel32.INSTANCE.GetSystemPowerStatus(status);
 
