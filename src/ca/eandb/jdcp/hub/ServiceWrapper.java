@@ -96,13 +96,23 @@ final class ServiceWrapper implements JobService {
 	private void keepAlive() {
 		while (!shutdown) {
 			while (service == null && !shutdown) {
-				service = connect(host, username, password);
+				try {
+					service = connect(host, username, password);
+				} catch (Exception e) {
+					logger.error("Could not connect to remote host", e);
+				}
+				if (service != null) {
+					logger.info("Successfully connected to remote host");
+					break;
+				}
+				logger.info("Could not connect, waiting...");
 				try {
 					Thread.sleep(RECONNECT_INTERVAL);
 				} catch (InterruptedException e) {
 					/* nothing to do. */
 				}
 			}
+			logger.info("Connected, keepAlive going to sleep");
 			try {
 				synchronized (keepAlive) {
 					keepAlive.wait();
@@ -111,6 +121,7 @@ final class ServiceWrapper implements JobService {
 				/* nothing to do. */
 			}
 		}
+		logger.info("Shutting down keepAlive");
 	}
 
 	private interface ServiceOperation<T> {
@@ -121,30 +132,36 @@ final class ServiceWrapper implements JobService {
 		JobService service = this.service;
 		if (service != null) {
 			try {
+				if (logger.isInfoEnabled()) {
+					logger.info(String.format("Running operation: %s", operation));
+				}
 				return operation.run(service);
 			} catch (NoSuchObjectException e) {
-				service = null;
+				this.service = null;
 				logger.error("Lost connection", e);
 			} catch (ConnectException e) {
-				service = null;
+				this.service = null;
 				logger.error("Lost connection", e);
 			} catch (ConnectIOException e) {
-				service = null;
+				this.service = null;
 				logger.error("Lost connection", e);
 			} catch (UnknownHostException e) {
-				service = null;
+				this.service = null;
 				logger.error("Lost connection", e);
 			} catch (UnmarshalException e) {
 				if (e.getCause() instanceof EOFException) {
-					service = null;
+					this.service = null;
 					logger.error("Lost connection", e);
 				} else {
+					logger.error("Communication error", e);
 					throw new DelegationException("Error occurred delegating to server", e);
 				}
 			} catch (Exception e) {
+				logger.error("Communication error", e);
 				throw new DelegationException("Error occurred delegating to server", e);
 			}
 		}
+		logger.info("Signalling connection thread to reconnect");
 		synchronized (keepAlive) {
 			keepAlive.notify();
 		}
@@ -153,17 +170,24 @@ final class ServiceWrapper implements JobService {
 
 	private synchronized JobService connect(String host, String username,
 			String password) throws DelegationException {
+		if (logger.isInfoEnabled()) {
+			logger.info(String.format("connect(host='%s', username='%s', password='%s')", host, username, password));
+		}
 		Date now = new Date();
 		if (now.after(idleUntil)) {
 			try {
+				logger.info("Locating registry");
 				Registry registry = LocateRegistry.getRegistry(host, 5327);
+				logger.info("Looking up AuthenticationService");
 				AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
+				logger.info("Authenticating");
 				return auth.authenticate(username, password);
 			} catch (Exception e) {
 				logger.error("Job service not found at remote host.", e);
 				throw new DelegationException("Could not connect to remote host", e);
 			}
 		} else {
+			logger.info("Will not connect, idling");
 			throw new DelegationException("Connection to remote host is down.");
 		}
 	}
