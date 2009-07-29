@@ -394,6 +394,7 @@ public final class MainWindow extends JFrame {
 			powerMonitor.setRequireAC(requireAC);
 			powerMonitor.setMinBatteryLifePercent(minBattLife);
 			powerMonitor.setMinBatteryLifePercentWhileCharging(minBattLifeWhileChg);
+			powerMonitor.update();
 		}
 	}
 
