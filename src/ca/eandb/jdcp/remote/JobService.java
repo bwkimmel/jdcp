@@ -174,7 +174,8 @@ public interface JobService extends Remote {
 	 * 		cancel jobs.
 	 * @throws RemoteException If a communication error occurs.
 	 */
-	void cancelJob(UUID jobId) throws IllegalArgumentException, SecurityException, RemoteException;
+	void cancelJob(UUID jobId) throws IllegalArgumentException,
+			SecurityException, RemoteException;
 
 
 	/* ************************
@@ -211,7 +212,8 @@ public interface JobService extends Remote {
 	 * 		obtain class digests.
 	 * @throws RemoteException If a communication error occurs.
 	 */
-	byte[] getClassDigest(String name) throws SecurityException, RemoteException;
+	byte[] getClassDigest(String name) throws SecurityException,
+			RemoteException;
 
 	/**
 	 * Gets the definition of the given class associated with the specified
@@ -239,7 +241,8 @@ public interface JobService extends Remote {
 	 * 		class definitions.
 	 * @throws RemoteException If a communication error occurs.
 	 */
-	void setClassDefinition(String name, byte[] def) throws SecurityException, RemoteException;
+	void setClassDefinition(String name, byte[] def) throws SecurityException,
+			RemoteException;
 
 	/**
 	 * Sets the definition of a given class only for the specified job.
@@ -254,7 +257,8 @@ public interface JobService extends Remote {
 	 * 		class definitions.
 	 * @throws RemoteException If a communication error occurs.
 	 */
-	void setClassDefinition(String name, UUID jobId, byte[] def) throws IllegalArgumentException, SecurityException, RemoteException;
+	void setClassDefinition(String name, UUID jobId, byte[] def)
+			throws IllegalArgumentException, SecurityException, RemoteException;
 
 
 	/* **********************
@@ -272,7 +276,8 @@ public interface JobService extends Remote {
 	 * 		the idle time.
 	 * @throws RemoteException If a communication error occurs.
 	 */
-	void setIdleTime(int idleSeconds) throws IllegalArgumentException, SecurityException, RemoteException;
+	void setIdleTime(int idleSeconds) throws IllegalArgumentException,
+			SecurityException, RemoteException;
 
 	/**
 	 * Sets the priority of the specified job.
@@ -285,7 +290,8 @@ public interface JobService extends Remote {
 	 * 		job priorities.
 	 * @throws RemoteException If a communication error occurs.
 	 */
-	void setJobPriority(UUID jobId, int priority) throws IllegalArgumentException, SecurityException, RemoteException;
+	void setJobPriority(UUID jobId, int priority)
+			throws IllegalArgumentException, SecurityException, RemoteException;
 
 	/**
 	 * Determines if any of the specified tasks are no longer outstanding.
@@ -302,6 +308,7 @@ public interface JobService extends Remote {
 	 * 		the completion status of tasks.
 	 * @throws RemoteException If a communication error occurs.
 	 */
-	BitSet getFinishedTasks(UUID[] jobIds, int[] taskIds) throws IllegalArgumentException, SecurityException, RemoteException;
+	BitSet getFinishedTasks(UUID[] jobIds, int[] taskIds)
+			throws IllegalArgumentException, SecurityException, RemoteException;
 
 }
