@@ -78,7 +78,7 @@ public final class JobServer implements JobService {
 	/** The <code>Logger</code> for this class. */
 	private static final Logger logger = Logger.getLogger(JobServer.class);
 
-	/** The <code>Random</code> number generator (for generating task IDs. */
+	/** The <code>Random</code> number generator (for generating task IDs). */
 	private static final Random rand = new Random();
 
 	/**
