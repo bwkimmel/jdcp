@@ -14,10 +14,11 @@ package ca.eandb.jdcp.worker.policy.win32;
 
 import java.awt.Rectangle;
 
+import ca.eandb.jdcp.worker.policy.win32.User32.POINT;
+
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
-import com.sun.jna.examples.win32.User32.POINT;
 import com.sun.jna.ptr.PointerByReference;
 
 /** Definition (incomplete) of <code>gdi32.dll</code>. */
