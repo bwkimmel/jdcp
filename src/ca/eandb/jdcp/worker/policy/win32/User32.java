@@ -12,10 +12,11 @@
  */
 package ca.eandb.jdcp.worker.policy.win32;
 
+import ca.eandb.jdcp.worker.policy.win32.GDI32.RECT;
+
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
-import com.sun.jna.examples.win32.GDI32.RECT;
 import com.sun.jna.ptr.ByteByReference;
 import com.sun.jna.ptr.IntByReference;
 
