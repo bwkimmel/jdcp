@@ -60,6 +60,8 @@ public final class PreferencesDialog extends JDialog {
 
 	private static final String FORMAT_BATTERY_LIFE = "Suspend when battery life drops below %d%%";
 
+	private static boolean cacheClassDefinitionsChanged = false;
+
 	private JPanel jContentPane = null;
 	private JPanel buttonPanel = null;
 	private JPanel mainPanel = null;
@@ -79,6 +81,8 @@ public final class PreferencesDialog extends JDialog {
 	private JLabel minBatteryLifeLabel;
 
 	private JLabel minBatteryLifeWhileChargingLabel;
+
+	private JCheckBox cacheClassDefinitions;
 
 	/**
 	 * @param owner
@@ -148,6 +152,9 @@ public final class PreferencesDialog extends JDialog {
 			getMinBatteryLifeSlider().setEnabled(false);
 			getMinBatteryLifeWhileChargingSlider().setEnabled(false);
 		}
+
+		boolean cacheClassDefinitions = pref.getBoolean("cacheClassDefinitions", true);
+		getCacheClassDefinitionsCheckBox().setSelected(cacheClassDefinitions);
 	}
 
 	/**
@@ -170,6 +177,9 @@ public final class PreferencesDialog extends JDialog {
 		pref.putBoolean("requireAC", requireAC);
 		pref.putInt("minBattLife", minBattLife);
 		pref.putInt("minBattLifeWhileChg", minBattLifeWhileChg);
+
+		boolean cacheClassDefinitions = getCacheClassDefinitionsCheckBox().isSelected();
+		pref.putBoolean("cacheClassDefinitions", cacheClassDefinitions);
 	}
 
 	/**
@@ -178,7 +188,7 @@ public final class PreferencesDialog extends JDialog {
 	 * @return void
 	 */
 	private void initialize() {
-		this.setSize(480, 320);
+		this.setSize(480, 350);
 		this.setTitle("Preferences");
 		this.setContentPane(getJContentPane());
 	}
@@ -276,6 +286,7 @@ public final class PreferencesDialog extends JDialog {
 	 */
 	private JPanel getMainPanel() {
 		if (mainPanel == null) {
+			int row = -1;
 			mainPanel = new JPanel();
 			mainPanel.setLayout(new GridBagLayout());
 
@@ -284,76 +295,103 @@ public final class PreferencesDialog extends JDialog {
 			c.fill = GridBagConstraints.HORIZONTAL;
 
 			c.gridx = 0;
-			c.gridy = 0;
+			c.gridy = ++row;
 			c.gridwidth = 2;
 			c.weightx = 1.0D;
 			c.weighty = 0.0D;
 			mainPanel.add(getRunOnStartupCheckBox(), c);
 
 			c.gridx = 0;
-			c.gridy = 1;
+			c.gridy = ++row;
+			c.gridwidth = 2;
+			c.weightx = 1.0D;
+			c.weighty = 0.0D;
+			mainPanel.add(getCacheClassDefinitionsCheckBox(), c);
+
+			c.gridx = 0;
+			c.gridy = ++row;
 			c.gridwidth = 2;
 			c.weightx = 1.0D;
 			c.weighty = 0.0D;
 			mainPanel.add(getLimitCpusCheckBox(), c);
 
 			c.gridx = 0;
-			c.gridy = 2;
+			c.gridy = ++row;
 			c.gridwidth = 1;
 			c.weightx = 0.0D;
 			c.weighty = 0.0D;
 			mainPanel.add(new JLabel("Maximum CPUs"), c);
 
 			c.gridx = 1;
-			c.gridy = 2;
+			c.gridy = row;
 			c.gridwidth = 1;
 			c.weightx = 1.0D;
 			c.weighty = 0.0D;
 			mainPanel.add(getMaxCpusTextField(), c);
 
 			c.gridx = 0;
-			c.gridy = 3;
+			c.gridy = ++row;
 			c.gridwidth = 2;
 			c.weightx = 1.0D;
 			c.weighty = 0.0D;
 			mainPanel.add(getRequireACCheckBox(), c);
 
 			c.gridx = 0;
-			c.gridy = 4;
+			c.gridy = ++row;
 			c.gridwidth = 2;
 			c.weightx = 1.0D;
 			c.weighty = 0.0D;
 			mainPanel.add(getMinBatteryLifeLabel(), c);
 
 			c.gridx = 0;
-			c.gridy = 5;
+			c.gridy = ++row;
 			c.gridwidth = 2;
 			c.weightx = 1.0D;
 			c.weighty = 0.0D;
 			mainPanel.add(getMinBatteryLifeSlider(), c);
 
 			c.gridx = 0;
-			c.gridy = 6;
+			c.gridy = ++row;
 			c.gridwidth = 2;
 			c.weightx = 1.0D;
 			c.weighty = 0.0D;
 			mainPanel.add(getMinBatteryLifeWhileChargingLabel(), c);
 
 			c.gridx = 0;
-			c.gridy = 7;
+			c.gridy = ++row;
 			c.gridwidth = 2;
 			c.weightx = 1.0D;
 			c.weighty = 0.0D;
 			mainPanel.add(getMinBatteryLifeWhileChargingSlider(), c);
 
 			c.gridx = 0;
-			c.gridy = 8;
+			c.gridy = ++row;
 			c.gridwidth = 2;
 			c.weightx = 1.0D;
 			c.weighty = 1.0D;
 			mainPanel.add(new JPanel(), c);
 		}
 		return mainPanel;
+	}
+
+	private JCheckBox getCacheClassDefinitionsCheckBox() {
+		if (cacheClassDefinitions == null) {
+			cacheClassDefinitions = new JCheckBox("Cache class definitions");
+			cacheClassDefinitions.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					if (!cacheClassDefinitionsChanged) {
+						cacheClassDefinitionsChanged = true;
+						JOptionPane
+								.showMessageDialog(
+										PreferencesDialog.this,
+										"This change will take effect the next time this application is started.",
+										"Preferences",
+										JOptionPane.INFORMATION_MESSAGE);
+					}
+				}
+			});
+		}
+		return cacheClassDefinitions;
 	}
 
 	private JSlider getMinBatteryLifeSlider() {

@@ -554,19 +554,21 @@ public final class MainWindow extends JFrame {
 				getProgressPanel(), courtesyMonitor);
 		worker.setMaxWorkers(options.numberOfCpus);
 
-		setStatus("Preparing data source...");
-
-		EmbeddedDataSource ds = null;
-		try {
-			Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-			ds = new EmbeddedDataSource();
-			ds.setConnectionAttributes("create=true");
-			ds.setDatabaseName("classes");
-			worker.setDataSource(ds);
-		} catch (ClassNotFoundException e) {
-			logger.error("Could not locate database driver.", e);
-		} catch (SQLException e) {
-			logger.error("Error occurred while initializing data source.", e);
+		boolean cacheClassDefinitions = pref.getBoolean("cacheClassDefinitions", true);
+		if (cacheClassDefinitions) {
+			setStatus("Preparing data source...");
+			EmbeddedDataSource ds = null;
+			try {
+				Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+				ds = new EmbeddedDataSource();
+				ds.setConnectionAttributes("create=true");
+				ds.setDatabaseName("classes");
+				worker.setDataSource(ds);
+			} catch (ClassNotFoundException e) {
+				logger.error("Could not locate database driver.", e);
+			} catch (SQLException e) {
+				logger.error("Error occurred while initializing data source.", e);
+			}
 		}
 
 		onPreferencesChanged();
