@@ -32,6 +32,7 @@ import java.rmi.registry.Registry;
 
 import javax.security.auth.login.LoginException;
 
+import ca.eandb.jdcp.JdcpUtil;
 import ca.eandb.jdcp.remote.AuthenticationService;
 import ca.eandb.jdcp.remote.JobService;
 
@@ -80,7 +81,7 @@ public class Configuration {
 	public JobService getJobService() {
 		if (service == null) {
 			try {
-				Registry registry = LocateRegistry.getRegistry(host, 5327);
+				Registry registry = LocateRegistry.getRegistry(host, JdcpUtil.DEFAULT_PORT);
 				AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
 				service = auth.authenticate(username, password);
 			} catch (NotBoundException e) {

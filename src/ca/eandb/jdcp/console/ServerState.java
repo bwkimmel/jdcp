@@ -38,6 +38,7 @@ import java.util.prefs.Preferences;
 import org.apache.derby.jdbc.EmbeddedDataSource;
 import org.apache.log4j.Logger;
 
+import ca.eandb.jdcp.JdcpUtil;
 import ca.eandb.jdcp.server.AuthenticationServer;
 import ca.eandb.jdcp.server.JobServer;
 import ca.eandb.jdcp.server.classmanager.DbClassManager;
@@ -77,7 +78,7 @@ public final class ServerState {
 	 */
 	public synchronized Registry getRegistry() throws RemoteException {
 		if (registry == null) {
-			registry = LocateRegistry.createRegistry(5327);
+			registry = LocateRegistry.createRegistry(JdcpUtil.DEFAULT_PORT);
 		}
 		return registry;
 	}
@@ -131,7 +132,7 @@ public final class ServerState {
 			TaskScheduler scheduler = new PrioritySerialTaskScheduler();
 			Executor executor = Executors.newCachedThreadPool();
 			jobServer = new JobServer(jobsDirectory, factory, scheduler, classManager, executor);
-			AuthenticationServer authServer = new AuthenticationServer(jobServer, 5327);
+			AuthenticationServer authServer = new AuthenticationServer(jobServer, JdcpUtil.DEFAULT_PORT);
 
 			logger.info("Binding service");
 			Registry registry = getRegistry();

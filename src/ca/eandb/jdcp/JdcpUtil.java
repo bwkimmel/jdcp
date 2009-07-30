@@ -49,6 +49,9 @@ import ca.eandb.util.rmi.Serialized;
  */
 public final class JdcpUtil {
 
+	/** The default port that a JDCP server listens on. */
+	public static final int DEFAULT_PORT = 5327;
+
 	/**
 	 * Submits a job to a server for processing.
 	 * @param job The <code>ParallelizableJob</code> to be processed.
@@ -75,7 +78,7 @@ public final class JdcpUtil {
 			JobExecutionException, LoginException, NotBoundException {
 
 		Serialized<ParallelizableJob> payload = new Serialized<ParallelizableJob>(job);
-		Registry registry = LocateRegistry.getRegistry(host, 5327);
+		Registry registry = LocateRegistry.getRegistry(host, DEFAULT_PORT);
 		AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
 		JobService service = auth.authenticate(username, password);
 

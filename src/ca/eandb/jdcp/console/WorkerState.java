@@ -42,6 +42,7 @@ import javax.security.auth.login.LoginException;
 import org.apache.derby.jdbc.EmbeddedDataSource;
 import org.apache.log4j.Logger;
 
+import ca.eandb.jdcp.JdcpUtil;
 import ca.eandb.jdcp.remote.AuthenticationService;
 import ca.eandb.jdcp.remote.JobService;
 import ca.eandb.jdcp.worker.JobServiceFactory;
@@ -200,7 +201,7 @@ public final class WorkerState {
 	private JobService connect(String host, String username, String password) {
 		JobService service = null;
 		try {
-			Registry registry = LocateRegistry.getRegistry(host, 5327);
+			Registry registry = LocateRegistry.getRegistry(host, JdcpUtil.DEFAULT_PORT);
 			AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
 			service = auth.authenticate(username, password);
 		} catch (NotBoundException e) {

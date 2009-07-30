@@ -40,6 +40,7 @@ import java.util.UUID;
 
 import org.apache.log4j.Logger;
 
+import ca.eandb.jdcp.JdcpUtil;
 import ca.eandb.jdcp.job.JobExecutionException;
 import ca.eandb.jdcp.job.ParallelizableJob;
 import ca.eandb.jdcp.job.TaskDescription;
@@ -177,7 +178,7 @@ final class ServiceWrapper implements JobService {
 		if (now.after(idleUntil)) {
 			try {
 				logger.info("Locating registry");
-				Registry registry = LocateRegistry.getRegistry(host, 5327);
+				Registry registry = LocateRegistry.getRegistry(host, JdcpUtil.DEFAULT_PORT);
 				logger.info("Looking up AuthenticationService");
 				AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
 				logger.info("Authenticating");

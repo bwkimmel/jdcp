@@ -36,6 +36,7 @@ import java.util.UUID;
 import javax.security.auth.Subject;
 
 
+import ca.eandb.jdcp.JdcpUtil;
 import ca.eandb.jdcp.job.JobExecutionException;
 import ca.eandb.jdcp.job.ParallelizableJob;
 import ca.eandb.jdcp.job.TaskDescription;
@@ -69,7 +70,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 	 * @param server The underlying <code>JobService</code>.
 	 */
 	public JobServiceProxy(Subject user, JobService service) throws RemoteException {
-		super(5327);
+		super(JdcpUtil.DEFAULT_PORT);
 		this.user = user;
 		this.service = service;
 	}

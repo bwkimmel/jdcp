@@ -32,6 +32,7 @@ import java.rmi.registry.Registry;
 import org.apache.derby.jdbc.EmbeddedDataSource;
 import org.apache.log4j.Logger;
 
+import ca.eandb.jdcp.JdcpUtil;
 import ca.eandb.jdcp.hub.JobHub;
 import ca.eandb.jdcp.server.AuthenticationServer;
 import ca.eandb.util.args.CommandArgument;
@@ -60,7 +61,7 @@ public final class HubState {
 	 */
 	public synchronized Registry getRegistry() throws RemoteException {
 		if (registry == null) {
-			registry = LocateRegistry.createRegistry(5327);
+			registry = LocateRegistry.createRegistry(JdcpUtil.DEFAULT_PORT);
 		}
 		return registry;
 	}
@@ -82,7 +83,7 @@ public final class HubState {
 
 			logger.info("Initializing service");
 			jobHub = new JobHub(ds);
-			AuthenticationServer authServer = new AuthenticationServer(jobHub, 5327);
+			AuthenticationServer authServer = new AuthenticationServer(jobHub, JdcpUtil.DEFAULT_PORT);
 
 			logger.info("Binding service");
 			Registry registry = getRegistry();

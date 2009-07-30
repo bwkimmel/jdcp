@@ -100,7 +100,7 @@ public final class JobServerMain {
 			TaskScheduler scheduler = new PrioritySerialTaskScheduler();
 			Executor executor = Executors.newCachedThreadPool();
 			JobServer jobServer = new JobServer(jobsDirectory, panel, scheduler, classManager, executor);
-			AuthenticationServer authServer = new AuthenticationServer(jobServer, 5327);
+			AuthenticationServer authServer = new AuthenticationServer(jobServer, JdcpUtil.DEFAULT_PORT);
 			System.err.println("OK");
 
 			System.err.print("Exporting service stubs...");
@@ -109,7 +109,7 @@ public final class JobServerMain {
 			System.err.println("OK");
 
 			System.err.print("Binding service...");
-			final Registry registry = LocateRegistry.createRegistry(5327);
+			final Registry registry = LocateRegistry.createRegistry(JdcpUtil.DEFAULT_PORT);
 			registry.bind("AuthenticationService", authServer);
 			System.err.println("OK");
 
