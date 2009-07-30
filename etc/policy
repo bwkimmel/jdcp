@@ -31,7 +31,11 @@ grant CodeBase "file:lib/derbyclient.jar" {
 };
 
 grant CodeBase "file:lib/log4j-1.2.15.jar" {
-	permission java.security.AllPermission;
+    permission java.security.AllPermission;
+};
+
+grant CodeBase "file:lib/jna.jar" {
+    permission java.security.AllPermission;
 };
 
 grant Principal ca.eandb.util.auth.RolePrincipal "jdcp.worker" {

@@ -65,6 +65,7 @@ Section -Main SEC0000
     File build\dist\jdcp-${VERSION}\jdcp.ico
     File build\dist\jdcp-${VERSION}\jdcp-common.jar
     SetOutPath $INSTDIR\etc
+    File build\dist\jdcp-${VERSION}\etc\policy
     File build\dist\jdcp-${VERSION}\etc\log4j.properties
     SetOutPath $INSTDIR\lib
     File build\dist\jdcp-${VERSION}\lib\log4j-1.2.15.jar
@@ -81,7 +82,6 @@ Section /o Server SEC0001
     File build\dist\jdcp-${VERSION}\jdcp-server.bat
     File build\dist\jdcp-${VERSION}\jdcp-server.jar
     SetOutPath $INSTDIR\etc
-    File build\dist\jdcp-${VERSION}\etc\policy
     File build\dist\jdcp-${VERSION}\etc\login.config
     File build\dist\jdcp-${VERSION}\etc\passwd
     SetOutPath $SMPROGRAMS\$StartMenuGroup
@@ -96,11 +96,12 @@ Section Worker SEC0002
     File build\dist\jdcp-${VERSION}\jdcp-worker.jar
     SetOutPath $INSTDIR\lib
     File build\dist\jdcp-${VERSION}\lib\jnlp.jar
+    File build\dist\jdcp-${VERSION}\lib\jna.jar
     SetOutPath $SMPROGRAMS\$StartMenuGroup
     SetOutPath $INSTDIR
-    CreateShortcut "$SMPROGRAMS\$StartMenuGroup\JDCP Worker.lnk" "$SYSDIR\javaw.exe" "-Dlog4j.configuration=file:./etc/log4j.properties -jar jdcp-worker.jar" "$INSTDIR\jdcp.ico"
+    CreateShortcut "$SMPROGRAMS\$StartMenuGroup\JDCP Worker.lnk" "$SYSDIR\javaw.exe" "-Djava.security.manager -Djava.security.policy=etc/policy -Djava.library.path=lib -Dlog4j.configuration=file:./etc/log4j.properties -jar jdcp-worker.jar" "$INSTDIR\jdcp.ico"
     WriteRegStr HKLM "${REGKEY}\Components" Worker 1
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "JDCP Worker" '"$SYSDIR\javaw.exe" -Dlog4j.configuration="$INSTDIR\etc\log4j.properties" -jar "$INSTDIR\jdcp-worker.jar" --startup'
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "JDCP Worker" '"$SYSDIR\javaw.exe" -Djava.security.manager -Djava.security.policy=etc/policy -Djava.library.path=lib -Dlog4j.configuration="$INSTDIR\etc\log4j.properties" -jar "$INSTDIR\jdcp-worker.jar" --startup'
 SectionEnd
 
 Section /o Client SEC0003

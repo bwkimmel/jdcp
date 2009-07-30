@@ -114,7 +114,7 @@
             </fileset>
             <manifest>
                 <attribute name="Main-Class" value="${worker.main}"/>
-                <attribute name="Class-Path" value="jdcp-common.jar lib/eandb.jar lib/jnlp.jar lib/log4j-1.2.15.jar lib/derby.jar lib/derbyclient.jar"/>
+                <attribute name="Class-Path" value="jdcp-common.jar lib/eandb.jar lib/jnlp.jar lib/log4j-1.2.15.jar lib/derby.jar lib/derbyclient.jar lib/jna.jar"/>
             </manifest>
         </jar>
 	</target>
@@ -188,6 +188,7 @@
                 <include name="jdcp-*.png"/>
                 <include name="lib/**/*.jar"/>
                 <include name="etc/log4j.properties"/>
+                <include name="etc/policy"/>
             </fileset>
         </copy>
         <copy file="${eandb.util.jar.file}" todir="${worker.dist.dir}/lib"/>
@@ -230,9 +231,7 @@
                 <include name="jdcp-console.sh"/>
 				<include name="jdcp-server.bat"/>
 				<include name="jdcp-server.sh"/>
-				<include name="lib/log4j-*.jar"/>
-				<include name="lib/derby*.jar"/>
-				<include name="lib/jnlp.jar"/>
+				<include name="lib/**/*.jar"/>
 				<include name="etc/**"/>
 			</fileset>
 		</copy>
@@ -269,7 +268,7 @@
 			</classpath>
 			<!--<jvmarg value="-Djava.security.manager"/>-->
             <sysproperty key="jdcp.home" value="."/>
-            <sysproperty key="java.library.path" value="$lib"/>
+            <sysproperty key="java.library.path" value="${lib.dir}"/>
 			<sysproperty key="java.security.auth.login.config" value="etc/login.config"/>
 			<sysproperty key="java.security.policy" value="etc/policy"/>
 			<sysproperty key="log4j.configuration" value="file:./etc/log4j.properties"/>
