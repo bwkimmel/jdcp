@@ -172,6 +172,7 @@
 				<include name="etc/**"/>
 			</fileset>
 		</copy>
+		<chmod perm="a+x" file="${server.dist.dir}/jdcp-server.sh"/>
         <copy file="${eandb.util.jar.file}" todir="${server.dist.dir}/lib"/>
 	</target>
 
@@ -235,6 +236,12 @@
 				<include name="etc/**"/>
 			</fileset>
 		</copy>
+		<chmod perm="a+x">
+			<filelist>
+				<file name="${console.dist.dir}/jdcp-console.sh"/>
+				<file name="${console.dist.dir}/jdcp-server.sh"/>
+			</filelist>
+		</chmod>
         <copy file="${eandb.util.jar.file}" todir="${console.dist.dir}/lib"/>
 	</target>
 
