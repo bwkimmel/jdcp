@@ -49,6 +49,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.sql.SQLException;
+import java.util.Calendar;
 import java.util.concurrent.ThreadFactory;
 import java.util.prefs.Preferences;
 
@@ -418,6 +419,7 @@ public final class MainWindow extends JFrame {
 	private JobService connect(int timeout) {
 		final ConnectionDialog dialog = getConnectionDialog();
 		JobService service = null;
+		boolean showMessages = true;
 		do {
 			if (MainWindow.this.isVisible()) {
 				dialog.setTimeout(timeout);
@@ -430,6 +432,7 @@ public final class MainWindow extends JFrame {
 					if (dialog.isCancelled()) {
 						break;
 					}
+					showMessages = !dialog.isTimedOut();
 				} catch (InterruptedException e) {
 					break;
 				} catch (InvocationTargetException e) {
@@ -445,15 +448,34 @@ public final class MainWindow extends JFrame {
 				};
 				MainWindow.this.addWindowListener(l);
 				try {
-					Thread.sleep(1000 * timeout);
-				} catch (InterruptedException e) {
-					timeout = 0;
-					continue;
+					Calendar endTimeout = Calendar.getInstance();
+					endTimeout.add(Calendar.SECOND, timeout);
+					while (true) {
+						Calendar now = Calendar.getInstance();
+						if (!now.before(endTimeout)) {
+							break;
+						}
+						long millis = endTimeout.getTimeInMillis()
+								- now.getTimeInMillis();
+						assert(millis > 0);
+						try {
+							Thread.sleep(millis);
+						} catch (InterruptedException e) {
+							if (MainWindow.this.isVisible()) {
+								timeout = 0;
+								break;
+							}
+						}
+					}
+					if (timeout == 0) {
+						continue;
+					}
 				} finally {
 					MainWindow.this.removeWindowListener(l);
 				}
+				showMessages = false;
 			}
-			service = connect(dialog.getHost(), dialog.getUser(), dialog.getPassword(), !dialog.isTimedOut());
+			service = connect(dialog.getHost(), dialog.getUser(), dialog.getPassword(), showMessages);
 			if (!dialog.isTimedOut()) {
 				timeout = 0;
 			}
