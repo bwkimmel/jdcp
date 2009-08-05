@@ -101,7 +101,7 @@ Section Worker SEC0002
     SetOutPath $INSTDIR
     CreateShortcut "$SMPROGRAMS\$StartMenuGroup\JDCP Worker.lnk" "$SYSDIR\javaw.exe" "-Djava.security.manager -Djava.security.policy=etc/policy -Djava.library.path=lib -Dlog4j.configuration=file:./etc/log4j.properties -jar jdcp-worker.jar" "$INSTDIR\jdcp.ico"
     WriteRegStr HKLM "${REGKEY}\Components" Worker 1
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "JDCP Worker" '"$SYSDIR\javaw.exe" -Djava.security.manager -Djava.security.policy=etc/policy -Djava.library.path=lib -Dlog4j.configuration="$INSTDIR\etc\log4j.properties" -jar "$INSTDIR\jdcp-worker.jar" --startup'
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "JDCP Worker" '"$SYSDIR\javaw.exe" -Duser.dir="$INSTDIR" -Djava.security.manager -Djava.security.policy="$INSTDIR\etc\policy" -Djava.library.path="$INSTDIR\lib" -Dlog4j.configuration="$INSTDIR\etc\log4j.properties" -jar "$INSTDIR\jdcp-worker.jar" --startup'
 SectionEnd
 
 Section /o Client SEC0003
