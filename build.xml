@@ -237,9 +237,9 @@
 			</fileset>
 		</copy>
 		<chmod perm="a+x">
-			<filelist>
-				<file name="${console.dist.dir}/jdcp-console.sh"/>
-				<file name="${console.dist.dir}/jdcp-server.sh"/>
+			<filelist dir="${console.dist.dir}">
+				<file name="jdcp-console.sh"/>
+				<file name="jdcp-server.sh"/>
 			</filelist>
 		</chmod>
         <copy file="${eandb.util.jar.file}" todir="${console.dist.dir}/lib"/>
