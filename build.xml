@@ -273,8 +273,10 @@
 					<fileset dir="${server.dist.dir}/lib" includes="**/*.jar"/>
 			    </path>
 			</classpath>
-			<!--<jvmarg value="-Djava.security.manager"/>-->
-            <sysproperty key="jdcp.home" value="."/>
+			<jvmarg value="-Djava.security.manager"/>
+			<sysproperty key="java.net.preferIPv4Stack" value="true"/>
+			<sysproperty key="java.rmi.server.randomIDs" value="true"/>
+			<sysproperty key="java.rmi.server.disableHttp" value="true"/>
             <sysproperty key="java.library.path" value="${lib.dir}"/>
 			<sysproperty key="java.security.auth.login.config" value="etc/login.config"/>
 			<sysproperty key="java.security.policy" value="etc/policy"/>
@@ -291,13 +293,11 @@
                     <fileset dir="${worker.dist.dir}/lib" includes="**/*.jar"/>
                 </path>
             </classpath>
-        	<!--
             <jvmarg value="-Djava.security.manager"/>
             <sysproperty key="java.library.path" value="lib"/>
             <sysproperty key="java.security.auth.login.config" value="etc/login.config"/>
             <sysproperty key="java.security.policy" value="etc/policy"/>
             <sysproperty key="log4j.configuration" value="file:./etc/log4j.properties"/>
-            -->
         </java>
     </target>
 
@@ -315,6 +315,9 @@
 			    </path>
 			</classpath>
 			<jvmarg value="-Djava.security.manager"/>
+			<sysproperty key="java.net.preferIPv4Stack" value="true"/>
+			<sysproperty key="java.rmi.server.randomIDs" value="true"/>
+			<sysproperty key="java.rmi.server.disableHttp" value="true"/>
 			<sysproperty key="java.library.path" value="lib"/>
 			<sysproperty key="java.security.auth.login.config" value="etc/login.config"/>
 			<sysproperty key="java.security.policy" value="etc/policy"/>
@@ -371,9 +374,6 @@
 	<target name="archive" depends="tar,zip">
 	</target>
 
-	<!--
-	java -Djava.library.path=lib -Djava.security.manager -Djava.security.auth.login.config=login.config -Djava.security.policy=policy -Dlog4j.configuration=file:./log4j.properties -jar jdcpserver.jar
-	-->
 	<target name="jarbundler">
 	    <taskdef name="jarbundler" classname="net.sourceforge.jarbundler.JarBundler"/>
 	</target>
@@ -387,11 +387,15 @@
             mainclass="${server.main}"
             version="${version}"
             bundleid="ca.eandb.jdcp.server"
-            jvmversion="1.6+"
+            jvmversion="1.5+"
             vmoptions="-Djava.security.manager"
             workingDirectory="$APP_PACKAGE/Contents/Resources/Java">
             <jarfileset dir="${server.dist.dir}" includes="**/*.jar"/>
             <javafileset dir="${server.dist.dir}" excludes="**/*.jar"/>
+	    	<javaproperty name="jdcp.home" value="$APP_PACKAGE/Contents/Resources/Java"/>
+			<javaproperty name="java.net.preferIPv4Stack" value="true"/>
+        	<javaproperty name="java.rmi.server.randomIDs" value="true"/>
+        	<javaproperty name="java.rmi.server.disableHttp" value="true"/>
             <javaproperty name="java.library.path" value="lib"/>
             <javaproperty name="java.security.auth.login.config" value="etc/login.config"/>
             <javaproperty name="java.security.policy" value="etc/policy"/>
@@ -411,12 +415,14 @@
 	    	mainclass="${worker.main}"
 	    	version="${version}"
 	    	bundleid="ca.eandb.jdcp.worker"
-	    	jvmversion="1.6+"
+	    	jvmversion="1.5+"
+            vmoptions="-Djava.security.manager"
 	    	workingDirectory="$APP_PACKAGE/Contents/Resources/Java">
 	    	<jarfileset dir="${worker.dist.dir}" includes="**/*.jar"/>
             <javafileset dir="${worker.dist.dir}" excludes="**/*.jar"/>
+	    	<javaproperty name="jdcp.home" value="$APP_PACKAGE/Contents/Resources/Java"/>
 	    	<javaproperty name="java.library.path" value="lib"/>
-	    	<!-- <javaproperty name="java.security.policy" value="etc/policy"/> -->
+	    	<javaproperty name="java.security.policy" value="etc/policy"/>
             <javaproperty name="log4j.configuration" value="file:./etc/log4j.properties"/>
             <javaproperty name="apple.laf.useScreenMenuBar" value="true"/>
             <javaproperty name="apple.awt.antialiasing" value="on"/>
