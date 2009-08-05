@@ -79,6 +79,7 @@ import org.apache.log4j.PatternLayout;
 import ca.eandb.jdcp.JdcpUtil;
 import ca.eandb.jdcp.remote.AuthenticationService;
 import ca.eandb.jdcp.remote.JobService;
+import ca.eandb.jdcp.remote.ProtocolVersionException;
 import ca.eandb.jdcp.worker.policy.CourtesyMonitor;
 import ca.eandb.jdcp.worker.policy.CourtesyMonitorFactory;
 import ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor;
@@ -487,7 +488,7 @@ public final class MainWindow extends JFrame {
 		try {
 			Registry registry = LocateRegistry.getRegistry(host, JdcpUtil.DEFAULT_PORT);
 			AuthenticationService authService = (AuthenticationService) registry.lookup("AuthenticationService");
-			return authService.authenticate(user, password);
+			return authService.authenticate(user, password, JdcpUtil.PROTOCOL_VERSION_ID);
 		} catch (LoginException e) {
 			logger.error("Authentication failed.", e);
 			JOptionPane.showMessageDialog(this, "Authentication failed.  Please check your user name and password.", "Connection Failed", JOptionPane.WARNING_MESSAGE);
@@ -500,6 +501,11 @@ public final class MainWindow extends JFrame {
 			logger.error("Could not find AuthenticationService at remote host.", e);
 			if (showMessageDialog) {
 				JOptionPane.showMessageDialog(this, "Could find JDCP Server at remote host.", "Connection Failed", JOptionPane.WARNING_MESSAGE);
+			}
+		} catch (ProtocolVersionException e) {
+			logger.error("Client is incompatible with the remote server.", e);
+			if (showMessageDialog) {
+				JOptionPane.showMessageDialog(this, "This client is incompatible with the remote server.  Please update the client and try again.", "Incompatible Client", JOptionPane.WARNING_MESSAGE);
 			}
 		}
 		return null;

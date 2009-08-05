@@ -45,6 +45,7 @@ import org.apache.log4j.Logger;
 import ca.eandb.jdcp.JdcpUtil;
 import ca.eandb.jdcp.remote.AuthenticationService;
 import ca.eandb.jdcp.remote.JobService;
+import ca.eandb.jdcp.remote.ProtocolVersionException;
 import ca.eandb.jdcp.worker.JobServiceFactory;
 import ca.eandb.jdcp.worker.ThreadServiceWorker;
 import ca.eandb.jdcp.worker.policy.CourtesyMonitor;
@@ -203,13 +204,15 @@ public final class WorkerState {
 		try {
 			Registry registry = LocateRegistry.getRegistry(host, JdcpUtil.DEFAULT_PORT);
 			AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
-			service = auth.authenticate(username, password);
+			service = auth.authenticate(username, password, JdcpUtil.PROTOCOL_VERSION_ID);
 		} catch (NotBoundException e) {
 			logger.error("Job service not found at remote host.", e);
 		} catch (RemoteException e) {
 			logger.error("Could not connect to job service.", e);
 		} catch (LoginException e) {
 			logger.error("Login failed.", e);
+		} catch (ProtocolVersionException e) {
+			logger.error("Client is incompatible with remote server.", e);
 		}
 		return service;
 	}

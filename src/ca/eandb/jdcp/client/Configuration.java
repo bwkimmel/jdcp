@@ -35,6 +35,7 @@ import javax.security.auth.login.LoginException;
 import ca.eandb.jdcp.JdcpUtil;
 import ca.eandb.jdcp.remote.AuthenticationService;
 import ca.eandb.jdcp.remote.JobService;
+import ca.eandb.jdcp.remote.ProtocolVersionException;
 
 /**
  * Command line options for the JDCP client application.
@@ -83,7 +84,7 @@ public class Configuration {
 			try {
 				Registry registry = LocateRegistry.getRegistry(host, JdcpUtil.DEFAULT_PORT);
 				AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
-				service = auth.authenticate(username, password);
+				service = auth.authenticate(username, password, JdcpUtil.PROTOCOL_VERSION_ID);
 			} catch (NotBoundException e) {
 				System.err.println("Job service not found at remote host.");
 				System.exit(1);
@@ -93,6 +94,9 @@ public class Configuration {
 				System.exit(1);
 			} catch (LoginException e) {
 				System.err.println("Login failed.");
+				System.exit(1);
+			} catch (ProtocolVersionException e) {
+				System.err.println("This client is incompatible with the remote server.  Please update the client and try again.");
 				System.exit(1);
 			}
 		}

@@ -29,14 +29,17 @@ import java.rmi.RemoteException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.UUID;
 
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 
 
+import ca.eandb.jdcp.JdcpUtil;
 import ca.eandb.jdcp.remote.AuthenticationService;
 import ca.eandb.jdcp.remote.JobService;
+import ca.eandb.jdcp.remote.ProtocolVersionException;
 import ca.eandb.util.auth.FixedCallbackHandler;
 
 /**
@@ -97,10 +100,14 @@ public final class AuthenticationServer extends UnicastRemoteObject implements
 	}
 
 	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.remote.AuthenticationService#authenticate(java.lang.String, java.lang.String)
+	 * @see ca.eandb.jdcp.remote.AuthenticationService#authenticate(java.lang.String, java.lang.String, java.util.UUID)
 	 */
-	public JobService authenticate(final String username, final String password)
-			throws RemoteException, LoginException {
+	public JobService authenticate(final String username, final String password, UUID protocolVersionId)
+			throws RemoteException, LoginException, ProtocolVersionException {
+		
+		if (!protocolVersionId.equals(JdcpUtil.PROTOCOL_VERSION_ID)) {
+			throw new ProtocolVersionException();
+		}
 
 		CallbackHandler handler = FixedCallbackHandler.forNameAndPassword(username, password);
 		LoginContext context = new LoginContext(LOGIN_CONFIGURATION_NAME, handler);

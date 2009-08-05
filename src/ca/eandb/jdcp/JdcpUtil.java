@@ -39,6 +39,7 @@ import ca.eandb.jdcp.job.JobExecutionException;
 import ca.eandb.jdcp.job.ParallelizableJob;
 import ca.eandb.jdcp.remote.AuthenticationService;
 import ca.eandb.jdcp.remote.JobService;
+import ca.eandb.jdcp.remote.ProtocolVersionException;
 import ca.eandb.jdcp.server.ServerUtil;
 import ca.eandb.util.io.FileUtil;
 import ca.eandb.util.rmi.Serialized;
@@ -51,6 +52,13 @@ public final class JdcpUtil {
 
 	/** The default port that a JDCP server listens on. */
 	public static final int DEFAULT_PORT = 5327;
+
+	/**
+	 * Uniquely identifies the protocol used for communication between clients
+	 * and a server.  This is used for verifying protocol compatibility when
+	 * authenticating with the server.
+	 */
+	public static final UUID PROTOCOL_VERSION_ID = UUID.fromString("2B6A67E6-7361-4F3B-870B-53D2336C9DD9");
 
 	/**
 	 * Submits a job to a server for processing.
@@ -71,16 +79,18 @@ public final class JdcpUtil {
 	 * @throws LoginException If the login attempt fails.
 	 * @throws NotBoundException If the <code>AuthenticationService</code>
 	 * 		could not be found at the server.
+	 * @throws ProtocolVersionException If this client is incompatible with the
+	 * 		server.
 	 */
 	public static UUID submitJob(ParallelizableJob job, String description,
 			String host, String username, String password)
 			throws SecurityException, RemoteException, ClassNotFoundException,
-			JobExecutionException, LoginException, NotBoundException {
+			JobExecutionException, LoginException, NotBoundException, ProtocolVersionException {
 
 		Serialized<ParallelizableJob> payload = new Serialized<ParallelizableJob>(job);
 		Registry registry = LocateRegistry.getRegistry(host, DEFAULT_PORT);
 		AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
-		JobService service = auth.authenticate(username, password);
+		JobService service = auth.authenticate(username, password, PROTOCOL_VERSION_ID);
 
 		return service.submitJob(payload, description);
 

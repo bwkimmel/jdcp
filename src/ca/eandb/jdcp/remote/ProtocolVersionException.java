@@ -25,31 +25,29 @@
 
 package ca.eandb.jdcp.remote;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-import java.util.UUID;
-
-import javax.security.auth.login.LoginException;
-
 /**
- * A remote service for authenticating <code>JobService</code> users.
+ * An <code>Exception</code> that is thrown to indicate that the client is not
+ * compatible with the server.
  * @author Brad Kimmel
  */
-public interface AuthenticationService extends Remote {
+public final class ProtocolVersionException extends Exception {
+
+	/** Serialization version ID. */
+	private static final long serialVersionUID = -909825261111187078L;
 
 	/**
-	 * Authenticates a user.
-	 * @param username The username identifying the user to authenticate.
-	 * @param password The password of the user to authenticate.
-	 * @param protocolVersionId The <code>UUID</code> indicating the protocol
-	 * 		expected by the client.
-	 * @return The <code>JobService</code> to use for this session.
-	 * @throws LoginException if the user name or password are invalid.
-	 * @throws ProtocolVersionException if the protocol expected by the client
-	 * 		(as indicated by <code>protocolVersionId</code>) is incompatible
-	 * 		with the protocol expected by the server.
+	 * Creates a new <code>ProtocolVersionException</code>.
 	 */
-	JobService authenticate(String username, String password, UUID protocolVersionId)
-			throws RemoteException, LoginException, ProtocolVersionException;
+	public ProtocolVersionException() {
+		/* nothing to do. */
+	}
+
+	/**
+	 * Creates a new <code>ProtocolVersionException</code>.
+	 * @param message A message describing the exceptional condition.
+	 */
+	public ProtocolVersionException(String message) {
+		super(message);
+	}
 
 }

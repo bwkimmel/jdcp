@@ -182,7 +182,7 @@ final class ServiceWrapper implements JobService {
 				logger.info("Looking up AuthenticationService");
 				AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
 				logger.info("Authenticating");
-				return auth.authenticate(username, password);
+				return auth.authenticate(username, password, JdcpUtil.PROTOCOL_VERSION_ID);
 			} catch (Exception e) {
 				logger.error("Job service not found at remote host.", e);
 				throw new DelegationException("Could not connect to remote host", e);
