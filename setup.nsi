@@ -30,7 +30,8 @@ Var StartMenuGroup
 # Installer pages
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE LICENSE
-!insertmacro MUI_PAGE_COMPONENTS
+Page custom ShowInstTypePage LeaveInstTypePage "Installation Type"
+#!insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_STARTMENU Application $StartMenuGroup
 !insertmacro MUI_PAGE_INSTFILES
@@ -57,8 +58,14 @@ VIAddVersionKey LegalCopyright ""
 InstallDirRegKey HKLM "${REGKEY}" Path
 ShowUninstDetails show
 
+InstType "Worker Only"
+InstType "Full Installation"
+InstType /NOCUSTOM
+InstType /COMPONENTSONLYONCUSTOM
+
 # Installer sections
-Section -Main SEC0000
+Section -Main SEC_MAIN
+    SectionIn 1 2
     SetOutPath $INSTDIR
     SetOverwrite on
     File build\dist\jdcp-${VERSION}\jdcp-32.png
@@ -75,7 +82,8 @@ Section -Main SEC0000
     WriteRegStr HKLM "${REGKEY}\Components" Main 1
 SectionEnd
 
-Section /o Server SEC0001
+Section -Server SEC_SERVER
+    SectionIn 2
     SetOutPath $INSTDIR
     SetOverwrite on
     File build\dist\jdcp-${VERSION}\jdcp-server.sh
@@ -90,7 +98,8 @@ Section /o Server SEC0001
     WriteRegStr HKLM "${REGKEY}\Components" Server 1
 SectionEnd
 
-Section Worker SEC0002
+Section -Worker SEC_WORKER
+    SectionIn 1 2
     SetOutPath $INSTDIR
     SetOverwrite on
     File build\dist\jdcp-${VERSION}\jdcp-worker.jar
@@ -104,14 +113,15 @@ Section Worker SEC0002
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "JDCP Worker" '"$SYSDIR\javaw.exe" -Duser.dir="$INSTDIR" -Djava.security.manager -Djava.security.policy="$INSTDIR\etc\policy" -Djava.library.path="$INSTDIR\lib" -Dlog4j.configuration="$INSTDIR\etc\log4j.properties" -jar "$INSTDIR\jdcp-worker.jar" --startup'
 SectionEnd
 
-Section /o Client SEC0003
+Section -Client SEC_CLIENT
+    SectionIn 2
     SetOutPath $INSTDIR
     SetOverwrite on
     File build\dist\jdcp-${VERSION}\jdcp-client.jar
     WriteRegStr HKLM "${REGKEY}\Components" Client 1
 SectionEnd
 
-Section -post SEC0004
+Section -post SEC_POST
     WriteRegStr HKLM "${REGKEY}" Path $INSTDIR
     SetOutPath $INSTDIR
     WriteUninstaller $INSTDIR\uninstall.exe
@@ -142,12 +152,12 @@ done${UNSECTION_ID}:
 !macroend
 
 # Uninstaller sections
-Section /o -un.Client UNSEC0003
+Section /o -un.Client UNSEC_CLIENT
     Delete /REBOOTOK $INSTDIR\jdcp-client.jar
     DeleteRegValue HKLM "${REGKEY}\Components" Client
 SectionEnd
 
-Section /o -un.Worker UNSEC0002
+Section /o -un.Worker UNSEC_WORKER
     Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\JDCP Worker.lnk"
     Delete /REBOOTOK $INSTDIR\lib\jnlp.jar
     Delete /REBOOTOK $INSTDIR\jdcp-worker.jar
@@ -155,28 +165,28 @@ Section /o -un.Worker UNSEC0002
     DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "JDCP Worker"
 SectionEnd
 
-Section /o -un.Server UNSEC0001
+Section /o -un.Server UNSEC_SERVER
     Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\JDCP Server.lnk"
     Delete /REBOOTOK $INSTDIR\etc\passwd
     Delete /REBOOTOK $INSTDIR\etc\login.config
-    Delete /REBOOTOK $INSTDIR\etc\policy
     Delete /REBOOTOK $INSTDIR\jdcp-server.jar
     Delete /REBOOTOK $INSTDIR\jdcp-server.bat
     Delete /REBOOTOK $INSTDIR\jdcp-server.sh
     DeleteRegValue HKLM "${REGKEY}\Components" Server
 SectionEnd
 
-Section /o -un.Main UNSEC0000
+Section /o -un.Main UNSEC_MAIN
     Delete /REBOOTOK $INSTDIR\lib\eandb.jar
     Delete /REBOOTOK $INSTDIR\lib\log4j-1.2.15.jar
     Delete /REBOOTOK $INSTDIR\etc\log4j.properties
+    Delete /REBOOTOK $INSTDIR\etc\policy
     Delete /REBOOTOK $INSTDIR\jdcp-common.jar
     Delete /REBOOTOK $INSTDIR\jdcp.ico
     Delete /REBOOTOK $INSTDIR\jdcp-32.png
     DeleteRegValue HKLM "${REGKEY}\Components" Main
 SectionEnd
 
-Section -un.post UNSEC0004
+Section -un.post UNSEC_POST
     DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)"
     Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\Uninstall $(^Name).lnk"
     Delete /REBOOTOK $INSTDIR\uninstall.exe
@@ -191,21 +201,42 @@ SectionEnd
 # Installer functions
 Function .onInit
     InitPluginsDir
+
+    SetOutPath "$PLUGINSDIR"
+    File "SetupTypes.ini"
 FunctionEnd
+
 
 # Uninstaller functions
 Function un.onInit
     ReadRegStr $INSTDIR HKLM "${REGKEY}" Path
     !insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuGroup
-    !insertmacro SELECT_UNSECTION Main ${UNSEC0000}
-    !insertmacro SELECT_UNSECTION Server ${UNSEC0001}
-    !insertmacro SELECT_UNSECTION Worker ${UNSEC0002}
-    !insertmacro SELECT_UNSECTION Client ${UNSEC0003}
+    !insertmacro SELECT_UNSECTION Main ${UNSEC_MAIN}
+    !insertmacro SELECT_UNSECTION Server ${UNSEC_SERVER}
+    !insertmacro SELECT_UNSECTION Worker ${UNSEC_WORKER}
+    !insertmacro SELECT_UNSECTION Client ${UNSEC_CLIENT}
+FunctionEnd
+
+Function ShowInstTypePage ;FunctionName defined with Page command
+  !insertmacro MUI_HEADER_TEXT "Installation Type" "Choose the type of installation to perform"
+  InstallOptions::dialog "$PLUGINSDIR/SetupTypes.ini"
+FunctionEnd
+
+Function LeaveInstTypePage
+  ReadINIStr $R0 "$PLUGINSDIR\SetupTypes.ini" "Field 1" "State"
+  IntCmp $R0 1 workerOnly full full
+full:
+    SetCurInstType 1
+    Goto done
+workerOnly:
+    SetCurInstType 0
+    Goto done
+done:
 FunctionEnd
 
 # Section Descriptions
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-!insertmacro MUI_DESCRIPTION_TEXT ${SEC0001} "An application for hosting JDCP jobs."
-!insertmacro MUI_DESCRIPTION_TEXT ${SEC0002} "An application for contributing your spare CPU cycles to a job hosted on a JDCP server."
-!insertmacro MUI_DESCRIPTION_TEXT ${SEC0003} "An application for working with and submitting jobs to a remote JDCP server."
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC_SERVER} "An application for hosting JDCP jobs."
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC_WORKER} "An application for contributing your spare CPU cycles to a job hosted on a JDCP server."
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC_CLIENT} "An application for working with and submitting jobs to a remote JDCP server."
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
