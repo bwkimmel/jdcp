@@ -121,6 +121,16 @@ Section -Client SEC_CLIENT
     WriteRegStr HKLM "${REGKEY}\Components" Client 1
 SectionEnd
 
+Section -Console SEC_CONSOLE
+    SectionIn 2
+    SetOutPath $INSTDIR
+    SetOverwrite on
+    File build\dist\jdcp-${VERSION}\jdcp-console.jar
+    File build\dist\jdcp-${VERSION}\jdcp-console.bat
+    WriteRegStr HKLM "${REGKEY}\Components" Console 1
+    CreateShortcut "$SMPROGRAMS\$StartMenuGroup\JDCP Console.lnk" "JDCP Console" "$INSTDIR\jdcp-console.bat" "$INSTDIR\jdcp.ico"
+SectionEnd
+
 Section -post SEC_POST
     WriteRegStr HKLM "${REGKEY}" Path $INSTDIR
     SetOutPath $INSTDIR
@@ -152,6 +162,12 @@ done${UNSECTION_ID}:
 !macroend
 
 # Uninstaller sections
+Section /o -un.Console UNSEC_CONSOLE
+    Delete /REBOOTOK $INSTDIR\jdcp-console.jar
+    Delete /REBOOTOK $INSTDIR\jdcp-console.bat
+    DeleteRegValue HKLM "${REGKEY}\Components" Console
+SectionEnd
+
 Section /o -un.Client UNSEC_CLIENT
     Delete /REBOOTOK $INSTDIR\jdcp-client.jar
     DeleteRegValue HKLM "${REGKEY}\Components" Client
