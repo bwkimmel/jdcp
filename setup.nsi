@@ -128,7 +128,7 @@ Section -Console SEC_CONSOLE
     File build\dist\jdcp-${VERSION}\jdcp-console.jar
     File build\dist\jdcp-${VERSION}\jdcp-console.bat
     WriteRegStr HKLM "${REGKEY}\Components" Console 1
-    CreateShortcut "$SMPROGRAMS\$StartMenuGroup\JDCP Console.lnk" "JDCP Console" "$INSTDIR\jdcp-console.bat" "$INSTDIR\jdcp.ico"
+    CreateShortcut "$SMPROGRAMS\$StartMenuGroup\JDCP Console.lnk" "$INSTDIR\jdcp-console.bat" "" "$INSTDIR\jdcp.ico"
 SectionEnd
 
 Section -post SEC_POST
