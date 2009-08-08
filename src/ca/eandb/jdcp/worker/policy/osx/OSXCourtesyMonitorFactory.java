@@ -23,29 +23,27 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package ca.eandb.jdcp.worker.policy;
+package ca.eandb.jdcp.worker.policy.osx;
 
-import java.io.File;
-
-import ca.eandb.jdcp.worker.policy.osx.OSXCourtesyMonitorFactory;
-import ca.eandb.jdcp.worker.policy.win32.Win32CourtesyMonitorFactory;
-
-import com.sun.jna.Platform;
+import ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor;
+import ca.eandb.jdcp.worker.policy.StandardCourtesyMonitorFactory;
 
 /**
- * @author Brad
- *
+ * A <code>CourtesyMonitorFactory</code> for Mac OS X.
+ * @author Brad Kimmel
  */
-public interface CourtesyMonitorFactory {
+public final class OSXCourtesyMonitorFactory extends
+		StandardCourtesyMonitorFactory {
 
-	public static final CourtesyMonitorFactory INSTANCE = Platform.isWindows() ? new Win32CourtesyMonitorFactory()
-			: Platform.isMac() ? new OSXCourtesyMonitorFactory()
-					: new StandardCourtesyMonitorFactory();
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.worker.policy.StandardCourtesyMonitorFactory#createPowerCourtesyMonitor()
+	 */
+	public PowerCourtesyMonitor createPowerCourtesyMonitor() {
+		// TODO Implement OSXPowerCourtesyMonitor and uncomment the following
+		// line.
+		//return new OSXPowerCourtesyMonitor();
 
-	PowerCourtesyMonitor createPowerCourtesyMonitor();
-
-	PollingCourtesyMonitor createExecCourtesyMonitor(String cmd);
-
-	PollingCourtesyMonitor createExecCourtesyMonitor(String cmd, File workingDir);
+		return null;
+	}
 
 }
