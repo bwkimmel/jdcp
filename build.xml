@@ -273,6 +273,7 @@
 					<fileset dir="${server.dist.dir}/lib" includes="**/*.jar"/>
 			    </path>
 			</classpath>
+			<jvmarg value="-server"/>
 			<jvmarg value="-Djava.security.manager"/>
 			<sysproperty key="java.net.preferIPv4Stack" value="true"/>
 			<sysproperty key="java.rmi.server.randomIDs" value="true"/>
@@ -293,6 +294,7 @@
                     <fileset dir="${worker.dist.dir}/lib" includes="**/*.jar"/>
                 </path>
             </classpath>
+			<jvmarg value="-server"/>
             <jvmarg value="-Djava.security.manager"/>
             <sysproperty key="java.library.path" value="lib"/>
             <sysproperty key="java.security.auth.login.config" value="etc/login.config"/>
@@ -314,6 +316,7 @@
 					<fileset dir="${console.dist.dir}/lib" includes="**/*.jar"/>
 			    </path>
 			</classpath>
+			<jvmarg value="-server"/>
 			<jvmarg value="-Djava.security.manager"/>
 			<sysproperty key="java.net.preferIPv4Stack" value="true"/>
 			<sysproperty key="java.rmi.server.randomIDs" value="true"/>
@@ -388,7 +391,7 @@
             version="${version}"
             bundleid="ca.eandb.jdcp.server"
             jvmversion="1.5+"
-            vmoptions="-Djava.security.manager"
+            vmoptions="-server -Djava.security.manager"
             workingDirectory="$APP_PACKAGE/Contents/Resources/Java">
             <jarfileset dir="${server.dist.dir}" includes="**/*.jar"/>
             <javafileset dir="${server.dist.dir}" excludes="**/*.jar"/>
@@ -416,7 +419,7 @@
 	    	version="${version}"
 	    	bundleid="ca.eandb.jdcp.worker"
 	    	jvmversion="1.5+"
-            vmoptions="-Djava.security.manager"
+            vmoptions="-server -Djava.security.manager"
 	    	workingDirectory="$APP_PACKAGE/Contents/Resources/Java">
 	    	<jarfileset dir="${worker.dist.dir}" includes="**/*.jar"/>
             <javafileset dir="${worker.dist.dir}" excludes="**/*.jar"/>
