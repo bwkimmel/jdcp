@@ -1,1 +1,1 @@
-java -server -Djava.library.path=lib -Djava.security.manager -Djava.security.auth.login.config=etc/login.config -Djava.security.policy=etc/policy -Dlog4j.configuration=file:./etc/log4j.properties -jar jdcp-server.jar
+java -Djava.library.path=lib -Djava.security.manager -Djava.security.auth.login.config=etc/login.config -Djava.security.policy=etc/policy -Dlog4j.configuration=file:./etc/log4j.properties -jar jdcp-server.jar
