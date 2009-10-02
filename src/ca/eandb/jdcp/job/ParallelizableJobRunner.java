@@ -134,21 +134,21 @@ public final class ParallelizableJobRunner implements Runnable {
 
 				try {
 
-					/* Get the next task to run.  If there are no further tasks,
-					 * then wait for the remaining tasks to finish.
-					 */
-					Object task = this.job.getNextTask();
-					if (task == null) {
-						this.workerSlot.acquire(this.maxConcurrentWorkers);
-						complete = true;
-						break;
-					}
-
 					/* Acquire one of the slots for processing a task -- this
 					 * limits the processing to the specified number of concurrent
 					 * tasks.
 					 */
 					this.workerSlot.acquire();
+
+					/* Get the next task to run.  If there are no further tasks,
+					 * then wait for the remaining tasks to finish.
+					 */
+					Object task = this.job.getNextTask();
+					if (task == null) {
+						this.workerSlot.acquire(this.maxConcurrentWorkers - 1);
+						complete = true;
+						break;
+					}
 
 					/* Create a worker and process the task. */
 					String workerTitle = String.format("Worker (%d)", taskNumber);
