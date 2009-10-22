@@ -48,6 +48,7 @@ import ca.eandb.jdcp.job.TaskWorker;
 import ca.eandb.jdcp.remote.AuthenticationService;
 import ca.eandb.jdcp.remote.DelegationException;
 import ca.eandb.jdcp.remote.JobService;
+import ca.eandb.jdcp.remote.TaskService;
 import ca.eandb.util.rmi.Serialized;
 
 /**
@@ -357,6 +358,22 @@ final class ServiceWrapper implements JobService {
 				return null;
 			}
 		});
+	}
+
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.remote.JobService#registerTaskService(java.lang.String, ca.eandb.jdcp.remote.TaskService)
+	 */
+	public void registerTaskService(String name, TaskService service)
+			throws SecurityException, RemoteException {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.remote.JobService#unregisterTaskService(java.lang.String)
+	 */
+	public void unregisterTaskService(String name) throws SecurityException,
+			RemoteException {
+		throw new UnsupportedOperationException();
 	}
 
 }

@@ -25,51 +25,32 @@
 
 package ca.eandb.jdcp.server;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
 import java.rmi.RemoteException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.BitSet;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Random;
 import java.util.UUID;
-import java.util.WeakHashMap;
-import java.util.Map.Entry;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 
-import ca.eandb.jdcp.job.HostService;
 import ca.eandb.jdcp.job.JobExecutionException;
 import ca.eandb.jdcp.job.JobExecutionWrapper;
 import ca.eandb.jdcp.job.ParallelizableJob;
 import ca.eandb.jdcp.job.TaskDescription;
 import ca.eandb.jdcp.job.TaskWorker;
-import ca.eandb.jdcp.remote.JobService;
 import ca.eandb.jdcp.remote.TaskService;
-import ca.eandb.jdcp.server.classmanager.ChildClassManager;
-import ca.eandb.jdcp.server.classmanager.ParentClassManager;
 import ca.eandb.jdcp.server.scheduling.TaskScheduler;
+import ca.eandb.util.ClassUtil;
 import ca.eandb.util.UnexpectedException;
-import ca.eandb.util.classloader.StrategyClassLoader;
 import ca.eandb.util.concurrent.BackgroundThreadFactory;
-import ca.eandb.util.io.FileUtil;
 import ca.eandb.util.progress.ProgressMonitor;
 import ca.eandb.util.progress.ProgressMonitorFactory;
 import ca.eandb.util.rmi.Serialized;
@@ -78,7 +59,7 @@ import ca.eandb.util.rmi.Serialized;
  * A <code>JobService</code> implementation.
  * @author Brad Kimmel
  */
-public final class JobServer implements JobService {
+public final class TemporaryJobServer implements TaskService {
 
 	/**
 	 * The default amount of time (in seconds) to instruct workers to idle for
@@ -87,7 +68,7 @@ public final class JobServer implements JobService {
 	private static final int DEFAULT_IDLE_SECONDS = 10;
 
 	/** The <code>Logger</code> for this class. */
-	private static final Logger logger = Logger.getLogger(JobServer.class);
+	private static final Logger logger = Logger.getLogger(TemporaryJobServer.class);
 
 	/** The <code>Random</code> number generator (for generating task IDs). */
 	private static final Random rand = new Random();
@@ -107,21 +88,9 @@ public final class JobServer implements JobService {
 	private final TaskScheduler scheduler;
 
 	/**
-	 * The <code>ParentClassManager</code> to use for managing class
-	 * definitions supplied by clients.
-	 */
-	private final ParentClassManager classManager;
-
-	/**
-	 * The directory under which to provide working directories for individual
-	 * jobs.
-	 */
-	private final File outputDirectory;
-
-	/**
 	 * A <code>Map</code> for looking up <code>ScheduledJob</code> structures
 	 * by the corresponding job ID.
-	 * @see ca.eandb.jdcp.server.JobServer.ScheduledJob
+	 * @see ca.eandb.jdcp.server.TemporaryJobServer.ScheduledJob
 	 */
 	private final Map<UUID, ScheduledJob> jobs = new HashMap<UUID, ScheduledJob>();
 
@@ -133,20 +102,6 @@ public final class JobServer implements JobService {
 	 * are available to be performed.
 	 */
 	private TaskDescription idleTask = new TaskDescription(null, 0, DEFAULT_IDLE_SECONDS);
-
-	private static final long POLLING_INTERVAL = 10;
-
-	private static final TimeUnit POLLING_UNITS = TimeUnit.SECONDS;
-	
-	private final Queue<ServiceInfo> services = new LinkedList<ServiceInfo>();
-
-	private final Map<UUID, ServiceInfo> routes = new WeakHashMap<UUID, ServiceInfo>();
-
-	private final Map<String, ServiceInfo> hosts = new HashMap<String, ServiceInfo>();
-
-	private final ScheduledExecutorService poller = Executors.newScheduledThreadPool(1, new BackgroundThreadFactory());
-	
-	private final DataSource dataSource = null;
 
 	/**
 	 * Creates a new <code>JobServer</code>.
@@ -160,25 +115,12 @@ public final class JobServer implements JobService {
 	 * @param executor The <code>Executor</code> to use to run bits of code
 	 * 		that should not hold up the remote caller.
 	 */
-	public JobServer(File outputDirectory, ProgressMonitorFactory monitorFactory, TaskScheduler scheduler, ParentClassManager classManager, Executor executor) throws IllegalArgumentException {
-		if (!outputDirectory.isDirectory()) {
-			throw new IllegalArgumentException("outputDirectory must be a directory.");
-		}
-		this.outputDirectory = outputDirectory;
+	public TemporaryJobServer(ProgressMonitorFactory monitorFactory, TaskScheduler scheduler, Executor executor) throws IllegalArgumentException {
 		this.monitorFactory = monitorFactory;
 		this.scheduler = scheduler;
-		this.classManager = classManager;
 		this.executor = executor;
-		
-		Runnable poll = new Runnable() {
-			public void run() {
-				pollActiveTasks();
-			}
-		};
-		poller.scheduleAtFixedRate(poll, POLLING_INTERVAL,
-				POLLING_INTERVAL, POLLING_UNITS);
-		
-		logger.info("JobServer created");
+
+		logger.info("TemporaryJobServer created");
 	}
 
 	/**
@@ -191,73 +133,23 @@ public final class JobServer implements JobService {
 	 * @param classManager The <code>ParentClassManager</code> to use to
 	 * 		store and retrieve class definitions.
 	 */
-	public JobServer(File outputDirectory, ProgressMonitorFactory monitorFactory, TaskScheduler scheduler, ParentClassManager classManager) throws IllegalArgumentException {
-		this(outputDirectory, monitorFactory, scheduler, classManager, Executors.newCachedThreadPool(new BackgroundThreadFactory()));
-	}
-	
-	private final void pollActiveTasks() {
-		for (ServiceInfo info : hosts.values()) {
-			info.pollActiveTasks();
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.remote.JobService#createJob(java.lang.String)
-	 */
-	public UUID createJob(String description) throws SecurityException {
-		ScheduledJob sched = new ScheduledJob(description, monitorFactory.createProgressMonitor(description));
-		jobs.put(sched.id, sched);
-
-		if (logger.isInfoEnabled()) {
-			logger.info("Job created (" + sched.id.toString() + "): " + description);
-		}
-
-		return sched.id;
-	}
-
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.remote.JobService#submitJob(ca.eandb.util.rmi.Envelope, java.util.UUID)
-	 */
-	public void submitJob(Serialized<ParallelizableJob> job, UUID jobId)
-			throws IllegalArgumentException, SecurityException, ClassNotFoundException, JobExecutionException {
-		ScheduledJob sched = jobs.get(jobId);
-		if (sched == null || sched.job != null) {
-			throw new IllegalArgumentException("No pending job with provided Job ID");
-		}
-
-		try {
-			ServerUtil.setHostService(sched);
-			sched.initializeJob(job);
-			sched.scheduleNextTask();
-		} catch (JobExecutionException e) {
-			handleJobExecutionException(e, jobId);
-			throw e;
-		} finally {
-			ServerUtil.clearHostService();
-		}
-
-		if (logger.isInfoEnabled()) {
-			logger.info("Pending job submitted (" + jobId.toString() + ")");
-		}
+	public TemporaryJobServer(ProgressMonitorFactory monitorFactory, TaskScheduler scheduler) throws IllegalArgumentException {
+		this(monitorFactory, scheduler, Executors.newCachedThreadPool(new BackgroundThreadFactory()));
 	}
 
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.remote.JobService#submitJob(ca.eandb.util.rmi.Envelope, java.lang.String)
 	 */
-	public UUID submitJob(Serialized<ParallelizableJob> job, String description)
-			throws SecurityException, ClassNotFoundException, JobExecutionException {
-		ScheduledJob sched = new ScheduledJob(description, monitorFactory.createProgressMonitor(description));
+	public UUID submitJob(ParallelizableJob job, String description)
+			throws ClassNotFoundException, JobExecutionException {
+		ScheduledJob sched = new ScheduledJob(job, description, monitorFactory.createProgressMonitor(description));
 		jobs.put(sched.id, sched);
 
 		try {
-			ServerUtil.setHostService(sched);
-			sched.initializeJob(job);
 			sched.scheduleNextTask();
 		} catch (JobExecutionException e) {
 			handleJobExecutionException(e, sched.id);
 			throw e;
-		} finally {
-			ServerUtil.clearHostService();
 		}
 
 		if (logger.isInfoEnabled()) {
@@ -271,7 +163,7 @@ public final class JobServer implements JobService {
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.remote.JobService#cancelJob(java.util.UUID)
 	 */
-	public void cancelJob(UUID jobId) throws IllegalArgumentException, SecurityException {
+	public void cancelJob(UUID jobId) throws IllegalArgumentException {
 		if (!jobs.containsKey(jobId)) {
 			throw new IllegalArgumentException("No job with provided Job ID");
 		}
@@ -288,11 +180,6 @@ public final class JobServer implements JobService {
 		if (sched != null) {
 			return sched.worker;
 		}
-		
-		ServiceInfo info = routes.get(jobId);
-		if (info != null) {
-			return info.getTaskWorker(jobId);
-		}
 
 		throw new IllegalArgumentException("No submitted job with provided Job ID");
 	}
@@ -305,41 +192,12 @@ public final class JobServer implements JobService {
 		if (taskDesc != null) {
 			ScheduledJob sched = jobs.get(taskDesc.getJobId());
 			try {
-				ServerUtil.setHostService(sched);
 				sched.scheduleNextTask();
 			} catch (JobExecutionException e) {
 				handleJobExecutionException(e, sched.id);
-			} finally {
-				ServerUtil.clearHostService();
 			}
 			return taskDesc;
 		}
-
-		int n = services.size();
-		if (n > 0) {
-			ServiceInfo[] serv;
-			synchronized (this) {
-				serv = (ServiceInfo[]) services.toArray(new ServiceInfo[n]);
-			}
-			for (ServiceInfo info : serv) {
-				try {
-					synchronized (this) {
-						if (services.remove(info)) {
-							services.add(info);
-						}
-					}
-					TaskDescription task = info.requestTask();
-					if (task != null) {
-						UUID jobId = task.getJobId();
-						routes.put(jobId, info);
-						return task;
-					}
-				} catch (Exception e) {
-					logger.error("Failed to request task from server", e);
-				}
-			}
-		}
-
 		return idleTask;
 	}
 
@@ -350,26 +208,7 @@ public final class JobServer implements JobService {
 			final Serialized<Object> results) throws SecurityException {
 		ScheduledJob sched = jobs.get(jobId);
 		if (sched != null) {
-			try {
-				ServerUtil.setHostService(sched);
-				sched.submitTaskResults(taskId, results);
-			} finally {
-				ServerUtil.clearHostService();
-			}
-			return;
-		}
-		
-		final ServiceInfo info = routes.get(jobId);
-		if (info != null) {
-			executor.execute(new Runnable() {
-				public void run() {
-					try {
-						info.submitTaskResults(jobId, taskId, results);
-					} catch (Exception e) {
-						logger.error("Cannot submit task results", e);
-					}
-				}
-			});
+			sched.submitTaskResults(taskId, results);
 		}
 	}
 
@@ -381,19 +220,6 @@ public final class JobServer implements JobService {
 		ScheduledJob sched = jobs.get(jobId);
 		if (sched != null) {
 			sched.reportException(taskId, e);
-		}
-		
-		final ServiceInfo info = routes.get(jobId);
-		if (info != null) {
-			executor.execute(new Runnable() {
-				public void run() {
-					try {
-						info.reportException(jobId, taskId, e);
-					} catch (Exception e1) {
-						logger.error("Cannot report exception", e1);
-					}
-				}
-			});
 		}
 	}
 
@@ -416,12 +242,7 @@ public final class JobServer implements JobService {
 		for (int i = 0; i < jobIds.length; i++) {
 			UUID jobId = jobIds[i];
 			int taskId = taskIds[i];
-			if (jobs.containsKey(jobId)) {
-				finished.set(i, jobId == null || !scheduler.contains(jobId, taskId));
-			} else {
-				ServiceInfo info = routes.get(jobIds[i]);
-				finished.set(i, (info == null) || info.isTaskComplete(jobIds[i], taskIds[i]));
-			}
+			finished.set(i, jobId == null || !scheduler.contains(jobId, taskId));
 		}
 
 		return finished;
@@ -433,81 +254,42 @@ public final class JobServer implements JobService {
 	 */
 	public byte[] getClassDefinition(String name, UUID jobId)
 			throws SecurityException {
-		ScheduledJob sched = jobs.get(jobId);
-		if (sched != null) {
-			ByteBuffer def = sched.classManager.getClassDefinition(name);
-			if (def.hasArray() && def.arrayOffset() == 0) {
-				return def.array();
-			} else {
-				byte[] bytes = new byte[def.remaining()];
-				def.get(bytes);
-				return bytes;
-			}
-		}
-		
-		ServiceInfo info = routes.get(jobId);
-		if (info != null) {
-			return info.getClassDefinition(name, jobId);
-		}
-		
-		throw new IllegalArgumentException("No job with provided Job ID");
+		return getClassDefinition(name);
 	}
 
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.remote.JobService#getClassDigest(java.lang.String, java.util.UUID)
 	 */
-	public byte[] getClassDigest(String name, UUID jobId)
-			throws SecurityException {
-		ScheduledJob sched = jobs.get(jobId);
-		if (sched != null) {
-			return sched.classManager.getClassDigest(name);
-		}
-		
-		ServiceInfo info = routes.get(jobId);
-		if (info != null) {
-			return info.getClassDigest(name, jobId);
-		}
-		
-		throw new IllegalArgumentException("No job with provided Job ID");
+	public byte[] getClassDigest(String name, UUID jobId) {
+		return getClassDigest(name);
 	}
-
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.remote.JobService#getClassDigest(java.lang.String)
-	 */
-	public byte[] getClassDigest(String name) throws SecurityException {
-		return classManager.getClassDigest(name);
-	}
-
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.remote.JobService#setClassDefinition(java.lang.String, byte[])
-	 */
-	public void setClassDefinition(String name, byte[] def)
-			throws SecurityException {
-		classManager.setClassDefinition(name, def);
-
-		if (logger.isInfoEnabled()) {
-			logger.info("Global class definition updated for " + name);
+	
+	private byte[] getClassDigest(String name) {
+		try {
+			MessageDigest md5 = MessageDigest.getInstance("MD5");
+			Class<?> cl = Class.forName(name);
+			ClassUtil.getClassDigest(cl, md5);
+			return md5.digest();
+		} catch (NoSuchAlgorithmException e) {
+			throw new UnexpectedException(e);
+		} catch (ClassNotFoundException e) {
+			return null;
 		}
 	}
-
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.remote.JobService#setClassDefinition(java.lang.String, java.util.UUID, byte[])
-	 */
-	public void setClassDefinition(String name, UUID jobId, byte[] def)
-			throws IllegalArgumentException, SecurityException {
-		ScheduledJob sched = jobs.get(jobId);
-		if (sched == null || sched.job != null) {
-			throw new IllegalArgumentException("No pending job with provided Job ID");
-		}
-
-		sched.classManager.setClassDefinition(name, def);
-
-		if (logger.isInfoEnabled()) {
-			logger.info("Class definition of " + name + " set for job "
-					+ jobId.toString());
-		}
+	
+	private byte[] getClassDefinition(String name) {
+		try {
+			Class<?> cl = Class.forName(name);
+			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			ClassUtil.writeClassToStream(cl, stream);
+			return stream.toByteArray();
+		} catch (ClassNotFoundException e) {
+			return null;
+		} catch (IOException e) {
+			return null;
+		}	
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.remote.JobService#setIdleTime(int)
 	 */
@@ -569,38 +351,6 @@ public final class JobServer implements JobService {
 			}
 			jobs.remove(jobId);
 			scheduler.removeJob(jobId);
-			sched.classManager.release();
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.remote.JobService#registerTaskService(java.lang.String, ca.eandb.jdcp.remote.TaskService)
-	 */
-	public void registerTaskService(String name, TaskService service)
-			throws SecurityException, RemoteException {
-		if (hosts.containsKey(name)) {
-			unregisterTaskService(name);
-		}
-		ServiceInfo info = new ServiceInfo(service, dataSource, executor);
-		hosts.put(name, info);
-		services.add(info);
-	}
-
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.remote.JobService#unregisterTaskService(java.lang.String)
-	 */
-	public void unregisterTaskService(String name) throws SecurityException,
-			RemoteException {
-		ServiceInfo info = hosts.get(name);
-		if (info != null) {
-			hosts.remove(name);
-			services.remove(info);
-			for (Entry<UUID, ServiceInfo> entry : routes.entrySet()) {
-				if (entry.getValue() == info) {
-					routes.remove(entry.getKey());
-				}
-			}
-			info.shutdown();
 		}
 	}
 
@@ -609,7 +359,7 @@ public final class JobServer implements JobService {
 	 * to this <code>JobMasterServer</code>.
 	 * @author Brad Kimmel
 	 */
-	private class ScheduledJob implements HostService {
+	private class ScheduledJob {
 
 		/** The <code>ParallelizableJob</code> to be processed. */
 		public JobExecutionWrapper				job;
@@ -630,24 +380,14 @@ public final class JobServer implements JobService {
 		public final ProgressMonitor			monitor;
 
 		/**
-		 * The <code>ClassManager</code> to use to store the class definitions
-		 * applicable to this job.
-		 */
-		public final ChildClassManager			classManager;
-
-		/** The working directory for this job. */
-		private final File						workingDirectory;
-
-		/** The <code>ClassLoader</code> to use to deserialize this job. */
-		public ClassLoader						classLoader;
-
-		/**
 		 * Initializes the scheduled job.
+		 * @param job The <code>ParallelizableJob</code> to run.
 		 * @param description A description of the job.
 		 * @param monitor The <code>ProgressMonitor</code> to use to monitor
 		 * 		the progress of the <code>ParallelizableJob</code>.
+		 * @throws JobExecutionException If the job throws an exception.
 		 */
-		public ScheduledJob(String description, ProgressMonitor monitor) {
+		public ScheduledJob(ParallelizableJob job, String description, ProgressMonitor monitor) throws JobExecutionException {
 
 			this.id					= UUID.randomUUID();
 			this.description		= description;
@@ -655,30 +395,10 @@ public final class JobServer implements JobService {
 			//String title			= String.format("%s (%s)", this.job.getClass().getSimpleName(), this.id.toString());
 			this.monitor			= monitor;
 			this.monitor.notifyStatusChanged("Awaiting job submission");
-
-			this.classManager		= JobServer.this.classManager.createChildClassManager();
-
-			this.workingDirectory	= new File(outputDirectory, id.toString());
-
-		}
-
-		/**
-		 * Deserializes the job and prepares it to be managed by the host
-		 * machine.
-		 * @param job The serialized job.
-		 * @throws ClassNotFoundException If a class required by the job is
-		 * 		missing.
-		 * @throws JobExecutionException If the job throws an exception.
-		 */
-		public void initializeJob(Serialized<ParallelizableJob> job) throws ClassNotFoundException, JobExecutionException {
-			this.classLoader	= new StrategyClassLoader(classManager, JobServer.class.getClassLoader());
-			this.job			= new JobExecutionWrapper(job.deserialize(classLoader));
+			
+			this.job			= new JobExecutionWrapper(job);
 			this.worker			= new Serialized<TaskWorker>(this.job.worker());
 			this.monitor.notifyStatusChanged("");
-
-			this.workingDirectory.mkdir();
-			this.job.setHostService(this);
-
 			this.job.initialize();
 		}
 
@@ -707,25 +427,11 @@ public final class JobServer implements JobService {
 		 * @param ex The exception that was thrown.
 		 */
 		public synchronized void reportException(int taskId, Exception ex) {
-			PrintStream log = null;
-
-			try {
-				File logFile = new File(workingDirectory, "job.log");
-				log = new PrintStream(new FileOutputStream(logFile, true));
-				if (taskId != 0) {
-					log.println("A worker reported an exception while processing the job:");
-				} else {
-					log.println("A worker reported an exception while processing a task (" + Integer.toString(taskId) + "):");
-				}
-				log.println(ex);
-			} catch (IOException e) {
-				logger.error("Exception thrown while logging exception for job " + id.toString(), e);
-			} finally {
-				if (log != null) {
-					log.close();
-				}
+			if (taskId != 0) {
+				logger.error("A worker reported an exception while processing the job", ex);
+			} else {
+				logger.error("A worker reported an exception while processing a task (" + Integer.toString(taskId)+ ")", ex);
 			}
-
 		}
 
 		/**
@@ -761,87 +467,13 @@ public final class JobServer implements JobService {
 		 * @throws JobExecutionException If the job throws an exception.
 		 */
 		private synchronized void finalizeJob() throws JobExecutionException {
-
 			assert(job.isComplete());
 
 			job.finish();
-
-			try {
-
-				String				filename		= String.format("%s.zip", id.toString());
-				File				outputFile		= new File(outputDirectory, filename);
-
-				File				logFile			= new File(workingDirectory, "job.log");
-				PrintStream			log				= new PrintStream(new FileOutputStream(logFile, true));
-
-				log.printf("%tc: Job %s completed.", new Date(), id.toString());
-				log.println();
-				log.flush();
-				log.close();
-
-				FileUtil.zip(outputFile, workingDirectory);
-				FileUtil.deleteRecursive(workingDirectory);
-
-			} catch (IOException e) {
-				logger.error("Exception caught while finalizing job " + id.toString(), e);
+			
+			if (logger.isInfoEnabled()) {
+				logger.info(String.format("Job %s completed", id));
 			}
-
-		}
-
-		/**
-		 * Gets the <code>File</code> associated with the specified path which
-		 * is relative to this jobs working directory.
-		 * @param path The relative path.
-		 * @return The <code>File</code> associated with the specified path.
-		 * @throws IllegalArgumentException If the path is not a relative path
-		 * 		or references the parent directory (..).
-		 */
-		private File getWorkingFile(String path) {
-			File file = new File(workingDirectory, path).getAbsoluteFile();
-			try {
-				if (!FileUtil.isAncestor(file, workingDirectory)) {
-					throw new IllegalArgumentException("path must not reference parent directory.");
-				}
-			} catch (IOException e) {
-				throw new UnexpectedException(e);
-			}
-			return file;
-		}
-
-		/* (non-Javadoc)
-		 * @see ca.eandb.jdcp.job.HostService#createFileOutputStream(java.lang.String)
-		 */
-		public FileOutputStream createFileOutputStream(final String path) {
-			return AccessController.doPrivileged(new PrivilegedAction<FileOutputStream>() {
-				public FileOutputStream run() {
-					File file = getWorkingFile(path);
-					File dir = file.getParentFile();
-					dir.mkdirs();
-					try {
-						return new FileOutputStream(file);
-					} catch (FileNotFoundException e) {
-						throw new UnexpectedException(e);
-					}
-				}
-			});
-		}
-
-		/* (non-Javadoc)
-		 * @see ca.eandb.jdcp.job.HostService#createRandomAccessFile(java.lang.String)
-		 */
-		public RandomAccessFile createRandomAccessFile(final String path) {
-			return AccessController.doPrivileged(new PrivilegedAction<RandomAccessFile>() {
-				public RandomAccessFile run() {
-					File file = getWorkingFile(path);
-					File dir = file.getParentFile();
-					dir.mkdirs();
-					try {
-						return new RandomAccessFile(file, "rw");
-					} catch (FileNotFoundException e) {
-						throw new UnexpectedException(e);
-					}
-				}
-			});
 		}
 
 	}
@@ -892,12 +524,10 @@ public final class JobServer implements JobService {
 		 * @see java.lang.Runnable#run()
 		 */
 		public void run() {
-			ClassLoader cl = sched.classLoader;
 			if (task != null) {
 				try {
-					ServerUtil.setHostService(sched);
 					sched.job.submitTaskResults(task,
-							results.deserialize(cl), monitor);
+							results.deserialize(), monitor);
 
 					if (sched.job.isComplete()) {
 						sched.finalizeJob();
@@ -915,8 +545,6 @@ public final class JobServer implements JobService {
 							"Exception thrown while attempting to submit task results for job "
 									+ sched.id.toString(), e);
 					removeScheduledJob(sched.id, false);
-				} finally {
-					ServerUtil.clearHostService();
 				}
 			}
 		}

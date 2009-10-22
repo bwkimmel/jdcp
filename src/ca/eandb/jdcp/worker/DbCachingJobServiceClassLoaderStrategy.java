@@ -36,7 +36,7 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 
-import ca.eandb.jdcp.remote.JobService;
+import ca.eandb.jdcp.remote.TaskService;
 import ca.eandb.util.StringUtil;
 import ca.eandb.util.sql.DbUtil;
 
@@ -104,14 +104,14 @@ public final class DbCachingJobServiceClassLoaderStrategy extends
 
 	/**
 	 * Creates a new <code>DbCachingJobServiceClassLoaderStrategy</code>.
-	 * @param service The <code>JobService</code> from which to obtain class
+	 * @param service The <code>TaskService</code> from which to obtain class
 	 * 		definitions.
 	 * @param jobId The <code>UUID</code> identifying the job for which to
 	 * 		obtain class definitions.
 	 * @param ds The <code>DataSource</code> to use to store cached class
 	 * 		definitions.
 	 */
-	public DbCachingJobServiceClassLoaderStrategy(JobService service,
+	public DbCachingJobServiceClassLoaderStrategy(TaskService service,
 			UUID jobId, DataSource ds) {
 		super(service, jobId);
 		this.ds = ds;

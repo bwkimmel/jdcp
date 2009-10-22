@@ -39,8 +39,8 @@ import javax.jnlp.PersistenceService;
 import javax.jnlp.ServiceManager;
 import javax.jnlp.UnavailableServiceException;
 
-
 import ca.eandb.jdcp.remote.JobService;
+import ca.eandb.jdcp.remote.TaskService;
 import ca.eandb.util.StringUtil;
 import ca.eandb.util.UnexpectedException;
 
@@ -66,7 +66,7 @@ public final class PersistenceCachingJobServiceClassLoaderStrategy extends
 	 * <code>PersistenceCachingJobServiceClassLoaderStrategy</code>.  The
 	 * <code>BasicService</code> is used to determine the code base
 	 * <code>URL</code>.
-	 * @param service The <code>JobService</code> from which to obtain class
+	 * @param service The <code>TaskService</code> from which to obtain class
 	 * 		definitions.
 	 * @param jobId The <code>UUID</code> identifying the job for which to
 	 * 		obtain class definitions.
@@ -75,7 +75,7 @@ public final class PersistenceCachingJobServiceClassLoaderStrategy extends
 	 * @see javax.jnlp.PersistenceService
 	 * @see javax.jnlp.BasicService
 	 */
-	public PersistenceCachingJobServiceClassLoaderStrategy(JobService service,
+	public PersistenceCachingJobServiceClassLoaderStrategy(TaskService service,
 			UUID jobId) throws UnavailableServiceException {
 		super(service, jobId);
 		BasicService basicService = (BasicService) ServiceManager.lookup("javax.jnlp.BasicService");

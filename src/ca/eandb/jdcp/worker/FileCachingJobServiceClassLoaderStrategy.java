@@ -32,6 +32,7 @@ import java.util.UUID;
 import org.apache.log4j.Logger;
 
 import ca.eandb.jdcp.remote.JobService;
+import ca.eandb.jdcp.remote.TaskService;
 import ca.eandb.util.StringUtil;
 import ca.eandb.util.io.FileUtil;
 
@@ -51,7 +52,7 @@ public final class FileCachingJobServiceClassLoaderStrategy extends
 
 	/**
 	 * Creates a new <code>FileCachingJobServiceClassLoaderStrategy</code>.
-	 * @param service The <code>JobService</code> from which to obtain class
+	 * @param service The <code>TaskService</code> from which to obtain class
 	 * 		definitions.
 	 * @param jobId The <code>UUID</code> identifying the job for which to
 	 * 		obtain class definitions.
@@ -60,7 +61,7 @@ public final class FileCachingJobServiceClassLoaderStrategy extends
 	 * @throws IllegalArgumentException if <code>directory</code> does not
 	 * 		refer to an existing directory.
 	 */
-	public FileCachingJobServiceClassLoaderStrategy(JobService service,
+	public FileCachingJobServiceClassLoaderStrategy(TaskService service,
 			UUID jobId, File directory) {
 		super(service, jobId);
 		this.directory = directory;

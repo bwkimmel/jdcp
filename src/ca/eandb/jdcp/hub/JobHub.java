@@ -49,6 +49,7 @@ import ca.eandb.jdcp.job.ParallelizableJob;
 import ca.eandb.jdcp.job.TaskDescription;
 import ca.eandb.jdcp.job.TaskWorker;
 import ca.eandb.jdcp.remote.JobService;
+import ca.eandb.jdcp.remote.TaskService;
 import ca.eandb.util.concurrent.BackgroundThreadFactory;
 import ca.eandb.util.rmi.Serialized;
 
@@ -325,6 +326,22 @@ public final class JobHub implements JobService {
 	public UUID submitJob(Serialized<ParallelizableJob> job, String description)
 			throws SecurityException, ClassNotFoundException, RemoteException,
 			JobExecutionException {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.remote.JobService#registerTaskService(java.lang.String, ca.eandb.jdcp.remote.TaskService)
+	 */
+	public void registerTaskService(String name, TaskService service)
+			throws SecurityException, RemoteException {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.remote.JobService#unregisterTaskService(java.lang.String)
+	 */
+	public void unregisterTaskService(String name) throws SecurityException,
+			RemoteException {
 		throw new UnsupportedOperationException();
 	}
 

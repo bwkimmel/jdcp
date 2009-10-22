@@ -42,6 +42,7 @@ import ca.eandb.jdcp.job.ParallelizableJob;
 import ca.eandb.jdcp.job.TaskDescription;
 import ca.eandb.jdcp.job.TaskWorker;
 import ca.eandb.jdcp.remote.JobService;
+import ca.eandb.jdcp.remote.TaskService;
 import ca.eandb.util.rmi.Serialized;
 
 /**
@@ -326,6 +327,64 @@ public final class ReconnectingJobService implements JobService {
 			try {
 				service = getJobService(service);
 				return service.getFinishedTasks(jobIds, taskIds);
+			} catch (NoSuchObjectException e) {
+				logger.error("Lost connection", e);
+			} catch (ConnectException e) {
+				logger.error("Lost connection", e);
+			} catch (ConnectIOException e) {
+				logger.error("Lost connection", e);
+			} catch (UnknownHostException e) {
+				logger.error("Lost connection", e);
+			} catch (UnmarshalException e) {
+				if (e.getCause() instanceof EOFException) {
+					logger.error("Lost connection", e);
+				} else {
+					throw e;
+				}
+			}
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.remote.JobService#registerTaskService(java.lang.String, ca.eandb.jdcp.remote.TaskService)
+	 */
+	public void registerTaskService(String name, TaskService taskService)
+			throws SecurityException, RemoteException {
+		JobService service = null;
+		while (true) {
+			try {
+				service = getJobService(service);
+				service.registerTaskService(name, taskService);
+				return;
+			} catch (NoSuchObjectException e) {
+				logger.error("Lost connection", e);
+			} catch (ConnectException e) {
+				logger.error("Lost connection", e);
+			} catch (ConnectIOException e) {
+				logger.error("Lost connection", e);
+			} catch (UnknownHostException e) {
+				logger.error("Lost connection", e);
+			} catch (UnmarshalException e) {
+				if (e.getCause() instanceof EOFException) {
+					logger.error("Lost connection", e);
+				} else {
+					throw e;
+				}
+			}
+		}	
+	}
+
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.remote.JobService#unregisterTaskService(java.lang.String)
+	 */
+	public void unregisterTaskService(String name)
+			throws IllegalArgumentException, SecurityException, RemoteException {
+		JobService service = null;
+		while (true) {
+			try {
+				service = getJobService(service);
+				service.unregisterTaskService(name);
+				return;
 			} catch (NoSuchObjectException e) {
 				logger.error("Lost connection", e);
 			} catch (ConnectException e) {

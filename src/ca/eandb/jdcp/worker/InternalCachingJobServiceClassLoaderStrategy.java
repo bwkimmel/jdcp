@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import ca.eandb.jdcp.remote.JobService;
+import ca.eandb.jdcp.remote.TaskService;
 import ca.eandb.util.StringUtil;
 
 /**
@@ -45,12 +45,12 @@ public final class InternalCachingJobServiceClassLoaderStrategy extends
 
 	/**
 	 * Creates a new <code>InternalCachingJobServiceClassLoaderStrategy</code>.
-	 * @param service The <code>JobService</code> from which to obtain class
+	 * @param service The <code>TaskService</code> from which to obtain class
 	 * 		definitions.
 	 * @param jobId The <code>UUID</code> identifying the job for which to
 	 * 		obtain class definitions.
 	 */
-	public InternalCachingJobServiceClassLoaderStrategy(JobService service,
+	public InternalCachingJobServiceClassLoaderStrategy(TaskService service,
 			UUID jobId) {
 		super(service, jobId);
 	}

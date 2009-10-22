@@ -29,8 +29,7 @@ import java.nio.ByteBuffer;
 import java.rmi.RemoteException;
 import java.util.UUID;
 
-
-import ca.eandb.jdcp.remote.JobService;
+import ca.eandb.jdcp.remote.TaskService;
 import ca.eandb.util.classloader.ClassLoaderStrategy;
 
 /**
@@ -41,8 +40,8 @@ import ca.eandb.util.classloader.ClassLoaderStrategy;
  */
 public final class JobServiceClassLoaderStrategy implements ClassLoaderStrategy {
 
-	/** The <code>JobService</code> to obtain class definitions from. */
-	private final JobService service;
+	/** The <code>TaskService</code> to obtain class definitions from. */
+	private final TaskService service;
 
 	/**
 	 * The <code>UUID</code> identifying the job for which to obtain the
@@ -52,12 +51,12 @@ public final class JobServiceClassLoaderStrategy implements ClassLoaderStrategy 
 
 	/**
 	 * Creates a new <code>JobServiceClassLoaderStrategy</code>.
-	 * @param service The <code>JobService</code> to obtain class definitions
+	 * @param service The <code>TaskService</code> to obtain class definitions
 	 * 		from.
 	 * @param jobId The <code>UUID</code> identifying the job for which to
 	 * 		obtain the associated class definitions.
 	 */
-	public JobServiceClassLoaderStrategy(JobService service, UUID jobId) {
+	public JobServiceClassLoaderStrategy(TaskService service, UUID jobId) {
 		this.service = service;
 		this.jobId = jobId;
 	}

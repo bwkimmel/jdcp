@@ -35,13 +35,13 @@ import java.util.UUID;
 
 import javax.security.auth.Subject;
 
-
 import ca.eandb.jdcp.JdcpUtil;
 import ca.eandb.jdcp.job.JobExecutionException;
 import ca.eandb.jdcp.job.ParallelizableJob;
 import ca.eandb.jdcp.job.TaskDescription;
 import ca.eandb.jdcp.job.TaskWorker;
 import ca.eandb.jdcp.remote.JobService;
+import ca.eandb.jdcp.remote.TaskService;
 import ca.eandb.jdcp.security.JdcpPermission;
 import ca.eandb.util.UnexpectedException;
 import ca.eandb.util.rmi.Serialized;
@@ -216,7 +216,6 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.remote.JobService#getTaskWorker(java.util.UUID)
 	 */
-	@SuppressWarnings("unchecked")
 	public Serialized<TaskWorker> getTaskWorker(final UUID jobId)
 			throws IllegalArgumentException, SecurityException, RemoteException {
 
@@ -528,6 +527,64 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 				public BitSet run() throws Exception {
 					AccessController.checkPermission(new JdcpPermission("getFinishedTasks"));
 					return service.getFinishedTasks(jobIds, taskIds);
+				}
+
+			}, null);
+		} catch (PrivilegedActionException e) {
+			if (e.getException() instanceof IllegalArgumentException) {
+				throw (IllegalArgumentException) e.getException();
+			} else if (e.getException() instanceof SecurityException) {
+				throw (SecurityException) e.getException();
+			} else if (e.getException() instanceof RemoteException) {
+				throw (RemoteException) e.getException();
+			} else {
+				throw new UnexpectedException(e);
+			}
+		}
+
+	}
+
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.remote.JobService#registerTaskService(java.lang.String, ca.eandb.jdcp.remote.TaskService)
+	 */
+	public void registerTaskService(final String name, final TaskService taskService)
+			throws SecurityException, RemoteException {
+		
+		try {
+			Subject.doAsPrivileged(user, new PrivilegedExceptionAction<Object>() {
+
+				public Object run() throws Exception {
+					AccessController.checkPermission(new JdcpPermission("registerTaskService"));
+					service.registerTaskService(name, taskService);
+					return null;
+				}
+
+			}, null);
+		} catch (PrivilegedActionException e) {
+			if (e.getException() instanceof SecurityException) {
+				throw (SecurityException) e.getException();
+			} else if (e.getException() instanceof RemoteException) {
+				throw (RemoteException) e.getException();
+			} else {
+				throw new UnexpectedException(e);
+			}
+		}
+
+	}
+
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.remote.JobService#unregisterTaskService(java.lang.String)
+	 */
+	public void unregisterTaskService(final String name)
+			throws IllegalArgumentException, SecurityException, RemoteException {
+		
+		try {
+			Subject.doAsPrivileged(user, new PrivilegedExceptionAction<Object>() {
+
+				public Object run() throws Exception {
+					AccessController.checkPermission(new JdcpPermission("unregisterTaskService"));
+					service.unregisterTaskService(name);
+					return null;
 				}
 
 			}, null);

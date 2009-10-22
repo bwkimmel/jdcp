@@ -34,7 +34,7 @@ import java.util.UUID;
 
 import org.apache.log4j.Logger;
 
-import ca.eandb.jdcp.remote.JobService;
+import ca.eandb.jdcp.remote.TaskService;
 import ca.eandb.util.classloader.ClassLoaderStrategy;
 
 /**
@@ -50,8 +50,8 @@ public abstract class CachingJobServiceClassLoaderStrategy implements ClassLoade
 	/** The <code>Logger</code> for this class. */
 	private static final Logger logger = Logger.getLogger(CachingJobServiceClassLoaderStrategy.class);
 
-	/** The <code>JobService</code> from which to obtain class definitions. */
-	private final JobService service;
+	/** The <code>TaskService</code> from which to obtain class definitions. */
+	private final TaskService service;
 
 	/**
 	 * The <code>UUID</code> identifying the job for which to obtain class
@@ -78,12 +78,12 @@ public abstract class CachingJobServiceClassLoaderStrategy implements ClassLoade
 
 	/**
 	 * Creates a new <code>CachingJobServiceClassLoaderStrategy</code>.
-	 * @param service The <code>JobService</code> from which to obtain class
+	 * @param service The <code>TaskService</code> from which to obtain class
 	 * 		definitions.
 	 * @param jobId The <code>UUID</code> identifying the job for which to
 	 * 		obtain class definitions.
 	 */
-	protected CachingJobServiceClassLoaderStrategy(JobService service, UUID jobId) {
+	protected CachingJobServiceClassLoaderStrategy(TaskService service, UUID jobId) {
 		this.service = service;
 		this.jobId = jobId;
 	}
