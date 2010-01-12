@@ -28,6 +28,7 @@ package ca.eandb.jdcp.server;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.BitSet;
@@ -41,12 +42,14 @@ import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.log4j.Logger;
 
+import ca.eandb.jdcp.JdcpUtil;
 import ca.eandb.jdcp.job.JobExecutionException;
 import ca.eandb.jdcp.job.JobExecutionWrapper;
 import ca.eandb.jdcp.job.ParallelizableJob;
 import ca.eandb.jdcp.job.TaskDescription;
 import ca.eandb.jdcp.job.TaskWorker;
 import ca.eandb.jdcp.remote.TaskService;
+import ca.eandb.jdcp.server.scheduling.PrioritySerialTaskScheduler;
 import ca.eandb.jdcp.server.scheduling.TaskScheduler;
 import ca.eandb.util.ClassUtil;
 import ca.eandb.util.UnexpectedException;
@@ -60,6 +63,11 @@ import ca.eandb.util.rmi.Serialized;
  * @author Brad Kimmel
  */
 public final class TemporaryJobServer implements TaskService {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5172589787776509569L;
 
 	/**
 	 * The default amount of time (in seconds) to instruct workers to idle for
@@ -125,16 +133,34 @@ public final class TemporaryJobServer implements TaskService {
 
 	/**
 	 * Creates a new <code>JobServer</code>.
-	 * @param outputDirectory The directory to write job results to.
 	 * @param monitorFactory The <code>ProgressMonitorFactory</code> to use to
 	 * 		create <code>ProgressMonitor</code>s for individual jobs.
 	 * @param scheduler The <code>TaskScheduler</code> to use to assign
 	 * 		tasks.
-	 * @param classManager The <code>ParentClassManager</code> to use to
-	 * 		store and retrieve class definitions.
 	 */
 	public TemporaryJobServer(ProgressMonitorFactory monitorFactory, TaskScheduler scheduler) throws IllegalArgumentException {
 		this(monitorFactory, scheduler, Executors.newCachedThreadPool(new BackgroundThreadFactory()));
+	}
+
+	/**
+	 * Creates a new <code>JobServer</code>.
+	 * @param monitorFactory The <code>ProgressMonitorFactory</code> to use to
+	 * 		create <code>ProgressMonitor</code>s for individual jobs.
+	 */
+	public TemporaryJobServer(ProgressMonitorFactory monitorFactory) throws IllegalArgumentException {
+		this(monitorFactory, new PrioritySerialTaskScheduler());
+	}
+	
+	
+	private final Object complete = new Object(); 
+	public void waitForCompletion() throws InterruptedException {
+		synchronized (complete) {
+			complete.wait();
+		}
+	}
+	
+	public boolean isComplete() {
+		return jobs.isEmpty();
 	}
 
 	/* (non-Javadoc)
@@ -351,6 +377,11 @@ public final class TemporaryJobServer implements TaskService {
 			}
 			jobs.remove(jobId);
 			scheduler.removeJob(jobId);
+		}
+		if (jobs.isEmpty()) {
+			synchronized (this.complete) {
+				this.complete.notifyAll();
+			}
 		}
 	}
 
