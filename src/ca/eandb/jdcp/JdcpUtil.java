@@ -30,6 +30,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.UUID;
 
 import javax.security.auth.login.LoginException;
@@ -40,6 +41,7 @@ import ca.eandb.jdcp.job.ParallelizableJob;
 import ca.eandb.jdcp.remote.AuthenticationService;
 import ca.eandb.jdcp.remote.JobService;
 import ca.eandb.jdcp.remote.ProtocolVersionException;
+import ca.eandb.jdcp.remote.TaskService;
 import ca.eandb.jdcp.server.ServerUtil;
 import ca.eandb.util.io.FileUtil;
 import ca.eandb.util.rmi.Serialized;
@@ -93,6 +95,43 @@ public final class JdcpUtil {
 		JobService service = auth.authenticate(username, password, PROTOCOL_VERSION_ID);
 
 		return service.submitJob(payload, description);
+
+	}
+
+	/**
+	 * Submits a job to a server for processing.
+	 * @param job The <code>ParallelizableJob</code> to be processed.
+	 * @param description A description of the job.
+	 * @param host The host name of the server to send the job to.
+	 * @param username The user name to use to authenticate with the server.
+	 * @param password The password to use to authenticate with the server.
+	 * @return The <code>UUID</code> assigned to the job.
+	 * @throws SecurityException If the user does not have access to perform
+	 * 		the requested action on the server.
+	 * @throws RemoteException If a failure occurs in attempting to communicate
+	 * 		with the server.
+	 * @throws ClassNotFoundException If deserialization of the job at the
+	 * 		server requires a class that could not be found on the server.
+	 * @throws JobExecutionException If the submitted job threw an exception at
+	 * 		the server during initialization.
+	 * @throws LoginException If the login attempt fails.
+	 * @throws NotBoundException If the <code>AuthenticationService</code>
+	 * 		could not be found at the server.
+	 * @throws ProtocolVersionException If this client is incompatible with the
+	 * 		server.
+	 */
+	public static void registerTaskService(String name, TaskService taskService,
+			String host, String username, String password)
+			throws SecurityException, RemoteException, ClassNotFoundException,
+			JobExecutionException, LoginException, NotBoundException, ProtocolVersionException {
+
+		Registry registry = LocateRegistry.getRegistry(host, DEFAULT_PORT);
+		AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
+		JobService service = auth.authenticate(username, password, PROTOCOL_VERSION_ID);
+		
+//		TaskService stub = (TaskService) UnicastRemoteObject.exportObject(taskService, JdcpUtil.DEFAULT_PORT+1);
+
+		service.registerTaskService(name, taskService);
 
 	}
 
