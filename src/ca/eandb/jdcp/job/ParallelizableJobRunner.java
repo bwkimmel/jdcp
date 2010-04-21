@@ -73,6 +73,21 @@ public final class ParallelizableJobRunner implements Runnable {
 	 * Creates a new <code>ParallelizableJobRunner</code>.
 	 * @param job The <code>ParallelizableJob</code> to run.
 	 * @param workingDirectory The working directory for the job.
+	 * @param maxConcurrentWorkers The maximum number of concurrent tasks to
+	 * 		process.
+	 * @param monitorFactory The <code>ProgressMonitorFactory</code> to use to
+	 * 		create <code>ProgressMonitor</code>s for worker tasks.
+	 * @param monitor The <code>ProgressMonitor</code> to report overall job
+	 * 		progress to.
+	 */
+	public ParallelizableJobRunner(ParallelizableJob job, File workingDirectory, int maxConcurrentWorkers, ProgressMonitorFactory monitorFactory, ProgressMonitor monitor) {
+		this(job, workingDirectory, Executors.newFixedThreadPool(maxConcurrentWorkers, new BackgroundThreadFactory()), maxConcurrentWorkers, monitorFactory, monitor);
+	}
+
+	/**
+	 * Creates a new <code>ParallelizableJobRunner</code>.
+	 * @param job The <code>ParallelizableJob</code> to run.
+	 * @param workingDirectory The working directory for the job.
 	 * @param executor The <code>Executor</code> to use to run worker threads.
 	 * @param maxConcurrentWorkers The maximum number of concurrent tasks to
 	 * 		process.
