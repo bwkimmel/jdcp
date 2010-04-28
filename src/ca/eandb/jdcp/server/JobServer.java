@@ -679,6 +679,18 @@ public final class JobServer implements JobService {
 			this.workingDirectory.mkdir();
 			this.job.setHostService(this);
 
+			File logFile = new File(workingDirectory, "job.log");
+			PrintStream log;
+			try {
+				log = new PrintStream(new FileOutputStream(logFile, true));
+				log.printf("%tc: Job %s submitted.", new Date(), id.toString());
+				log.println();
+				log.flush();
+				log.close();
+			} catch (FileNotFoundException e) {
+				logger.error("Unable to open job log file.", e);
+			}
+
 			this.job.initialize();
 		}
 
@@ -713,11 +725,12 @@ public final class JobServer implements JobService {
 				File logFile = new File(workingDirectory, "job.log");
 				log = new PrintStream(new FileOutputStream(logFile, true));
 				if (taskId != 0) {
-					log.println("A worker reported an exception while processing the job:");
+					log.printf("%tc: A worker reported an exception while processing the job:", new Date());
 				} else {
-					log.println("A worker reported an exception while processing a task (" + Integer.toString(taskId) + "):");
+					log.printf("%tc: A worker reported an exception while processing a task (%d):", new Date(), taskId);
 				}
-				log.println(ex);
+				log.println();
+				ex.printStackTrace(log);
 			} catch (IOException e) {
 				logger.error("Exception thrown while logging exception for job " + id.toString(), e);
 			} finally {
