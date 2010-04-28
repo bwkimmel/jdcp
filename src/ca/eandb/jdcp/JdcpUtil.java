@@ -30,7 +30,6 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.UUID;
 
 import javax.security.auth.login.LoginException;
@@ -128,7 +127,7 @@ public final class JdcpUtil {
 		Registry registry = LocateRegistry.getRegistry(host, DEFAULT_PORT);
 		AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
 		JobService service = auth.authenticate(username, password, PROTOCOL_VERSION_ID);
-		
+
 //		TaskService stub = (TaskService) UnicastRemoteObject.exportObject(taskService, JdcpUtil.DEFAULT_PORT+1);
 
 		service.registerTaskService(name, taskService);
