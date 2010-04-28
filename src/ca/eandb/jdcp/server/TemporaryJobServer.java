@@ -28,7 +28,6 @@ package ca.eandb.jdcp.server;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.BitSet;
@@ -42,7 +41,6 @@ import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.log4j.Logger;
 
-import ca.eandb.jdcp.JdcpUtil;
 import ca.eandb.jdcp.job.JobExecutionException;
 import ca.eandb.jdcp.job.JobExecutionWrapper;
 import ca.eandb.jdcp.job.ParallelizableJob;
@@ -64,9 +62,7 @@ import ca.eandb.util.rmi.Serialized;
  */
 public final class TemporaryJobServer implements TaskService {
 
-	/**
-	 * 
-	 */
+	/** Serialization version ID. */
 	private static final long serialVersionUID = -5172589787776509569L;
 
 	/**
@@ -150,15 +146,15 @@ public final class TemporaryJobServer implements TaskService {
 	public TemporaryJobServer(ProgressMonitorFactory monitorFactory) throws IllegalArgumentException {
 		this(monitorFactory, new PrioritySerialTaskScheduler());
 	}
-	
-	
-	private final Object complete = new Object(); 
+
+
+	private final Object complete = new Object();
 	public void waitForCompletion() throws InterruptedException {
 		synchronized (complete) {
 			complete.wait();
 		}
 	}
-	
+
 	public boolean isComplete() {
 		return jobs.isEmpty();
 	}
@@ -289,7 +285,7 @@ public final class TemporaryJobServer implements TaskService {
 	public byte[] getClassDigest(String name, UUID jobId) {
 		return getClassDigest(name);
 	}
-	
+
 	private byte[] getClassDigest(String name) {
 		try {
 			MessageDigest md5 = MessageDigest.getInstance("MD5");
@@ -302,7 +298,7 @@ public final class TemporaryJobServer implements TaskService {
 			return null;
 		}
 	}
-	
+
 	private byte[] getClassDefinition(String name) {
 		try {
 			Class<?> cl = Class.forName(name);
@@ -313,9 +309,9 @@ public final class TemporaryJobServer implements TaskService {
 			return null;
 		} catch (IOException e) {
 			return null;
-		}	
+		}
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see ca.eandb.jdcp.remote.JobService#setIdleTime(int)
 	 */
@@ -426,7 +422,7 @@ public final class TemporaryJobServer implements TaskService {
 			//String title			= String.format("%s (%s)", this.job.getClass().getSimpleName(), this.id.toString());
 			this.monitor			= monitor;
 			this.monitor.notifyStatusChanged("Awaiting job submission");
-			
+
 			this.job			= new JobExecutionWrapper(job);
 			this.worker			= new Serialized<TaskWorker>(this.job.worker());
 			this.monitor.notifyStatusChanged("");
@@ -501,7 +497,7 @@ public final class TemporaryJobServer implements TaskService {
 			assert(job.isComplete());
 
 			job.finish();
-			
+
 			if (logger.isInfoEnabled()) {
 				logger.info(String.format("Job %s completed", id));
 			}
