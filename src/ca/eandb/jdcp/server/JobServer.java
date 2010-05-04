@@ -640,6 +640,9 @@ public final class JobServer implements JobService {
 
 		/** The <code>ClassLoader</code> to use to deserialize this job. */
 		public ClassLoader						classLoader;
+		
+		/** A value indicating if the last attempt to obtain a task failed. */
+		private boolean							stalled = false;
 
 		/**
 		 * Initializes the scheduled job.
@@ -760,7 +763,8 @@ public final class JobServer implements JobService {
 		 */
 		public void scheduleNextTask() throws JobExecutionException {
 			Object task = job.getNextTask();
-			if (task != null) {
+			stalled = (task == null);
+			if (!stalled) {
 				int taskId = generateTaskId();
 				TaskDescription desc = new TaskDescription(id, taskId, task);
 				scheduler.add(desc);
@@ -915,6 +919,12 @@ public final class JobServer implements JobService {
 					if (sched.job.isComplete()) {
 						sched.finalizeJob();
 						removeScheduledJob(sched.id, true);
+					} else {
+						synchronized (sched) {
+							if (sched.stalled) {
+								sched.scheduleNextTask();
+							}
+						}
 					}
 				} catch (JobExecutionException e) {
 					handleJobExecutionException(e, sched.id);
