@@ -123,7 +123,7 @@ public final class PrioritySerialTaskScheduler implements TaskScheduler {
 		 * 		scheduled.
 		 * @return The task ID for the newly scheduled task.
 		 */
-		public void addTask(TaskDescription task) {
+		public synchronized void addTask(TaskDescription task) {
 			int taskId = task.getTaskId();
 			tasks.put(taskId, task);
 			taskQueue.addFirst(taskId);
@@ -136,7 +136,7 @@ public final class PrioritySerialTaskScheduler implements TaskScheduler {
 		 * 		<code>taskId</code>, or <code>null</code> if no such task is
 		 * 		found.
 		 */
-		public TaskDescription getTask(int taskId) {
+		public synchronized TaskDescription getTask(int taskId) {
 			return tasks.get(taskId);
 		}
 
@@ -146,7 +146,7 @@ public final class PrioritySerialTaskScheduler implements TaskScheduler {
 		 * @return A value indicating whether a task exists with the given
 		 * 		<code>taskId</code>.
 		 */
-		public boolean contains(int taskId) {
+		public synchronized boolean contains(int taskId) {
 			return tasks.containsKey(taskId);
 		}
 
@@ -155,7 +155,7 @@ public final class PrioritySerialTaskScheduler implements TaskScheduler {
 		 * @return The <code>TaskDescription</code> for the next task to be
 		 * 		served.
 		 */
-		public TaskDescription getNextTask() {
+		public synchronized TaskDescription getNextTask() {
 			if (taskQueue.isEmpty()) {
 				return null;
 			}
@@ -169,7 +169,7 @@ public final class PrioritySerialTaskScheduler implements TaskScheduler {
 		 * @param taskId The task ID of the task to be removed.
 		 * @return The <code>Object</code> describing the removed task.
 		 */
-		public TaskDescription removeTask(int taskId) {
+		public synchronized TaskDescription removeTask(int taskId) {
 			taskQueue.remove((Object) new Integer(taskId));
 			return tasks.remove(taskId);
 		}
