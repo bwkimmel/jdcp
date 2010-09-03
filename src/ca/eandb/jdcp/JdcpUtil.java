@@ -62,6 +62,29 @@ public final class JdcpUtil {
 	public static final UUID PROTOCOL_VERSION_ID = UUID.fromString("F41F779C-0208-4BAC-AE5B-6E3FFD3FB903");
 
 	/**
+	 * Connects to a JDCP server.
+	 * @param host The host name of the server to send the job to.
+	 * @param username The user name to use to authenticate with the server.
+	 * @param password The password to use to authenticate with the server.
+	 * @return The <code>JobService</code> to use to communicate with the
+	 * 		server.
+	 * @throws RemoteException If a failure occurs in attempting to communicate
+	 * 		with the server.
+	 * @throws LoginException If the login attempt fails.
+	 * @throws NotBoundException If the <code>AuthenticationService</code>
+	 * 		could not be found at the server.
+	 * @throws ProtocolVersionException If this client is incompatible with the
+	 * 		server.
+	 */
+	public static JobService connect(String host, String username,
+			String password) throws RemoteException, NotBoundException,
+			LoginException, ProtocolVersionException {
+		Registry registry = LocateRegistry.getRegistry(host, DEFAULT_PORT);
+		AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
+		return auth.authenticate(username, password, PROTOCOL_VERSION_ID);
+	}
+	
+	/**
 	 * Submits a job to a server for processing.
 	 * @param job The <code>ParallelizableJob</code> to be processed.
 	 * @param description A description of the job.
@@ -89,9 +112,7 @@ public final class JdcpUtil {
 			JobExecutionException, LoginException, NotBoundException, ProtocolVersionException {
 
 		Serialized<ParallelizableJob> payload = new Serialized<ParallelizableJob>(job);
-		Registry registry = LocateRegistry.getRegistry(host, DEFAULT_PORT);
-		AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
-		JobService service = auth.authenticate(username, password, PROTOCOL_VERSION_ID);
+		JobService service = connect(host, username, password);
 
 		return service.submitJob(payload, description);
 
@@ -124,12 +145,7 @@ public final class JdcpUtil {
 			throws SecurityException, RemoteException, ClassNotFoundException,
 			JobExecutionException, LoginException, NotBoundException, ProtocolVersionException {
 
-		Registry registry = LocateRegistry.getRegistry(host, DEFAULT_PORT);
-		AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
-		JobService service = auth.authenticate(username, password, PROTOCOL_VERSION_ID);
-
-//		TaskService stub = (TaskService) UnicastRemoteObject.exportObject(taskService, JdcpUtil.DEFAULT_PORT+1);
-
+		JobService service = connect(host, username, password);
 		service.registerTaskService(name, taskService);
 
 	}
