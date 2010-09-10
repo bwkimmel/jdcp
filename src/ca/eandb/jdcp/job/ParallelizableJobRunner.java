@@ -35,7 +35,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
-import ca.eandb.util.ArrayQueue;
 import ca.eandb.util.UnexpectedException;
 import ca.eandb.util.concurrent.BackgroundThreadFactory;
 import ca.eandb.util.progress.DummyProgressMonitor;
