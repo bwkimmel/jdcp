@@ -29,14 +29,18 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.RandomAccessFile;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
+import ca.eandb.util.ArrayQueue;
 import ca.eandb.util.UnexpectedException;
 import ca.eandb.util.concurrent.BackgroundThreadFactory;
 import ca.eandb.util.progress.DummyProgressMonitor;
 import ca.eandb.util.progress.DummyProgressMonitorFactory;
+import ca.eandb.util.progress.PermanentProgressMonitor;
 import ca.eandb.util.progress.ProgressMonitor;
 import ca.eandb.util.progress.ProgressMonitorFactory;
 
@@ -166,8 +170,7 @@ public final class ParallelizableJobRunner implements Runnable {
 					}
 
 					/* Create a worker and process the task. */
-					String workerTitle = String.format("Worker (%d)", taskNumber);
-					Worker worker = new Worker(taskWorker, task, monitorFactory.createProgressMonitor(workerTitle));
+					Worker worker = new Worker(taskWorker, task, getWorkerProgressMonitor());
 
 					notifyStatusChanged(String.format("Starting worker %d", ++taskNumber));
 					this.executor.execute(worker);
@@ -192,6 +195,21 @@ public final class ParallelizableJobRunner implements Runnable {
 			monitor.notifyComplete();
 		}
 
+	}
+	
+	/**
+	 * Gets an available <code>ProgressMonitor</code> to use for the next task.
+	 * @return An available <code>ProgressMonitor</code>.
+	 */
+	private synchronized ProgressMonitor getWorkerProgressMonitor() {
+		ProgressMonitor monitor;
+		if (numProgressMonitors < maxConcurrentWorkers) {
+			String title = String.format("Worker (%d)", numProgressMonitors++);
+			monitor = new PermanentProgressMonitor(monitorFactory.createProgressMonitor(title));
+		} else {
+			monitor = workerMonitorQueue.remove();
+		}
+		return monitor;
 	}
 
 	/**
@@ -245,6 +263,7 @@ public final class ParallelizableJobRunner implements Runnable {
 			} catch (JobExecutionException e) {
 				throw new RuntimeException(e);
 			} finally {
+				workerMonitorQueue.add(monitor);
 				workerSlot.release();
 			}
 		}
@@ -309,6 +328,12 @@ public final class ParallelizableJobRunner implements Runnable {
 
 	/** The maximum number of concurrent tasks to process. */
 	private final int maxConcurrentWorkers;
+	
+	/** The <code>Queue</code> of <code>ProgressMonitor</code>s for workers. */
+	private final Queue<ProgressMonitor> workerMonitorQueue = new LinkedList<ProgressMonitor>(); 
+
+	/** The number of child <code>ProgressMonitor</code>s created. */
+	private int numProgressMonitors = 0;
 
 	/** The current <code>ProgressMonitor</code>. */
 	private ProgressMonitor monitor;
