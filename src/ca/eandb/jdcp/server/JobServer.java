@@ -685,9 +685,12 @@ public final class JobServer implements JobService {
 			File logFile = new File(workingDirectory, "job.log");
 			PrintStream log;
 			try {
+				Date now = new Date();
 				log = new PrintStream(new FileOutputStream(logFile, true));
-				log.printf("%tc: Job %s submitted.", new Date(), id.toString());
+				log.printf("%tc: Job %s submitted.", now, id.toString());
 				log.println();
+				log.printf("%tc: Description: ", now);
+				log.println(description);
 				log.flush();
 				log.close();
 			} catch (FileNotFoundException e) {
