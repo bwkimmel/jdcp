@@ -106,11 +106,11 @@ public final class JobHub implements JobService {
 		scheduler.shutdown();
 	}
 
-	public synchronized void connect(final String hostname, final String username, final String password) {
+	public synchronized void connect(final String hostname, final int port, final String username, final String password) {
 		if (hosts.containsKey(hostname)) {
 			disconnect(hostname);
 		}
-		ServiceInfo info = new ServiceInfo(hostname, username, password,
+		ServiceInfo info = new ServiceInfo(hostname, port, username, password,
 				dataSource, executor);
 		hosts.put(hostname, info);
 		services.add(info);

@@ -36,6 +36,7 @@ import ca.eandb.jdcp.client.SynchronizeCommand;
 import ca.eandb.jdcp.client.VerifyCommand;
 import ca.eandb.util.args.ArgumentProcessor;
 import ca.eandb.util.args.BooleanFieldOption;
+import ca.eandb.util.args.IntegerFieldOption;
 import ca.eandb.util.args.StringFieldOption;
 import ca.eandb.util.args.UnrecognizedCommand;
 
@@ -59,6 +60,7 @@ public final class ConsoleMain {
 		argProcessor.addOption("host", 'h', new StringFieldOption<Configuration>("host"));
 		argProcessor.addOption("username", 'u', new StringFieldOption<Configuration>("username"));
 		argProcessor.addOption("password", 'p', new StringFieldOption<Configuration>("password"));
+		argProcessor.addOption("port", 'P', new IntegerFieldOption<Configuration>("port"));
 
 		argProcessor.addCommand("verify", new VerifyCommand());
 		argProcessor.addCommand("sync", new SynchronizeCommand());

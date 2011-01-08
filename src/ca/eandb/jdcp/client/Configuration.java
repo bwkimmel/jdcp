@@ -53,6 +53,11 @@ public class Configuration {
 	 * The name or IP address of the JDCP server host.
 	 */
 	public String host = "localhost";
+	
+	/**
+	 * The port to use to connect to the JDCP server.
+	 */
+	public int port = JdcpUtil.DEFAULT_PORT;
 
 	/**
 	 * The username to use for authentication with the JDCP server.
@@ -82,7 +87,7 @@ public class Configuration {
 	public JobService getJobService() {
 		if (service == null) {
 			try {
-				Registry registry = LocateRegistry.getRegistry(host, JdcpUtil.DEFAULT_PORT);
+				Registry registry = LocateRegistry.getRegistry(host, port);
 				AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
 				service = auth.authenticate(username, password, JdcpUtil.PROTOCOL_VERSION_ID);
 			} catch (NotBoundException e) {

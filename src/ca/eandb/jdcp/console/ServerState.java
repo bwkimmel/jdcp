@@ -45,6 +45,7 @@ import ca.eandb.jdcp.server.classmanager.DbClassManager;
 import ca.eandb.jdcp.server.scheduling.PrioritySerialTaskScheduler;
 import ca.eandb.jdcp.server.scheduling.TaskScheduler;
 import ca.eandb.util.args.CommandArgument;
+import ca.eandb.util.args.OptionArgument;
 import ca.eandb.util.progress.ProgressState;
 import ca.eandb.util.progress.ProgressStateFactory;
 
@@ -68,6 +69,9 @@ public final class ServerState {
 
 	/** The running <code>JobServer</code>. */
 	private JobServer jobServer = null;
+	
+	/** The port that the server is running on. */
+	private int port = 0;
 
 	/**
 	 * Gets the RMI <code>Registry</code> to register the server with, creating
@@ -76,9 +80,10 @@ public final class ServerState {
 	 * @throws RemoteException If an error occurs while attempting to create
 	 * 		the <code>Registry</code>.
 	 */
-	public synchronized Registry getRegistry() throws RemoteException {
-		if (registry == null) {
-			registry = LocateRegistry.createRegistry(JdcpUtil.DEFAULT_PORT);
+	public synchronized Registry getRegistry(int port) throws RemoteException {
+		if (registry == null || port != this.port) {
+			registry = LocateRegistry.createRegistry(port);
+			this.port = port;
 		}
 		return registry;
 	}
@@ -102,9 +107,15 @@ public final class ServerState {
 	 * Starts the server.
 	 */
 	@CommandArgument
-	public void start() {
+	public void start(
+			@OptionArgument(value="port", shortKey='P') int port
+			) {
 		System.out.println("Starting server");
 		try {
+			
+			if (port <= 0) {
+				port = JdcpUtil.DEFAULT_PORT;
+			}
 
 			Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
 			EmbeddedDataSource ds = new EmbeddedDataSource();
@@ -132,10 +143,10 @@ public final class ServerState {
 			TaskScheduler scheduler = new PrioritySerialTaskScheduler();
 			Executor executor = Executors.newCachedThreadPool();
 			jobServer = new JobServer(jobsDirectory, factory, scheduler, classManager, executor);
-			AuthenticationServer authServer = new AuthenticationServer(jobServer, JdcpUtil.DEFAULT_PORT);
+			AuthenticationServer authServer = new AuthenticationServer(jobServer, port);
 
 			logger.info("Binding service");
-			Registry registry = getRegistry();
+			Registry registry = getRegistry(port);
 			registry.bind("AuthenticationService", authServer);
 
 			logger.info("Server ready");
@@ -170,7 +181,7 @@ public final class ServerState {
 	@CommandArgument
 	public void stop() {
 		try {
-			Registry registry = getRegistry();
+			Registry registry = getRegistry(port);
 			registry.unbind("AuthenticationService");
 			this.jobProgressStates = null;
 			System.out.println("Server stopped");

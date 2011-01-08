@@ -66,11 +66,12 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 
 	/**
 	 * Creates a new <code>JobServiceProxy</code>.
+	 * @param port The port on which the server is listening.
 	 * @param user The <code>Subject</code> that the user has authenticated as.
 	 * @param server The underlying <code>JobService</code>.
 	 */
-	public JobServiceProxy(Subject user, JobService service) throws RemoteException {
-		super(JdcpUtil.DEFAULT_PORT);
+	public JobServiceProxy(int port, Subject user, JobService service) throws RemoteException {
+		super(port);
 		this.user = user;
 		this.service = service;
 	}

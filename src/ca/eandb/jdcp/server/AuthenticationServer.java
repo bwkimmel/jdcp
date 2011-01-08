@@ -64,6 +64,9 @@ public final class AuthenticationServer extends UnicastRemoteObject implements
 
 	/** The <code>JobService</code> for which to authenticate users. */
 	private final JobService service;
+	
+	/** The port on which the server is listening. */
+	private final int port;
 
 	/**
 	 * Creates a new <code>AuthenticationServer</code>.
@@ -71,7 +74,7 @@ public final class AuthenticationServer extends UnicastRemoteObject implements
 	 * @throws RemoteException If a communication error occurs.
 	 */
 	public AuthenticationServer(JobService service) throws RemoteException {
-		this.service = service;
+		this(service, JdcpUtil.DEFAULT_PORT);
 	}
 
 	/**
@@ -83,6 +86,7 @@ public final class AuthenticationServer extends UnicastRemoteObject implements
 	public AuthenticationServer(JobService service, int port) throws RemoteException {
 		super(port);
 		this.service = service;
+		this.port = port;
 	}
 
 	/**
@@ -97,6 +101,7 @@ public final class AuthenticationServer extends UnicastRemoteObject implements
 			RMIServerSocketFactory ssf) throws RemoteException {
 		super(port, csf, ssf);
 		this.service = service;
+		this.port = port;
 	}
 
 	/* (non-Javadoc)
@@ -113,7 +118,7 @@ public final class AuthenticationServer extends UnicastRemoteObject implements
 		LoginContext context = new LoginContext(LOGIN_CONFIGURATION_NAME, handler);
 		context.login();
 
-		return new JobServiceProxy(context.getSubject(), service);
+		return new JobServiceProxy(port, context.getSubject(), service);
 
 	}
 

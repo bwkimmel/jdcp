@@ -90,8 +90,8 @@ final class ServiceInfo {
 
 	private Date idleUntil = new Date(0);
 
-	public ServiceInfo(String host, String username, String password, DataSource dataSource, Executor executor) {
-		this.service = new ServiceWrapper(host, username, password);
+	public ServiceInfo(String host, int port, String username, String password, DataSource dataSource, Executor executor) {
+		this.service = new ServiceWrapper(host, port, username, password);
 		this.dataSource = dataSource;
 		this.executor = executor;
 	}

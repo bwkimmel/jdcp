@@ -51,6 +51,9 @@ public final class HubState {
 
 	/** The running <code>JobHub</code>. */
 	private JobHub jobHub = null;
+	
+	/** The port that the server is running on */
+	private int port = 0;
 
 	/**
 	 * Gets the RMI <code>Registry</code> to register the server with, creating
@@ -59,9 +62,10 @@ public final class HubState {
 	 * @throws RemoteException If an error occurs while attempting to create
 	 * 		the <code>Registry</code>.
 	 */
-	public synchronized Registry getRegistry() throws RemoteException {
-		if (registry == null) {
-			registry = LocateRegistry.createRegistry(JdcpUtil.DEFAULT_PORT);
+	public synchronized Registry getRegistry(int port) throws RemoteException {
+		if (registry == null || port != this.port) {
+			registry = LocateRegistry.createRegistry(port);
+			this.port = port;
 		}
 		return registry;
 	}
@@ -70,9 +74,13 @@ public final class HubState {
 	 * Starts the hub.
 	 */
 	@CommandArgument
-	public void start() {
+	public void start(@OptionArgument(value="port", shortKey='P') int port) {
 		System.out.println("Starting hub");
 		try {
+			
+			if (port <= 0) {
+				port = JdcpUtil.DEFAULT_PORT;
+			}
 
 			Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
 			EmbeddedDataSource ds = new EmbeddedDataSource();
@@ -83,10 +91,10 @@ public final class HubState {
 
 			logger.info("Initializing service");
 			jobHub = new JobHub(ds);
-			AuthenticationServer authServer = new AuthenticationServer(jobHub, JdcpUtil.DEFAULT_PORT);
+			AuthenticationServer authServer = new AuthenticationServer(jobHub, port);
 
 			logger.info("Binding service");
-			Registry registry = getRegistry();
+			Registry registry = getRegistry(port);
 			registry.bind("AuthenticationService", authServer);
 
 			logger.info("Hub ready");
@@ -106,7 +114,7 @@ public final class HubState {
 		try {
 			jobHub.shutdown();
 			jobHub = null;
-			Registry registry = getRegistry();
+			Registry registry = getRegistry(port);
 			registry.unbind("AuthenticationService");
 			System.out.println("Hub stopped");
 		} catch (Exception e) {
@@ -118,6 +126,7 @@ public final class HubState {
 	@CommandArgument
 	public void connect(
 			@OptionArgument("host") String host,
+			@OptionArgument(value="port", shortKey='P') int port,
 			@OptionArgument("username") String username,
 			@OptionArgument("password") String password) {
 
@@ -131,9 +140,12 @@ public final class HubState {
 		if (username.equals("")) {
 			username = "guest";
 		}
+		if (port <= 0) {
+			port = JdcpUtil.DEFAULT_PORT;
+		}
 
 		System.out.printf("Connecting hub to %s\n", host);
-		hub.connect(host, username, password);
+		hub.connect(host, port, username, password);
 	}
 
 	@CommandArgument

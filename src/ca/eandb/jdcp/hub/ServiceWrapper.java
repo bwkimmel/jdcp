@@ -62,6 +62,8 @@ final class ServiceWrapper implements JobService {
 	private static final long RECONNECT_INTERVAL = 60000;
 
 	private final String host;
+	
+	private final int port;
 
 	private final String username;
 
@@ -75,8 +77,9 @@ final class ServiceWrapper implements JobService {
 
 	private boolean shutdown = false;
 
-	public ServiceWrapper(String host, String username, String password) {
+	public ServiceWrapper(String host, int port, String username, String password) {
 		this.host = host;
+		this.port = port;
 		this.username = username;
 		this.password = password;
 
@@ -99,7 +102,7 @@ final class ServiceWrapper implements JobService {
 		while (!shutdown) {
 			while (service == null && !shutdown) {
 				try {
-					service = connect(host, username, password);
+					service = connect(host, port, username, password);
 				} catch (Exception e) {
 					logger.error("Could not connect to remote host", e);
 				}
@@ -170,16 +173,16 @@ final class ServiceWrapper implements JobService {
 		throw new DelegationException("No connection to server");
 	}
 
-	private synchronized JobService connect(String host, String username,
+	private synchronized JobService connect(String host, int port, String username,
 			String password) throws DelegationException {
 		if (logger.isInfoEnabled()) {
-			logger.info(String.format("connect(host='%s', username='%s', password='%s')", host, username, password));
+			logger.info(String.format("connect(host='%s', port=%d, username='%s', password='%s')", host, port, username, password));
 		}
 		Date now = new Date();
 		if (now.after(idleUntil)) {
 			try {
 				logger.info("Locating registry");
-				Registry registry = LocateRegistry.getRegistry(host, JdcpUtil.DEFAULT_PORT);
+				Registry registry = LocateRegistry.getRegistry(host, port);
 				logger.info("Looking up AuthenticationService");
 				AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
 				logger.info("Authenticating");
