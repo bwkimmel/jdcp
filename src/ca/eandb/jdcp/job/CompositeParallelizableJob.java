@@ -91,6 +91,9 @@ public final class CompositeParallelizableJob implements ParallelizableJob {
 		 */
 		@Override
 		public synchronized boolean notifyProgress(double progress) {
+			if (jobProgress == null) {
+				jobProgress = new double[jobs.size()];
+			}
 			totalProgress += (progress - jobProgress[jobNumber]) / (double) jobs.size();
 			jobProgress[jobNumber] = progress;
 			return true;
