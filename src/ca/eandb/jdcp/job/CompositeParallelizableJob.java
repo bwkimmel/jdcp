@@ -234,7 +234,7 @@ public final class CompositeParallelizableJob implements ParallelizableJob {
 	@Override
 	public Object getNextTask() throws Exception {
 		for (int i = 0, n = jobs.size(); i < n; i++) {
-			ParallelizableJob job = jobs.get(n);
+			ParallelizableJob job = jobs.get(i);
 			Object task = job.getNextTask();
 			if (task != null) {
 				return new JobItem(i, task);
