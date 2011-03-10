@@ -29,8 +29,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.RandomAccessFile;
-import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
@@ -329,7 +329,7 @@ public final class ParallelizableJobRunner implements Runnable {
 	private final int maxConcurrentWorkers;
 	
 	/** The <code>Queue</code> of <code>ProgressMonitor</code>s for workers. */
-	private final Queue<ProgressMonitor> workerMonitorQueue = new LinkedList<ProgressMonitor>(); 
+	private final Queue<ProgressMonitor> workerMonitorQueue = new ConcurrentLinkedQueue<ProgressMonitor>(); 
 
 	/** The number of child <code>ProgressMonitor</code>s created. */
 	private int numProgressMonitors = 0;
