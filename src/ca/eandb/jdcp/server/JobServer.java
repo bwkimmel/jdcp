@@ -36,6 +36,7 @@ import java.rmi.RemoteException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -123,7 +124,7 @@ public final class JobServer implements JobService {
 	 * by the corresponding job ID.
 	 * @see ca.eandb.jdcp.server.JobServer.ScheduledJob
 	 */
-	private final Map<UUID, ScheduledJob> jobs = new HashMap<UUID, ScheduledJob>();
+	private final Map<UUID, ScheduledJob> jobs = Collections.synchronizedMap(new HashMap<UUID, ScheduledJob>());
 
 	/** An <code>Executor</code> to use to run asynchronous tasks. */
 	private final Executor executor;
@@ -140,9 +141,9 @@ public final class JobServer implements JobService {
 	
 	private final Queue<ServiceInfo> services = new LinkedList<ServiceInfo>();
 
-	private final Map<UUID, ServiceInfo> routes = new WeakHashMap<UUID, ServiceInfo>();
+	private final Map<UUID, ServiceInfo> routes = Collections.synchronizedMap(new WeakHashMap<UUID, ServiceInfo>());
 
-	private final Map<String, ServiceInfo> hosts = new HashMap<String, ServiceInfo>();
+	private final Map<String, ServiceInfo> hosts = Collections.synchronizedMap(new HashMap<String, ServiceInfo>());
 
 	private final ScheduledExecutorService poller = Executors.newScheduledThreadPool(1, new BackgroundThreadFactory());
 	
