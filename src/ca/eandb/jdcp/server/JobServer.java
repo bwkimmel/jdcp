@@ -36,6 +36,7 @@ import java.rmi.RemoteException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -140,7 +141,7 @@ public final class JobServer implements JobService {
 	
 	private final Queue<ServiceInfo> services = new LinkedList<ServiceInfo>();
 
-	private final Map<UUID, ServiceInfo> routes = new WeakHashMap<UUID, ServiceInfo>();
+	private final Map<UUID, ServiceInfo> routes = Collections.synchronizedMap(new WeakHashMap<UUID, ServiceInfo>());
 
 	private final Map<String, ServiceInfo> hosts = new HashMap<String, ServiceInfo>();
 
@@ -595,9 +596,11 @@ public final class JobServer implements JobService {
 		if (info != null) {
 			hosts.remove(name);
 			services.remove(info);
-			for (Entry<UUID, ServiceInfo> entry : routes.entrySet()) {
-				if (entry.getValue() == info) {
-					routes.remove(entry.getKey());
+			synchronized (routes) {
+				for (Entry<UUID, ServiceInfo> entry : routes.entrySet()) {
+					if (entry.getValue() == info) {
+						routes.remove(entry.getKey());
+					}
 				}
 			}
 			info.shutdown();
