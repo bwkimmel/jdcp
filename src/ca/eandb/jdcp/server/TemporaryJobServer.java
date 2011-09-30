@@ -553,8 +553,10 @@ public final class TemporaryJobServer implements TaskService {
 		public void run() {
 			if (task != null) {
 				try {
-					sched.job.submitTaskResults(task,
-							results.deserialize(), monitor);
+					synchronized (sched.job) { 
+						sched.job.submitTaskResults(task,
+								results.deserialize(), monitor);
+					}
 
 					if (sched.job.isComplete()) {
 						sched.finalizeJob();
