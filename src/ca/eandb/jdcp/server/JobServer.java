@@ -596,9 +596,11 @@ public final class JobServer implements JobService {
 		if (info != null) {
 			hosts.remove(name);
 			services.remove(info);
-			for (Entry<UUID, ServiceInfo> entry : routes.entrySet()) {
-				if (entry.getValue() == info) {
-					routes.remove(entry.getKey());
+			synchronized (routes) {
+				for (Entry<UUID, ServiceInfo> entry : routes.entrySet()) {
+					if (entry.getValue() == info) {
+						routes.remove(entry.getKey());
+					}
 				}
 			}
 			info.shutdown();
