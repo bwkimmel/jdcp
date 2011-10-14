@@ -264,7 +264,16 @@ public final class TemporaryJobServer implements TaskService {
 		for (int i = 0; i < jobIds.length; i++) {
 			UUID jobId = jobIds[i];
 			int taskId = taskIds[i];
-			finished.set(i, jobId == null || !scheduler.contains(jobId, taskId));
+			if (taskId != 0) {
+				finished.set(i, jobId == null || !scheduler.contains(jobId, taskId));
+			} else {
+				ScheduledJob sched = jobs.get(jobId);
+				try {
+					finished.set(i, sched == null || sched.job.isComplete());
+				} catch (JobExecutionException e) {
+					sched.reportException(0, e);
+				}
+			}
 		}
 
 		return finished;
@@ -469,7 +478,7 @@ public final class TemporaryJobServer implements TaskService {
 			int taskId;
 			do {
 				taskId = rand.nextInt();
-			} while (scheduler.contains(id, taskId));
+			} while (taskId != 0 && scheduler.contains(id, taskId));
 			return taskId;
 		}
 

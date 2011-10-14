@@ -41,11 +41,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Random;
 import java.util.UUID;
 import java.util.WeakHashMap;
-import java.util.Map.Entry;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
@@ -417,11 +417,24 @@ public final class JobServer implements JobService {
 		for (int i = 0; i < jobIds.length; i++) {
 			UUID jobId = jobIds[i];
 			int taskId = taskIds[i];
-			if (jobs.containsKey(jobId)) {
-				finished.set(i, jobId == null || !scheduler.contains(jobId, taskId));
+			if (taskId != 0) {
+				if (jobs.containsKey(jobId)) {
+					finished.set(i, jobId == null || !scheduler.contains(jobId, taskId));
+				} else {
+					ServiceInfo info = routes.get(jobId);
+					finished.set(i, (info == null) || info.isTaskComplete(jobId, taskId));
+				}
 			} else {
-				ServiceInfo info = routes.get(jobIds[i]);
-				finished.set(i, (info == null) || info.isTaskComplete(jobIds[i], taskIds[i]));
+				ScheduledJob sched = jobs.get(jobId);
+				if (sched != null) {
+					try {
+						finished.set(i, sched.job.isComplete());
+					} catch (JobExecutionException e) {
+						sched.reportException(0, e);
+					}
+				} else {
+					finished.set(i, !routes.containsKey(jobId));
+				}
 			}
 		}
 
@@ -758,7 +771,7 @@ public final class JobServer implements JobService {
 			int taskId;
 			do {
 				taskId = rand.nextInt();
-			} while (scheduler.contains(id, taskId));
+			} while (taskId != 0 && scheduler.contains(id, taskId));
 			return taskId;
 		}
 

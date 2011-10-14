@@ -28,10 +28,9 @@ package ca.eandb.jdcp.worker;
 import java.sql.SQLException;
 import java.util.BitSet;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
@@ -41,9 +40,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.sql.DataSource;
 
@@ -156,28 +153,43 @@ public final class ThreadServiceWorker implements Runnable {
 			UUID[] jobIds;
 			int[] taskIds;
 			boolean lastPollOk = true;
+			int nThreads, nJobs;
+			boolean removedJob;
 
 			while (!shutdown) {
 				synchronized (activeWorkers) {
-					int n = activeWorkers.size();
-					workers = new Worker[n];
-					jobIds = new UUID[n];
-					taskIds = new int[n];
-					int i = 0;
-					for (Worker worker : activeWorkers) {
-						workers[i] = worker;
-						jobIds[i] = worker.getCurrentJobId();
-						taskIds[i++] = worker.getCurrentTaskId();
+					synchronized (workerMap) {
+						nThreads = activeWorkers.size();
+						nJobs = workerMap.size();
+						workers = new Worker[nThreads];
+						jobIds = new UUID[nThreads + nJobs];
+						taskIds = new int[nThreads + nJobs];
+						int i = 0;
+						for (Worker worker : activeWorkers) {
+							workers[i] = worker;
+							jobIds[i] = worker.getCurrentJobId();
+							taskIds[i++] = worker.getCurrentTaskId();
+						}
+						for (UUID jobId : workerMap.keySet()) {
+							jobIds[i] = jobId;
+							taskIds[i++] = 0;
+						}
 					}
 				}
 
-				if (workers.length > 0) {
+				removedJob = false;
+				if (taskIds.length > 0) {
 					try {
 						BitSet finished = service.getFinishedTasks(jobIds, taskIds);
 						lastPollOk = true;
 						for (int i = finished.nextSetBit(0); i >= 0; i = finished
 								.nextSetBit(i + 1)) {
-							workers[i].cancel(jobIds[i], taskIds[i]);
+							if (i < nThreads) {
+								workers[i].cancel(jobIds[i], taskIds[i]);
+							} else {
+								workerMap.remove(jobIds[i]);
+								removedJob = true;
+							}
 						}
 					} catch (Exception e) {
 						if (lastPollOk) {
@@ -185,6 +197,10 @@ public final class ThreadServiceWorker implements Runnable {
 							lastPollOk = false;
 						}
 					}
+				}
+				
+				if (removedJob) {
+					System.gc();
 				}
 
 				try {
@@ -255,164 +271,18 @@ public final class ThreadServiceWorker implements Runnable {
 	}
 
 	/**
-	 * An entry in the <code>TaskWorker</code> cache.
+	 * Reference to a <code>TaskWorker</code>.  This object acts as a handle
+	 * for other workers to synchronize on to prevent multiple worker threads
+	 * from trying to download the same <code>TaskWorker</code>.
+	 * 
 	 * @author Brad Kimmel
 	 */
-	private static class WorkerCacheEntry {
+	private static class TaskWorkerRef {
+		public TaskWorker worker;
+	};
 
-		/**
-		 * Initializes the cache entry.
-		 * @param jobId The <code>UUID</code> of the job that the
-		 * 		<code>TaskWorker</code> processes tasks for.
-		 */
-		public WorkerCacheEntry(UUID jobId) {
-			this.jobId = jobId;
-			this.workerGuard.writeLock().lock();
-		}
-
-		/**
-		 * Returns a value indicating if this <code>WorkerCacheEntry</code>
-		 * is to be used for the job with the specified <code>UUID</code>.
-		 * @param jobId The job's <code>UUID</code> to test.
-		 * @return A value indicating if this <code>WorkerCacheEntry</code>
-		 * 		applies to the specified job.
-		 */
-		public boolean matches(UUID jobId) {
-			return this.jobId.equals(jobId);
-		}
-
-		/**
-		 * Sets the <code>TaskWorker</code> to use.  This method may only be
-		 * called once.
-		 * @param worker The <code>TaskWorker</code> to use for matching
-		 * 		jobs.
-		 */
-		public synchronized void setWorker(TaskWorker worker) {
-
-			/* Set the worker. */
-			this.worker = worker;
-
-			/* Release the lock. */
-			this.workerGuard.writeLock().unlock();
-
-		}
-
-		/**
-		 * Gets the <code>TaskWorker</code> to use to process tasks for the
-		 * matching job.  This method will wait for <code>setWorker</code>
-		 * to be called if it has not yet been called.
-		 * @return The <code>TaskWorker</code> to use to process tasks for
-		 * 		the matching job.
-		 * @see {@link #setWorker(TaskWorker)}.
-		 */
-		public TaskWorker getWorker() {
-
-			this.workerGuard.readLock().lock();
-			TaskWorker worker = this.worker;
-			this.workerGuard.readLock().unlock();
-
-			return worker;
-
-		}
-
-		/**
-		 * The <code>UUID</code> of the job that the <code>TaskWorker</code>
-		 * processes tasks for.
-		 */
-		private final UUID jobId;
-
-		/**
-		 * The cached <code>TaskWorker</code>.
-		 */
-		private TaskWorker worker;
-
-		/**
-		 * The <code>ReadWriteLock</code> to use before reading from or writing
-		 * to the <code>worker</code> field.
-		 */
-		private final ReadWriteLock workerGuard = new ReentrantReadWriteLock();
-
-	}
-
-	/**
-	 * Searches for the <code>WorkerCacheEntry</code> matching the job with the
-	 * specified <code>UUID</code>.
-	 * @param jobId The <code>UUID</code> of the job whose
-	 * 		<code>WorkerCacheEntry</code> to search for.
-	 * @return The <code>WorkerCacheEntry</code> corresponding to the job with
-	 * 		the specified <code>UUID</code>, or <code>null</code> if the
-	 * 		no such entry exists.
-	 */
-	private WorkerCacheEntry getCacheEntry(UUID jobId) {
-
-		assert(jobId != null);
-
-		synchronized (this.workerCache) {
-
-			Iterator<WorkerCacheEntry> i = this.workerCache.iterator();
-
-			/* Search for the worker for the specified job. */
-			while (i.hasNext()) {
-
-				WorkerCacheEntry entry = i.next();
-
-				if (entry.matches(jobId)) {
-
-					/* Remove the entry and re-insert it at the end of the list.
-					 * This will ensure that when an item is removed from the list,
-					 * the item that is removed will always be the least recently
-					 * used.
-					 */
-					i.remove();
-					this.workerCache.add(entry);
-
-					return entry;
-
-				}
-
-			}
-
-			/* cache miss */
-			return null;
-
-		}
-
-	}
-
-	/**
-	 * Removes the specified entry from the task worker cache.
-	 * @param entry The <code>WorkerCacheEntry</code> to remove.
-	 */
-	private void removeCacheEntry(WorkerCacheEntry entry) {
-
-		assert(entry != null);
-
-		synchronized (this.workerCache) {
-			this.workerCache.remove(entry);
-		}
-
-	}
-
-	/**
-	 * Removes least recently used entries from the task worker cache until
-	 * there are at most <code>this.maxCachedWorkers</code> entries.
-	 */
-	private void removeOldCacheEntries() {
-
-		synchronized (this.workerCache) {
-
-			/* If the cache has exceeded capacity, then remove the least
-			 * recently used entry.
-			 */
-			assert(this.maxCachedWorkers > 0);
-
-			while (this.workerCache.size() > this.maxCachedWorkers) {
-				this.workerCache.remove(0);
-			}
-
-		}
-
-	}
+	/** A <code>Map</code> containing the active <code>TaskWorker</code>s. */
+	private final Map<UUID, TaskWorkerRef> workerMap = Collections.synchronizedMap(new HashMap<UUID, TaskWorkerRef>());
 
 	/**
 	 * Obtains the task worker to process tasks for the job with the specified
@@ -426,65 +296,43 @@ public final class ThreadServiceWorker implements Runnable {
 	 */
 	private TaskWorker getTaskWorker(UUID jobId) throws ClassNotFoundException {
 
-		WorkerCacheEntry entry = null;
-		boolean hit;
-
-		synchronized (this.workerCache) {
-
-			/* First try to get the worker from the cache. */
-			entry = this.getCacheEntry(jobId);
-			hit = (entry != null);
-
-			/* If there was no matching cache entry, then add a new entry to
-			 * the cache.
-			 */
-			if (!hit) {
-				entry = new WorkerCacheEntry(jobId);
-				this.workerCache.add(entry);
+		/* First try to get the worker from the local map. */
+		TaskWorkerRef ref;
+		synchronized (workerMap) {
+			ref = workerMap.get(jobId);
+			if (ref == null) {
+				ref = new TaskWorkerRef();
+				workerMap.put(jobId, ref);
 			}
-
 		}
+		
+		synchronized (ref.worker) {
+			if (ref.worker == null) {
 
-		if (hit) {
+				/* The task worker was not in the cache, so use the service to
+				 * obtain the task worker.
+				 */
+				Serialized<TaskWorker> envelope = this.service.getTaskWorker(jobId);
 
-			/* We found a cache entry, so get the worker from that entry. */
-			return entry.getWorker();
+				ClassLoaderStrategy strategy;
+				if (dataSource != null) {
+					strategy = new DbCachingJobServiceClassLoaderStrategy(service, jobId, dataSource);
+				} else {
+					strategy = new InternalCachingJobServiceClassLoaderStrategy(service, jobId);
+				}
 
-		} else { /* cache miss */
+				ClassLoader loader = new StrategyClassLoader(strategy, ThreadServiceWorker.class.getClassLoader());
+				ref.worker = envelope.deserialize(loader);
 
-			/* The task worker was not in the cache, so use the service to
-			 * obtain the task worker.
-			 */
-			Serialized<TaskWorker> envelope = this.service.getTaskWorker(jobId);
-
-			ClassLoaderStrategy strategy;
-			if (dataSource != null) {
-				strategy = new DbCachingJobServiceClassLoaderStrategy(service, jobId, dataSource);
-			} else {
-				strategy = new InternalCachingJobServiceClassLoaderStrategy(service, jobId);
+				if (logger.isInfoEnabled()) {
+					logger.info(String.format("Got worker (thread=%d)", Thread.currentThread().getId()));
+				}
+				
 			}
-
-			ClassLoader loader = new StrategyClassLoader(strategy, ThreadServiceWorker.class.getClassLoader());
-			TaskWorker worker = envelope.deserialize(loader);
-			entry.setWorker(worker);
-
-			/* If we couldn't get a worker from the service, then don't keep
-			 * the cache entry.
-			 */
-			if (worker == null) {
-				this.removeCacheEntry(entry);
-			}
-
-			/* Clean up the cache. */
-			this.removeOldCacheEntries();
-
-			if (logger.isInfoEnabled()) {
-				logger.info(String.format("Got worker (thread=%d)", Thread.currentThread().getId()));
-			}
-
-			return worker;
-
 		}
+		
+		assert(ref.worker != null);
+		return ref.worker;
 
 	}
 
@@ -944,19 +792,7 @@ public final class ThreadServiceWorker implements Runnable {
 
 	/** A queue containing the available workers. */
 	private final BlockingQueue<Worker> workerQueue = new LinkedBlockingQueue<Worker>();
-
-	/**
-	 * A list of recently used <code>TaskWorker</code>s and their associated
-	 * job's <code>UUID</code>s, in order from least recently used to most
-	 * recently used.
-	 */
-	private final List<WorkerCacheEntry> workerCache = new LinkedList<WorkerCacheEntry>();
-
-	/**
-	 * The maximum number of <code>TaskWorker</code>s to retain in the cache.
-	 */
-	private final int maxCachedWorkers = 5;
-
+	
 	/**
 	 * A <code>DataSource</code> to use to store cached class definitions.
 	 */

@@ -80,7 +80,9 @@ public interface TaskService extends Remote {
 	 * @param jobIds An array of <code>UUID</code> indicating the IDs of the
 	 * 		jobs corresponding to the tasks to check.
 	 * @param taskIds An array indicating the IDs of the tasks to check (must
-	 * 		be the same length as <code>jobIds</code>).
+	 * 		be the same length as <code>jobIds</code>)  If a taskId is set to
+	 * 		zero (0), then the corresponding bit in the result indicates if the
+	 * 		job is complete.
 	 * @return A <code>BitSet</code> indicating which tasks are no longer
 	 * 		outstanding.  If either <code>jobIds</code> or <code>taskIds</code>
 	 * 		is null, an empty <code>BitSet</code> is returned.
