@@ -5,7 +5,7 @@ Name "Java Distributed Computing Platform"
 
 # Defines
 !define REGKEY "SOFTWARE\$(^Name)"
-!define VERSION 0.2.0
+!define VERSION 0.2.1-beta1
 !define COMPANY ""
 !define URL http://jdcp.googlecode.com
 
