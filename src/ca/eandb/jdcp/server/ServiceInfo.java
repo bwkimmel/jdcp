@@ -109,6 +109,8 @@ final class ServiceInfo {
 		ArrayList<Integer> taskIdList = new ArrayList<Integer>();
 		for (JobInfo job : jobs.values()) {
 			UUID jobId = job.getJobId();
+			jobIdList.add(jobId);
+			taskIdList.add(0);
 			for (int taskId : job.getActiveTasks()) {
 				jobIdList.add(jobId);
 				taskIdList.add(taskId);
@@ -120,11 +122,19 @@ final class ServiceInfo {
 			for (int i = 0, n = taskIdList.size(); i < n; i++) {
 				taskIds[i] = taskIdList.get(i);
 			}
+			boolean jobRemoved = false;
 			try {
 				BitSet finished = service.getFinishedTasks(jobIds, taskIds);
 				for (int i = finished.nextSetBit(0); i >= 0; i = finished.nextSetBit(i + 1)) {
-					JobInfo job = jobs.get(jobIds[i]);
-					job.removeTask(taskIds[i]);
+					if (taskIds[i] != 0) {
+						JobInfo job = jobs.get(jobIds[i]);
+						if (job != null) {
+							job.removeTask(taskIds[i]);
+						}
+					} else {
+						jobs.remove(jobIds[i]);
+						jobRemoved = true;
+					}
 				}
 				lastPollOk = true;
 			} catch (Exception e) {
@@ -132,6 +142,9 @@ final class ServiceInfo {
 					logger.error("Could not poll for finished tasks", e);
 					lastPollOk = false;
 				}
+			}
+			if (jobRemoved) {
+				System.gc();
 			}
 		}
 	}
