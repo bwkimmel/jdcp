@@ -329,7 +329,10 @@
 	</target>
 
     <target name="tar-server" depends="dist-server">
-        <tar destfile="${dist.dir}/${server.label}.tar.bz2" basedir="${dist.dir}" includes="${server.label}/**" compression="bzip2"/>
+        <tar destfile="${dist.dir}/${server.label}.tar.bz2" compression="bzip2">
+            <tarfileset dir="${dist.dir}" includes="${server.label}/**" excludes="${server.label}/**/*.sh" />
+            <tarfileset dir="${dist.dir}" includes="${server.label}/**/*.sh" filemode="755" />
+		</tar>            
     </target>
 
     <target name="tar-worker" depends="dist-worker">
@@ -341,11 +344,17 @@
     </target>
 
     <target name="tar-console" depends="dist-console">
-        <tar destfile="${dist.dir}/${console.label}.tar.bz2" basedir="${dist.dir}" includes="${console.label}/**" compression="bzip2"/>
+        <tar destfile="${dist.dir}/${console.label}.tar.bz2" compression="bzip2">
+            <tarfileset dir="${dist.dir}" includes="${console.label}/**" excludes="${console.label}/**/*.sh" />
+            <tarfileset dir="${dist.dir}" includes="${console.label}/**/*.sh" filemode="755" />
+        </tar>
     </target>
 
     <target name="tar-full" depends="dist-full">
-    	<tar destfile="${dist.dir}/${full.label}.tar.bz2" basedir="${dist.dir}" includes="${full.label}/**" compression="bzip2"/>
+    	<tar destfile="${dist.dir}/${full.label}.tar.bz2" compression="bzip2">
+            <tarfileset dir="${dist.dir}" includes="${full.label}/**" excludes="${full.label}/**/*.sh" />
+            <tarfileset dir="${dist.dir}" includes="${full.label}/**/*.sh" filemode="755" />
+    	</tar>	    
     </target>
 
 	<target name="tar" depends="tar-server,tar-worker,tar-client,tar-console,tar-full">
