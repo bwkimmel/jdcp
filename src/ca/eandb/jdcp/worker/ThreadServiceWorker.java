@@ -563,6 +563,7 @@ public final class ThreadServiceWorker implements Runnable {
 							worker = null;
 						} catch (ClassNotFoundException e) {
 							service.reportException(jobId, 0, e);
+							idle(EXCEPTION_IDLE_SECONDS, EXCEPTION_IDLE_MESSAGE);
 							worker = null;
 						}
 
@@ -583,6 +584,7 @@ public final class ThreadServiceWorker implements Runnable {
 							results = null;
 						} catch (Exception e) {
 							service.reportException(jobId, taskId, e);
+							idle(EXCEPTION_IDLE_SECONDS, EXCEPTION_IDLE_MESSAGE);
 							results = null;
 						}
 
@@ -716,14 +718,24 @@ public final class ThreadServiceWorker implements Runnable {
 
 			return true;
 		}
-
+		
 		/**
 		 * Idles for the specified number of seconds.
 		 * @param seconds The number of seconds to idle for.
 		 */
 		private void idle(int seconds) {
+			idle(seconds, DEFAULT_IDLE_MESSAGE);
+		}
 
-			monitor.notifyStatusChanged("Idling...");
+		/**
+		 * Idles for the specified number of seconds.
+		 * @param seconds The number of seconds to idle for.
+		 * @param message The message to display on the
+		 *   <code>ProgressMonitor</code> while idling.
+		 */
+		private void idle(int seconds, String message) {
+
+			monitor.notifyStatusChanged(message);
 
 			for (int i = 0; i < seconds; i++) {
 
@@ -922,6 +934,15 @@ public final class ThreadServiceWorker implements Runnable {
 
 	/** The <code>Logger</code> to write log messages to. */
 	private static final Logger logger = Logger.getLogger(ThreadServiceWorker.class);
+
+	/** Default message to display while idling. */
+	private static final String DEFAULT_IDLE_MESSAGE = "Idling...";
+	
+	/** Message to display while idling because an exception was thrown. */
+	private static final String EXCEPTION_IDLE_MESSAGE = "Exception thrown, idling...";
+	
+	/** Number of seconds to idle after an exception. */
+	private static int EXCEPTION_IDLE_SECONDS = 10;
 
 	/** The <code>Executor</code> to use to process tasks. */
 	private final Executor executor;
