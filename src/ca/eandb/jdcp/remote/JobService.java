@@ -43,8 +43,8 @@ public interface JobService extends TaskService {
 	/** The default job priority. */
 	public static final int DEFAULT_PRIORITY = 20;
 
-	/* **************************************************************
-	 * Worker client methods (Task distribution and result gathering)
+	/* *********************************
+	 * Job submission/management methods
 	 */
 
 	/**
