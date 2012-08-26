@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import ca.eandb.util.progress.CancelListener;
 import ca.eandb.util.progress.ProgressMonitor;
 
 /**
@@ -138,6 +139,14 @@ public final class CompositeParallelizableJob implements ParallelizableJob {
 		@Override
 		public boolean isCancelPending() {
 			return false;
+		}
+
+		/* (non-Javadoc)
+		 * @see ca.eandb.util.progress.ProgressMonitor#addCancelListener(ca.eandb.util.progress.CancelListener)
+		 */
+		@Override
+		public void addCancelListener(CancelListener listener) {
+			/* nothing to do. */
 		}
 		
 	}
