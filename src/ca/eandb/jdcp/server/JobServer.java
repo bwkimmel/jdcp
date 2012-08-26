@@ -71,6 +71,7 @@ import ca.eandb.util.UnexpectedException;
 import ca.eandb.util.classloader.StrategyClassLoader;
 import ca.eandb.util.concurrent.BackgroundThreadFactory;
 import ca.eandb.util.io.FileUtil;
+import ca.eandb.util.progress.CancelListener;
 import ca.eandb.util.progress.ProgressMonitor;
 import ca.eandb.util.progress.ProgressMonitorFactory;
 import ca.eandb.util.rmi.Serialized;
@@ -206,8 +207,10 @@ public final class JobServer implements JobService {
 	 * @see ca.eandb.jdcp.remote.JobService#createJob(java.lang.String)
 	 */
 	public UUID createJob(String description) throws SecurityException {
-		ScheduledJob sched = new ScheduledJob(description, monitorFactory.createProgressMonitor(description));
+		ProgressMonitor monitor = monitorFactory.createProgressMonitor(description);
+		ScheduledJob sched = new ScheduledJob(description, monitor);
 		jobs.put(sched.id, sched);
+		monitor.addCancelListener(new JobCancelListener(sched.id));
 
 		if (logger.isInfoEnabled()) {
 			logger.info("Job created (" + sched.id.toString() + "): " + description);
@@ -247,8 +250,10 @@ public final class JobServer implements JobService {
 	 */
 	public UUID submitJob(Serialized<ParallelizableJob> job, String description)
 			throws SecurityException, ClassNotFoundException, JobExecutionException {
-		ScheduledJob sched = new ScheduledJob(description, monitorFactory.createProgressMonitor(description));
+		ProgressMonitor monitor = monitorFactory.createProgressMonitor(description);
+		ScheduledJob sched = new ScheduledJob(description, monitor);
 		jobs.put(sched.id, sched);
+		monitor.addCancelListener(new JobCancelListener(sched.id));
 
 		try {
 			ServerUtil.setHostService(sched);
@@ -963,6 +968,34 @@ public final class JobServer implements JobService {
 			}
 		}
 
+	}
+	
+	/**
+	 * Cancels a job when notified.
+	 * @author Brad Kimmel
+	 */
+	private class JobCancelListener implements CancelListener {
+
+		/** The <code>UUID</code> identifying the job to be cancelled. */
+		private final UUID jobId;
+		
+		/**
+		 * Creates a new <code>JobCancelListener</code>.
+		 * @param jobId The <code>UUID</code> identifying the job to be
+		 *   cancelled.
+		 */
+		public JobCancelListener(UUID jobId) {
+			this.jobId = jobId;
+		}
+
+		/* (non-Javadoc)
+		 * @see ca.eandb.util.progress.CancelListener#cancelRequested()
+		 */
+		@Override
+		public void cancelRequested() {
+			cancelJob(jobId);	
+		}
+		
 	}
 
 }
