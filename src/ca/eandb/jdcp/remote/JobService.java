@@ -108,7 +108,6 @@ public interface JobService extends TaskService {
 	void cancelJob(UUID jobId) throws IllegalArgumentException,
 			SecurityException, RemoteException;
 
-
 	/* ************************
 	 * Class management methods
 	 */
@@ -216,6 +215,70 @@ public interface JobService extends TaskService {
 	 * @throws RemoteException If a communication error occurs.
 	 */
 	void unregisterTaskService(String name) throws IllegalArgumentException,
+			SecurityException, RemoteException;
+
+	
+	/* ******************
+	 * Monitoring methods
+	 */
+	
+	/**
+	 * Waits for a status change for any job hosted on this server.
+	 * @param lastEventId The ID of the last event received, or
+	 * 		<code>Long.MIN_VALUE</code> to indicate that no events had been
+	 * 		received previously.
+	 * @param timeoutMillis The maximum amount of time (in milliseconds) to wait
+	 * 		before returning.  If zero, then the call will return immediately.
+	 * 		If negative, the call will wait indefinitely.
+	 * @return If an event has already occurred subsequent to the event with ID
+	 * 		<code>lastEventId</code>, the pending <code>JobStatus</code> event
+	 * 		will be returned.  Otherwise, the call will wait up to
+	 * 		<code>timeoutMillis</code> milliseconds for an event to occur.  If
+	 * 		one does occur in that time, that <code>JobStatus</code> will be
+	 * 		returned.  If no event occurs, <code>null</code> is returned.
+	 * @throws SecurityException If the caller does not have permission wait for
+	 * 		events.
+	 * @throws RemoteException If a communication error occurs.
+	 */
+	JobStatus waitForJobStatusChange(long lastEventId, long timeoutMillis)
+		throws SecurityException, RemoteException;
+	
+	/**
+	 * Waits for a status change for the specified job.
+	 * @param jobId The <code>UUID</code> identifying the job to wait on.
+	 * @param lastEventId The ID of the last event received, or
+	 * 		<code>Long.MIN_VALUE</code> to indicate that no events had been
+	 * 		received previously.
+	 * @param timeoutMillis The maximum amount of time (in milliseconds) to wait
+	 * 		before returning.  If zero, then the call will return immediately.
+	 * 		If negative, the call will wait indefinitely.
+	 * @return If an event has already occurred subsequent to the event with ID
+	 * 		<code>lastEventId</code>, the pending <code>JobStatus</code> event
+	 * 		will be returned.  Otherwise, the call will wait up to
+	 * 		<code>timeoutMillis</code> milliseconds for an event to occur.  If
+	 * 		one does occur in that time, that <code>JobStatus</code> will be
+	 * 		returned.  If no event occurs, <code>null</code> is returned.
+	 * @throws IllegalArgumentException If no job exists with the specified
+	 * 		<code>UUID</code>.
+	 * @throws SecurityException If the caller does not have permission wait for
+	 * 		events.
+	 * @throws RemoteException If a communication error occurs.
+	 */
+	JobStatus waitForJobStatusChange(UUID jobId, long lastEventId, long timeoutMillis)
+			throws IllegalArgumentException, SecurityException, RemoteException;
+
+	/**
+	 * Gets the current status of the specified job.
+	 * @param jobId The <code>UUID</code> identifying the job of which to get
+	 * 		the status.
+	 * @return The current <code>JobStatus</code> for the specified job.
+	 * @throws IllegalArgumentException If no job exists with the specified
+	 * 		<code>UUID</code>.
+	 * @throws SecurityException If the caller does not have permission to
+	 * 		obtain the status of a job.
+	 * @throws RemoteException If a communication error occurs.
+	 */
+	JobStatus getJobStatus(UUID jobId) throws IllegalArgumentException,
 			SecurityException, RemoteException;
 
 }

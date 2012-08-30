@@ -49,6 +49,7 @@ import ca.eandb.jdcp.job.ParallelizableJob;
 import ca.eandb.jdcp.job.TaskDescription;
 import ca.eandb.jdcp.job.TaskWorker;
 import ca.eandb.jdcp.remote.JobService;
+import ca.eandb.jdcp.remote.JobStatus;
 import ca.eandb.jdcp.remote.TaskService;
 import ca.eandb.util.concurrent.BackgroundThreadFactory;
 import ca.eandb.util.rmi.Serialized;
@@ -342,6 +343,34 @@ public final class JobHub implements JobService {
 	 */
 	public void unregisterTaskService(String name) throws SecurityException,
 			RemoteException {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.remote.JobService#waitForJobStatusChange(long, long)
+	 */
+	@Override
+	public JobStatus waitForJobStatusChange(long lastEventId, long timeoutMillis)
+			throws SecurityException, RemoteException {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.remote.JobService#waitForJobStatusChange(java.util.UUID, long, long)
+	 */
+	@Override
+	public JobStatus waitForJobStatusChange(UUID jobId, long lastEventId,
+			long timeoutMillis) throws IllegalArgumentException,
+			SecurityException, RemoteException {
+		throw new UnsupportedOperationException();
+	}
+
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.remote.JobService#getJobStatus(java.util.UUID)
+	 */
+	@Override
+	public JobStatus getJobStatus(UUID jobId) throws IllegalArgumentException,
+			SecurityException, RemoteException {
 		throw new UnsupportedOperationException();
 	}
 

@@ -44,6 +44,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Random;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
@@ -63,6 +65,8 @@ import ca.eandb.jdcp.job.ParallelizableJob;
 import ca.eandb.jdcp.job.TaskDescription;
 import ca.eandb.jdcp.job.TaskWorker;
 import ca.eandb.jdcp.remote.JobService;
+import ca.eandb.jdcp.remote.JobState;
+import ca.eandb.jdcp.remote.JobStatus;
 import ca.eandb.jdcp.remote.TaskService;
 import ca.eandb.jdcp.server.classmanager.ChildClassManager;
 import ca.eandb.jdcp.server.classmanager.ParentClassManager;
@@ -171,7 +175,7 @@ public final class JobServer implements JobService {
 		this.scheduler = scheduler;
 		this.classManager = classManager;
 		this.executor = executor;
-		
+
 		Runnable poll = new Runnable() {
 			public void run() {
 				pollActiveTasks();
@@ -576,12 +580,12 @@ public final class JobServer implements JobService {
 		ScheduledJob sched = jobs.remove(jobId);
 		if (sched != null) {
 			if (complete) {
-				sched.monitor.notifyComplete();
+				sched.notifyComplete();
 				if (logger.isInfoEnabled()) {
 					logger.info("Job complete (" + jobId.toString() + ")");
 				}
 			} else {
-				sched.monitor.notifyCancelled();
+				sched.notifyCancelled();
 				if (logger.isInfoEnabled()) {
 					logger.info("Job cancelled (" + jobId.toString() + ")");
 				}
@@ -630,7 +634,7 @@ public final class JobServer implements JobService {
 	 * to this <code>JobMasterServer</code>.
 	 * @author Brad Kimmel
 	 */
-	private class ScheduledJob implements HostService {
+	private class ScheduledJob implements HostService, ProgressMonitor {
 
 		/** The <code>ParallelizableJob</code> to be processed. */
 		public JobExecutionWrapper				job;
@@ -684,6 +688,62 @@ public final class JobServer implements JobService {
 
 			this.workingDirectory	= new File(outputDirectory, id.toString());
 
+			setJobStatus(new JobStatus(id, description, JobState.NEW, 0.0,
+					"Awaiting job submission"));
+
+		}
+		
+		/**
+		 * Gets the current status of this job.
+		 * @return The current <code>JobStatus</code> for this job.
+		 */
+		private JobStatus getJobStatus() {
+			return statusByJobId.get(id);
+		}
+		
+		/**
+		 * Sets the status of this job.
+		 * @param newStatus The new <code>JobStatus</code> for this job.
+		 */
+		private synchronized void setJobStatus(JobStatus newStatus) {
+			updateStatus(newStatus);
+			notifyAll();	// wake up any listeners.
+		}
+		
+		/**
+		 * Wait for a status change for this job.
+		 * @param lastEventId The ID of the last event received, or
+		 * 		<code>Long.MIN_VALUE</code> to indicate that no events had been
+		 * 		received previously.
+		 * @param timeoutMillis The maximum amount of time (in milliseconds) to
+		 * 		wait before returning.  If zero, then the call will return
+		 * 		immediately.  If negative, the call will wait indefinitely.
+		 * @return If an event has already occurred subsequent to the event with
+		 * 		ID <code>lastEventId</code>, the pending <code>JobStatus</code>
+		 * 		event will be returned.  Otherwise, the call will wait up to
+		 * 		<code>timeoutMillis</code> milliseconds for an event to occur.
+		 * 		If one does occur in that time, that <code>JobStatus</code> will
+		 * 		be returned.  If no event occurs, <code>null</code> is returned.
+		 */
+		public synchronized JobStatus waitForJobStatusChange(long lastEventId, long timeoutMillis) {
+			
+			// when should I time out?
+			long end = timeoutMillis >= 0 ? System.currentTimeMillis() + timeoutMillis : Long.MAX_VALUE;
+			
+			// wait loop
+			while (getJobStatus().getEventId() <= lastEventId) {
+				try {
+					long time = System.currentTimeMillis();
+					if (time >= end) {
+						return null;		// timeout
+					}
+					wait(end - time);
+				} catch (InterruptedException e) { /* nothing to do. */ }
+			}
+			
+			// we found a newer event.
+			return getJobStatus();
+			
 		}
 
 		/**
@@ -698,7 +758,7 @@ public final class JobServer implements JobService {
 			this.classLoader	= new StrategyClassLoader(classManager, JobServer.class.getClassLoader());
 			this.job			= new JobExecutionWrapper(job.deserialize(classLoader));
 			this.worker			= new Serialized<TaskWorker>(this.job.worker());
-			this.monitor.notifyStatusChanged("");
+			notifyStatusChanged("");
 
 			this.workingDirectory.mkdir();
 			this.job.setHostService(this);
@@ -730,7 +790,7 @@ public final class JobServer implements JobService {
 			TaskDescription taskDesc = scheduler.remove(id, taskId);
 			if (taskDesc != null) {
 				Object task = taskDesc.getTask().get();
-				Runnable command = new TaskResultSubmitter(this, task, results, monitor);
+				Runnable command = new TaskResultSubmitter(this, task, results, this);
 				try {
 					executor.execute(command);
 				} catch (RejectedExecutionException e) {
@@ -885,6 +945,76 @@ public final class JobServer implements JobService {
 			});
 		}
 
+		/* (non-Javadoc)
+		 * @see ca.eandb.util.progress.ProgressMonitor#notifyProgress(int, int)
+		 */
+		@Override
+		public boolean notifyProgress(int value, int maximum) {
+			setJobStatus(getJobStatus().withProgress((double) value / (double) maximum));
+			return monitor.notifyProgress(value, maximum);
+		}
+
+		/* (non-Javadoc)
+		 * @see ca.eandb.util.progress.ProgressMonitor#notifyProgress(double)
+		 */
+		@Override
+		public boolean notifyProgress(double progress) {
+			setJobStatus(getJobStatus().withProgress(progress));
+			return monitor.notifyProgress(progress);
+		}
+
+		/* (non-Javadoc)
+		 * @see ca.eandb.util.progress.ProgressMonitor#notifyIndeterminantProgress()
+		 */
+		@Override
+		public boolean notifyIndeterminantProgress() {
+			setJobStatus(getJobStatus().withIndeterminantProgress());
+			return monitor.notifyIndeterminantProgress();
+		}
+
+		/* (non-Javadoc)
+		 * @see ca.eandb.util.progress.ProgressMonitor#notifyComplete()
+		 */
+		@Override
+		public void notifyComplete() {
+			setJobStatus(getJobStatus().asComplete());
+			monitor.notifyComplete();
+		}
+
+		/* (non-Javadoc)
+		 * @see ca.eandb.util.progress.ProgressMonitor#notifyCancelled()
+		 */
+		@Override
+		public void notifyCancelled() {
+			setJobStatus(getJobStatus().asCancelled());
+			monitor.notifyCancelled();
+		}
+
+		/* (non-Javadoc)
+		 * @see ca.eandb.util.progress.ProgressMonitor#notifyStatusChanged(java.lang.String)
+		 */
+		@Override
+		public void notifyStatusChanged(String newStatus) {
+			setJobStatus(getJobStatus().withStatus(newStatus));
+			monitor.notifyStatusChanged(newStatus);
+		}
+
+		/* (non-Javadoc)
+		 * @see ca.eandb.util.progress.ProgressMonitor#isCancelPending()
+		 */
+		@Override
+		public boolean isCancelPending() {
+			return monitor.isCancelPending();
+		}
+
+		/* (non-Javadoc)
+		 * @see ca.eandb.util.progress.ProgressMonitor#addCancelListener(ca.eandb.util.progress.CancelListener)
+		 */
+		@Override
+		public void addCancelListener(CancelListener listener) {
+			monitor.addCancelListener(listener);
+		}
+
 	}
 
 	/**
@@ -996,6 +1126,111 @@ public final class JobServer implements JobService {
 			cancelJob(jobId);	
 		}
 		
+	}
+	
+	/** Events indexed and sorted by event ID. */
+	private SortedMap<Long, JobStatus> statusByEventId =
+			Collections.synchronizedSortedMap(new TreeMap<Long, JobStatus>());
+	
+	/** Events indexed by job. */
+	private Map<UUID, JobStatus> statusByJobId =
+			Collections.synchronizedMap(new HashMap<UUID, JobStatus>());
+	
+	/**
+	 * Submits a new <code>JobStatus</code> event.
+	 * @param _newStatus The new <code>JobStatus</code> event.
+	 */
+	private synchronized void updateStatus(JobStatus _newStatus) {
+		
+		// generate a new event ID (always increasing).
+		JobStatus newStatus = _newStatus.withNewEventId();
+		
+		UUID jobId = newStatus.getJobId();
+		
+		// remove the last event for the same job, as it is no longer relevant.
+		JobStatus oldStatus = statusByJobId.get(jobId);
+		if (oldStatus != null) {
+			statusByEventId.remove(oldStatus.getEventId());
+		}
+		
+		// insert event into lookup tables.
+		statusByEventId.put(newStatus.getEventId(), newStatus);
+		statusByJobId.put(jobId, newStatus);
+		
+		// wake up any listeners.
+		notifyAll();
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.remote.JobService#waitForJobStatusChange(long, long)
+	 */
+	@Override
+	public synchronized JobStatus waitForJobStatusChange(long lastEventId, long timeoutMillis)
+			throws SecurityException, RemoteException {
+		
+		// when should I time out?
+		long end = timeoutMillis >= 0 ? System.currentTimeMillis() + timeoutMillis : Long.MAX_VALUE;
+		
+		// wait loop
+		SortedMap<Long, JobStatus> tail;
+		while (true) {
+			// find events newer than the last event the caller has seen.
+			tail = statusByEventId.tailMap(lastEventId + 1);
+			if (!tail.isEmpty()) break;
+			try {
+				long time = System.currentTimeMillis();
+				if (time >= end) {
+					return null;		// timeout
+				}
+				wait(end - time);
+			} catch (InterruptedException e) { /* nothing to do. */ }
+		}
+		
+		// found an event.
+		return tail.values().iterator().next();
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.remote.JobService#waitForJobStatusChange(java.util.UUID, long, long)
+	 */
+	@Override
+	public JobStatus waitForJobStatusChange(UUID jobId, long lastEventId, long timeoutMillis)
+			throws IllegalArgumentException, SecurityException, RemoteException {
+		
+		
+		// try to find the job if it is still active.
+		ScheduledJob sched = jobs.get(jobId);
+		
+		// if the job is no longer active, it could be that the caller has not
+		// yet received the COMPLETE/CANCELLED status, which will still be in
+		// the lookup.
+		if (sched == null) {
+			JobStatus status = statusByJobId.get(jobId);
+			if (status == null || lastEventId >= status.getEventId()) {
+				// the job either never existed, or the caller has already seen
+				// the COMPLETE event for this job.
+				throw new IllegalArgumentException("Invalid Job ID");
+			}
+			return status;
+		}
+		
+		// delegate to active job to wait for the event.
+		return sched.waitForJobStatusChange(lastEventId, timeoutMillis);
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.remote.JobService#getJobStatus(java.util.UUID)
+	 */
+	@Override
+	public JobStatus getJobStatus(UUID jobId) throws IllegalArgumentException,
+			SecurityException, RemoteException {
+		if (!statusByJobId.containsKey(jobId)) {
+			throw new IllegalArgumentException("Invalid job ID");
+		}
+		return statusByJobId.get(jobId);
 	}
 
 }

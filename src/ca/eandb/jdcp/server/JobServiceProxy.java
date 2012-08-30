@@ -41,6 +41,7 @@ import ca.eandb.jdcp.job.ParallelizableJob;
 import ca.eandb.jdcp.job.TaskDescription;
 import ca.eandb.jdcp.job.TaskWorker;
 import ca.eandb.jdcp.remote.JobService;
+import ca.eandb.jdcp.remote.JobStatus;
 import ca.eandb.jdcp.remote.TaskService;
 import ca.eandb.jdcp.security.JdcpPermission;
 import ca.eandb.util.UnexpectedException;
@@ -585,6 +586,94 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 					AccessController.checkPermission(new JdcpPermission("unregisterTaskService"));
 					service.unregisterTaskService(name);
 					return null;
+				}
+
+			}, null);
+		} catch (PrivilegedActionException e) {
+			if (e.getException() instanceof IllegalArgumentException) {
+				throw (IllegalArgumentException) e.getException();
+			} else if (e.getException() instanceof SecurityException) {
+				throw (SecurityException) e.getException();
+			} else if (e.getException() instanceof RemoteException) {
+				throw (RemoteException) e.getException();
+			} else {
+				throw new UnexpectedException(e);
+			}
+		}
+
+	}
+
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.remote.JobService#waitForJobStatusChange(long, long)
+	 */
+	@Override
+	public JobStatus waitForJobStatusChange(final long lastEventId, final long timeoutMillis)
+			throws SecurityException, RemoteException {
+
+		try {
+			return (JobStatus) Subject.doAsPrivileged(user, new PrivilegedExceptionAction<JobStatus>() {
+
+				public JobStatus run() throws Exception {
+					AccessController.checkPermission(new JdcpPermission("waitForJobStatusChange"));
+					return service.waitForJobStatusChange(lastEventId, timeoutMillis);
+				}
+
+			}, null);
+		} catch (PrivilegedActionException e) {
+			if (e.getException() instanceof IllegalArgumentException) {
+				throw (IllegalArgumentException) e.getException();
+			} else if (e.getException() instanceof SecurityException) {
+				throw (SecurityException) e.getException();
+			} else if (e.getException() instanceof RemoteException) {
+				throw (RemoteException) e.getException();
+			} else {
+				throw new UnexpectedException(e);
+			}
+		}
+		
+	}
+
+	@Override
+	public JobStatus waitForJobStatusChange(final UUID jobId, final long lastEventId,
+			final long timeoutMillis) throws IllegalArgumentException,
+			SecurityException, RemoteException {
+
+		try {
+			return (JobStatus) Subject.doAsPrivileged(user, new PrivilegedExceptionAction<JobStatus>() {
+
+				public JobStatus run() throws Exception {
+					AccessController.checkPermission(new JdcpPermission("waitForJobStatusChange"));
+					return service.waitForJobStatusChange(jobId, lastEventId, timeoutMillis);
+				}
+
+			}, null);
+		} catch (PrivilegedActionException e) {
+			if (e.getException() instanceof IllegalArgumentException) {
+				throw (IllegalArgumentException) e.getException();
+			} else if (e.getException() instanceof SecurityException) {
+				throw (SecurityException) e.getException();
+			} else if (e.getException() instanceof RemoteException) {
+				throw (RemoteException) e.getException();
+			} else {
+				throw new UnexpectedException(e);
+			}
+		}
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see ca.eandb.jdcp.remote.JobService#getJobStatus(java.util.UUID)
+	 */
+	@Override
+	public JobStatus getJobStatus(final UUID jobId) throws IllegalArgumentException,
+			SecurityException, RemoteException {
+
+		try {
+			return (JobStatus) Subject.doAsPrivileged(user, new PrivilegedExceptionAction<JobStatus>() {
+
+				public JobStatus run() throws Exception {
+					AccessController.checkPermission(new JdcpPermission("getJobStatus"));
+					return service.getJobStatus(jobId);
 				}
 
 			}, null);

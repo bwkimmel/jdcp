@@ -308,7 +308,7 @@ public final class ThreadServiceWorker implements Runnable {
 			}
 		}
 		
-		synchronized (ref.worker) {
+		synchronized (ref) {
 			if (ref.worker == null) {
 
 				/* The task worker was not in the cache, so use the service to
