@@ -16,6 +16,7 @@
 
 	<property name="src.dir" value="src"/>
 	<property name="lib.dir" value="lib"/>
+	<property name="ext.dir" value="ext"/>
 	<property name="build.dir" value="build"/>
 	<property name="classes.dir" value="${build.dir}/classes"/>
 	<property name="jar.dir" value="${build.dir}/jar"/>
@@ -33,7 +34,7 @@
 	<property name="console.dist.dir" value="${dist.dir}/${console.label}"/>
 	<property name="full.dist.dir" value="${dist.dir}/${full.label}"/>
 
-	<property name="eandb.util.dir" value="${basedir}/../util"/>
+	<property name="eandb.util.dir" value="${ext.dir}/java-util"/>
 	<property name="eandb.util.build.dir" value="${eandb.util.dir}/build"/>
 	<property name="eandb.util.jar.dir" value="${eandb.util.build.dir}/jar"/>
 	<property name="eandb.util.jar.file" value="${eandb.util.jar.dir}/eandb.jar"/>
