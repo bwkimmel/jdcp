@@ -27,6 +27,7 @@ package ca.eandb.jdcp.console;
 
 import ca.eandb.jdcp.client.Configuration;
 import ca.eandb.util.args.ShellArgument;
+import ca.eandb.util.auth.FileLoginManager;
 
 /**
  * @author Brad
@@ -42,5 +43,8 @@ public final class ConsoleState extends Configuration {
 
 	@ShellArgument
 	public final HubState hub = new HubState();
+	
+	@ShellArgument
+	public final FileLoginManager users = new FileLoginManager();
 
 }
