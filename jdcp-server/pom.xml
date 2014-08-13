@@ -34,11 +34,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
-      <groupId>org.apache.derby</groupId>
-      <artifactId>derby</artifactId>
-      <version>10.10.2.0</version>
-    </dependency>
 
     <!-- TODO: Remove this dependency -->
     <dependency>

@@ -1,3 +1,4 @@
+package ca.eandb.jdcp.server;
 /*
  * Copyright (c) 2008 Bradley W. Kimmel
  *
@@ -23,7 +24,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package ca.eandb.jdcp.server;
+
 
 import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
