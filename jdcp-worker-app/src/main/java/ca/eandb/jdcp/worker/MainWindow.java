@@ -307,7 +307,7 @@ public final class MainWindow extends JFrame {
 	private void initializeSystemTray() {
 		if (SystemTray.isSupported()) {
 
-			URL imageUrl = MainWindow.class.getResource("resources/jdcp-32.png");
+			URL imageUrl = MainWindow.class.getResource("jdcp-32.png");
 			Image image = Toolkit.getDefaultToolkit().getImage(imageUrl);
 			final TrayIcon icon = new TrayIcon(image, "JDCP Worker");
 			icon.setImageAutoSize(true);
