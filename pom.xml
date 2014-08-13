@@ -15,6 +15,7 @@
     <module>jdcp-server</module>
     <module>jdcp-worker</module>
     <module>jdcp-client</module>
+    <module>jdcp-console</module>
   </modules>
  
   <build>

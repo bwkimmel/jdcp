@@ -8,7 +8,7 @@
     <artifactId>jdcp</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>jdcp-worker</artifactId>
+  <artifactId>jdcp-console</artifactId>
   <dependencies>
     <dependency>
       <groupId>ca.eandb.util</groupId>
@@ -40,14 +40,24 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>com.sun.jna</groupId>
-      <artifactId>jna</artifactId>
-      <version>3.0.9</version>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>jdcp-server</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>jdcp-worker</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.derby</groupId>
       <artifactId>derby</artifactId>
       <version>10.10.2.0</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>jdcp-client</artifactId>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 </project>

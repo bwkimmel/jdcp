@@ -9,4 +9,42 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>jdcp-server</artifactId>
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>jdcp-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.15</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun.jmx</groupId>
+          <artifactId>jmxri</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.jdmk</groupId>
+          <artifactId>jmxtools</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>javax.jms</groupId>
+          <artifactId>jms</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.derby</groupId>
+      <artifactId>derby</artifactId>
+      <version>10.10.2.0</version>
+    </dependency>
+
+    <!-- TODO: Remove this dependency -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>jdcp-worker</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
 </project>
