@@ -44,10 +44,5 @@
       <artifactId>jna</artifactId>
       <version>3.0.9</version>
     </dependency>
-    <dependency>
-      <groupId>org.apache.derby</groupId>
-      <artifactId>derby</artifactId>
-      <version>10.10.2.0</version>
-    </dependency>
   </dependencies>
 </project>
