@@ -1,6 +1,3 @@
 [submodule "lib"]
 	path = lib
 	url = git@github.com:bwkimmel/java-libs.git
-[submodule "ext/java-util"]
-	path = ext/java-util
-	url = git@github.com:bwkimmel/java-util.git
