@@ -1,3 +1,0 @@
-[submodule "lib"]
-	path = original/lib
-	url = git@github.com:bwkimmel/java-libs.git
