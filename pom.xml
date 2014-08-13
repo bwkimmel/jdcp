@@ -12,6 +12,9 @@
       distributed computing jobs.</description>
   <modules>
     <module>jdcp-core</module>
+    <module>jdcp-server</module>
+    <module>jdcp-worker</module>
+    <module>jdcp-client</module>
   </modules>
  
   <build>
