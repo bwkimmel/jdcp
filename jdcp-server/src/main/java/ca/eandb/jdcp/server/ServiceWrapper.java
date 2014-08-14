@@ -59,7 +59,7 @@ final class ServiceWrapper implements TaskService {
   public ServiceWrapper(TaskService service) {
     this.service = service;
   }
-  
+
   public void shutdown() {
     /* nothing to do. */
   }

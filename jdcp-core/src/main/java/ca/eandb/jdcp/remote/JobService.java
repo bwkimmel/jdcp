@@ -203,7 +203,7 @@ public interface JobService extends TaskService {
    */
   void registerTaskService(String name, TaskService service) throws SecurityException,
       RemoteException;
-  
+
   /**
    * Unregisters a <code>TaskService</code>.
    * @param name The name of identifying the <code>TaskService</code> to
@@ -217,11 +217,11 @@ public interface JobService extends TaskService {
   void unregisterTaskService(String name) throws IllegalArgumentException,
       SecurityException, RemoteException;
 
-  
+
   /* ******************
    * Monitoring methods
    */
-  
+
   /**
    * Waits for a status change for any job hosted on this server.
    * @param lastEventId The ID of the last event received, or
@@ -242,7 +242,7 @@ public interface JobService extends TaskService {
    */
   JobStatus waitForJobStatusChange(long lastEventId, long timeoutMillis)
     throws SecurityException, RemoteException;
-  
+
   /**
    * Waits for a status change for the specified job.
    * @param jobId The <code>UUID</code> identifying the job to wait on.

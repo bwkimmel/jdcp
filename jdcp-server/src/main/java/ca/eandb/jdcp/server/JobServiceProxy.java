@@ -550,7 +550,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
    */
   public void registerTaskService(final String name, final TaskService taskService)
       throws SecurityException, RemoteException {
-    
+
     try {
       Subject.doAsPrivileged(user, new PrivilegedExceptionAction<Object>() {
 
@@ -578,7 +578,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
    */
   public void unregisterTaskService(final String name)
       throws IllegalArgumentException, SecurityException, RemoteException {
-    
+
     try {
       Subject.doAsPrivileged(user, new PrivilegedExceptionAction<Object>() {
 
@@ -630,7 +630,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
         throw new UnexpectedException(e);
       }
     }
-    
+
   }
 
   @Override
@@ -658,7 +658,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
         throw new UnexpectedException(e);
       }
     }
-    
+
   }
 
   /* (non-Javadoc)

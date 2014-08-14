@@ -104,7 +104,7 @@ public final class AuthenticationServer extends UnicastRemoteObject implements
    */
   public JobService authenticate(final String username, final String password, UUID protocolVersionId)
       throws RemoteException, LoginException, ProtocolVersionException {
-    
+
     if (!protocolVersionId.equals(JdcpUtil.PROTOCOL_VERSION_ID)) {
       throw new ProtocolVersionException();
     }

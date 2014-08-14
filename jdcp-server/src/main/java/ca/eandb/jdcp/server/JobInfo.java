@@ -55,7 +55,7 @@ final class JobInfo {
   public JobInfo(UUID id, ServiceWrapper service, DataSource dataSource, Executor executor) {
     this.id = id;
     this.service = service;
-    
+
     if (dataSource != null) {
       this.classCache = new DbCachingJobServiceClassLoaderStrategy(service, id, dataSource);
     } else {

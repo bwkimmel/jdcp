@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Bradley W. Kimmel
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -9,10 +9,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -33,10 +33,10 @@ public enum JobState {
 
   /** The job has been created but has not yet begun. */
   NEW,
-  
+
   /** The job is being processed. */
   RUNNING,
-  
+
   /**
    * The job has stalled.  That is, results have been submitted for all
    * pending tasks, but the job is not complete
@@ -46,11 +46,11 @@ public enum JobState {
    * <code>null</code>).
    */
   STALLED,
-  
+
   /** The job is complete. */
   COMPLETE,
-  
+
   /** The job has been cancelled. */
   CANCELLED
-  
+
 }

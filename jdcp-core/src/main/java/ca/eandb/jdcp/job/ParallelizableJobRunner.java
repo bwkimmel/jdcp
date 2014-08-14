@@ -195,7 +195,7 @@ public final class ParallelizableJobRunner implements Runnable {
     }
 
   }
-  
+
   /**
    * Gets an available <code>ProgressMonitor</code> to use for the next task.
    * @return An available <code>ProgressMonitor</code>.
@@ -327,9 +327,9 @@ public final class ParallelizableJobRunner implements Runnable {
 
   /** The maximum number of concurrent tasks to process. */
   private final int maxConcurrentWorkers;
-  
+
   /** The <code>Queue</code> of <code>ProgressMonitor</code>s for workers. */
-  private final Queue<ProgressMonitor> workerMonitorQueue = new ConcurrentLinkedQueue<ProgressMonitor>(); 
+  private final Queue<ProgressMonitor> workerMonitorQueue = new ConcurrentLinkedQueue<ProgressMonitor>();
 
   /** The number of child <code>ProgressMonitor</code>s created. */
   private int numProgressMonitors = 0;

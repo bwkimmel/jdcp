@@ -200,7 +200,7 @@ public final class ThreadServiceWorker implements Runnable {
             }
           }
         }
-        
+
         if (removedJob) {
           System.gc();
         }
@@ -248,7 +248,7 @@ public final class ThreadServiceWorker implements Runnable {
         idleLock.unlock();
       }
       while (numWorkers < maxWorkers) {
-        String title = String.format("Worker (%d)", numWorkers + 1);        
+        String title = String.format("Worker (%d)", numWorkers + 1);
         ProgressMonitorWrapper monitor = new ProgressMonitorWrapper(numWorkers++, monitorFactory.createProgressMonitor(title));
         workerQueue.add(new Worker(monitor));
       }
@@ -276,7 +276,7 @@ public final class ThreadServiceWorker implements Runnable {
    * Reference to a <code>TaskWorker</code>.  This object acts as a handle
    * for other workers to synchronize on to prevent multiple worker threads
    * from trying to download the same <code>TaskWorker</code>.
-   * 
+   *
    * @author Brad Kimmel
    */
   private static class TaskWorkerRef {
@@ -307,7 +307,7 @@ public final class ThreadServiceWorker implements Runnable {
         workerMap.put(jobId, ref);
       }
     }
-    
+
     synchronized (ref) {
       if (ref.worker == null) {
 
@@ -329,10 +329,10 @@ public final class ThreadServiceWorker implements Runnable {
         if (logger.isInfoEnabled()) {
           logger.info(String.format("Got worker (thread=%d)", Thread.currentThread().getId()));
         }
-        
+
       }
     }
-    
+
     assert(ref.worker != null);
     return ref.worker;
 
@@ -566,7 +566,7 @@ public final class ThreadServiceWorker implements Runnable {
 
       return true;
     }
-    
+
     /**
      * Idles for the specified number of seconds.
      * @param seconds The number of seconds to idle for.
@@ -641,7 +641,7 @@ public final class ThreadServiceWorker implements Runnable {
 
     /** A value indicating if the task is pending cancellation. */
     private boolean cancelPending = false;
-    
+
     /**
      * The <code>CancelListener</code> to be notified if the operation is
      * to be cancelled.
@@ -706,7 +706,7 @@ public final class ThreadServiceWorker implements Runnable {
     public boolean isCancelPending() {
       return isLocalCancelPending() || monitor.isCancelPending();
     }
-    
+
     /* (non-Javadoc)
      * @see ca.eandb.util.progress.ProgressMonitor#addCancelListener(ca.eandb.util.progress.CancelListener)
      */
@@ -785,10 +785,10 @@ public final class ThreadServiceWorker implements Runnable {
 
   /** Default message to display while idling. */
   private static final String DEFAULT_IDLE_MESSAGE = "Idling...";
-  
+
   /** Message to display while idling because an exception was thrown. */
   private static final String EXCEPTION_IDLE_MESSAGE = "Exception thrown, idling...";
-  
+
   /** Number of seconds to idle after an exception. */
   private static int EXCEPTION_IDLE_SECONDS = 10;
 
@@ -830,7 +830,7 @@ public final class ThreadServiceWorker implements Runnable {
 
   /** A queue containing the available workers. */
   private final BlockingQueue<Worker> workerQueue = new LinkedBlockingQueue<Worker>();
-  
+
   /**
    * A <code>DataSource</code> to use to store cached class definitions.
    */

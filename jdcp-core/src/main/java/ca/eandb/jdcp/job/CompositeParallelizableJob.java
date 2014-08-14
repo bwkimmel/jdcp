@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008 Bradley W. Kimmel
- * 
+ *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
  * files (the "Software"), to deal in the Software without
@@ -9,10 +9,10 @@
  * copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -37,7 +37,7 @@ import ca.eandb.util.progress.ProgressMonitor;
 
 /**
  * A <code>ParallelizableJob</code> that combines multiple jobs into one.
- * 
+ *
  * @author Brad Kimmel
  */
 public final class CompositeParallelizableJob implements ParallelizableJob {
@@ -48,33 +48,33 @@ public final class CompositeParallelizableJob implements ParallelizableJob {
   private final List<ParallelizableJob> jobs = new ArrayList<ParallelizableJob>();
 
   private transient TaskWorker worker = null;
-  
+
   private transient double[] jobProgress = null;
-  
+
   private transient double totalProgress = 0.0;
-  
+
   public CompositeParallelizableJob() {
     /* nothing to do. */
   }
-  
+
   public CompositeParallelizableJob(Collection<ParallelizableJob> jobs) {
     this.jobs.addAll(jobs);
   }
-  
+
   public CompositeParallelizableJob addJob(ParallelizableJob job) {
     jobs.add(job);
     return this;
   }
-  
+
   public CompositeParallelizableJob addJobs(Collection<ParallelizableJob> jobs) {
     this.jobs.addAll(jobs);
     return this;
   }
-  
+
   private final class CompositeProgressMonitor implements ProgressMonitor {
 
     private final int jobNumber;
-    
+
     public CompositeProgressMonitor(int jobNumber) {
       this.jobNumber = jobNumber;
     }
@@ -148,31 +148,31 @@ public final class CompositeParallelizableJob implements ParallelizableJob {
     public void addCancelListener(CancelListener listener) {
       /* nothing to do. */
     }
-    
+
   }
-  
+
   private static final class JobItem implements Serializable {
-    
+
     /** Serialization version ID. */
     private static final long serialVersionUID = 3197453751237018890L;
 
     public final int jobNumber;
     public final Object item;
-    
+
     public JobItem(int jobNumber, Object item) {
       this.jobNumber = jobNumber;
       this.item = item;
     }
-    
+
   }
-  
+
   private static final class CompositeTaskWorker implements TaskWorker {
 
     /** Serialization version ID. */
     private static final long serialVersionUID = -9185015559500365734L;
-    
+
     private final TaskWorker[] workers;
-    
+
     public CompositeTaskWorker(TaskWorker[] workers) {
       this.workers = workers;
     }
@@ -186,7 +186,7 @@ public final class CompositeParallelizableJob implements ParallelizableJob {
       JobItem task = (JobItem) task_;
       return workers[task.jobNumber].performTask(task.item, monitor);
     }
-    
+
   }
 
   /* (non-Javadoc)

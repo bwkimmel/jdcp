@@ -372,7 +372,7 @@ public final class ReconnectingJobService implements JobService {
           throw e;
         }
       }
-    }  
+    }
   }
 
   /* (non-Javadoc)
@@ -430,7 +430,7 @@ public final class ReconnectingJobService implements JobService {
           throw e;
         }
       }
-    }  
+    }
   }
 
   /* (non-Javadoc)
@@ -460,7 +460,7 @@ public final class ReconnectingJobService implements JobService {
           throw e;
         }
       }
-    }  
+    }
   }
 
   /* (non-Javadoc)
@@ -489,7 +489,7 @@ public final class ReconnectingJobService implements JobService {
           throw e;
         }
       }
-    }  
+    }
   }
 
 }

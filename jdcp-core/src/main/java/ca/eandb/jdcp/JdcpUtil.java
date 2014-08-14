@@ -83,7 +83,7 @@ public final class JdcpUtil {
     AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
     return auth.authenticate(username, password, PROTOCOL_VERSION_ID);
   }
-  
+
   /**
    * Submits a job to a server for processing.
    * @param job The <code>ParallelizableJob</code> to be processed.

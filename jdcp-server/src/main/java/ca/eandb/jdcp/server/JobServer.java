@@ -143,7 +143,7 @@ public final class JobServer implements JobService {
   private static final long POLLING_INTERVAL = 10;
 
   private static final TimeUnit POLLING_UNITS = TimeUnit.SECONDS;
-  
+
   private final Queue<ServiceInfo> services = new LinkedList<ServiceInfo>();
 
   private final Map<UUID, ServiceInfo> routes = Collections.synchronizedMap(new WeakHashMap<UUID, ServiceInfo>());
@@ -151,7 +151,7 @@ public final class JobServer implements JobService {
   private final Map<String, ServiceInfo> hosts = Collections.synchronizedMap(new HashMap<String, ServiceInfo>());
 
   private final ScheduledExecutorService poller = Executors.newScheduledThreadPool(1, new BackgroundThreadFactory());
-  
+
   private final DataSource dataSource = null;
 
   /**
@@ -183,7 +183,7 @@ public final class JobServer implements JobService {
     };
     poller.scheduleAtFixedRate(poll, POLLING_INTERVAL,
         POLLING_INTERVAL, POLLING_UNITS);
-    
+
     logger.info("JobServer created");
   }
 
@@ -200,7 +200,7 @@ public final class JobServer implements JobService {
   public JobServer(File outputDirectory, ProgressMonitorFactory monitorFactory, TaskScheduler scheduler, ParentClassManager classManager) throws IllegalArgumentException {
     this(outputDirectory, monitorFactory, scheduler, classManager, Executors.newCachedThreadPool(new BackgroundThreadFactory()));
   }
-  
+
   private final void pollActiveTasks() {
     for (ServiceInfo info : hosts.values()) {
       info.pollActiveTasks();
@@ -298,7 +298,7 @@ public final class JobServer implements JobService {
     if (sched != null) {
       return sched.worker;
     }
-    
+
     ServiceInfo info = routes.get(jobId);
     if (info != null) {
       return info.getTaskWorker(jobId);
@@ -368,7 +368,7 @@ public final class JobServer implements JobService {
       }
       return;
     }
-    
+
     final ServiceInfo info = routes.get(jobId);
     if (info != null) {
       executor.execute(new Runnable() {
@@ -392,7 +392,7 @@ public final class JobServer implements JobService {
     if (sched != null) {
       sched.reportException(taskId, e);
     }
-    
+
     final ServiceInfo info = routes.get(jobId);
     if (info != null) {
       executor.execute(new Runnable() {
@@ -467,12 +467,12 @@ public final class JobServer implements JobService {
         return bytes;
       }
     }
-    
+
     ServiceInfo info = routes.get(jobId);
     if (info != null) {
       return info.getClassDefinition(name, jobId);
     }
-    
+
     throw new IllegalArgumentException("No job with provided Job ID");
   }
 
@@ -485,12 +485,12 @@ public final class JobServer implements JobService {
     if (sched != null) {
       return sched.classManager.getClassDigest(name);
     }
-    
+
     ServiceInfo info = routes.get(jobId);
     if (info != null) {
       return info.getClassDigest(name, jobId);
     }
-    
+
     throw new IllegalArgumentException("No job with provided Job ID");
   }
 
@@ -665,7 +665,7 @@ public final class JobServer implements JobService {
 
     /** The <code>ClassLoader</code> to use to deserialize this job. */
     public ClassLoader            classLoader;
-    
+
     /** A value indicating if the last attempt to obtain a task failed. */
     private boolean              stalled = false;
 
@@ -692,7 +692,7 @@ public final class JobServer implements JobService {
           "Awaiting job submission"));
 
     }
-    
+
     /**
      * Gets the current status of this job.
      * @return The current <code>JobStatus</code> for this job.
@@ -700,7 +700,7 @@ public final class JobServer implements JobService {
     private JobStatus getJobStatus() {
       return statusByJobId.get(id);
     }
-    
+
     /**
      * Sets the status of this job.
      * @param newStatus The new <code>JobStatus</code> for this job.
@@ -709,7 +709,7 @@ public final class JobServer implements JobService {
       updateStatus(newStatus);
       notifyAll();  // wake up any listeners.
     }
-    
+
     /**
      * Wait for a status change for this job.
      * @param lastEventId The ID of the last event received, or
@@ -726,10 +726,10 @@ public final class JobServer implements JobService {
      *     be returned.  If no event occurs, <code>null</code> is returned.
      */
     public synchronized JobStatus waitForJobStatusChange(long lastEventId, long timeoutMillis) {
-      
+
       // when should I time out?
       long end = timeoutMillis >= 0 ? System.currentTimeMillis() + timeoutMillis : Long.MAX_VALUE;
-      
+
       // wait loop
       while (getJobStatus().getEventId() <= lastEventId) {
         try {
@@ -740,10 +740,10 @@ public final class JobServer implements JobService {
           wait(end - time);
         } catch (InterruptedException e) { /* nothing to do. */ }
       }
-      
+
       // we found a newer event.
       return getJobStatus();
-      
+
     }
 
     /**
@@ -1099,7 +1099,7 @@ public final class JobServer implements JobService {
     }
 
   }
-  
+
   /**
    * Cancels a job when notified.
    * @author Brad Kimmel
@@ -1108,7 +1108,7 @@ public final class JobServer implements JobService {
 
     /** The <code>UUID</code> identifying the job to be cancelled. */
     private final UUID jobId;
-    
+
     /**
      * Creates a new <code>JobCancelListener</code>.
      * @param jobId The <code>UUID</code> identifying the job to be
@@ -1123,43 +1123,43 @@ public final class JobServer implements JobService {
      */
     @Override
     public void cancelRequested() {
-      cancelJob(jobId);  
+      cancelJob(jobId);
     }
-    
+
   }
-  
+
   /** Events indexed and sorted by event ID. */
   private SortedMap<Long, JobStatus> statusByEventId =
       Collections.synchronizedSortedMap(new TreeMap<Long, JobStatus>());
-  
+
   /** Events indexed by job. */
   private Map<UUID, JobStatus> statusByJobId =
       Collections.synchronizedMap(new HashMap<UUID, JobStatus>());
-  
+
   /**
    * Submits a new <code>JobStatus</code> event.
    * @param _newStatus The new <code>JobStatus</code> event.
    */
   private synchronized void updateStatus(JobStatus _newStatus) {
-    
+
     // generate a new event ID (always increasing).
     JobStatus newStatus = _newStatus.withNewEventId();
-    
+
     UUID jobId = newStatus.getJobId();
-    
+
     // remove the last event for the same job, as it is no longer relevant.
     JobStatus oldStatus = statusByJobId.get(jobId);
     if (oldStatus != null) {
       statusByEventId.remove(oldStatus.getEventId());
     }
-    
+
     // insert event into lookup tables.
     statusByEventId.put(newStatus.getEventId(), newStatus);
     statusByJobId.put(jobId, newStatus);
-    
+
     // wake up any listeners.
     notifyAll();
-    
+
   }
 
   /* (non-Javadoc)
@@ -1168,10 +1168,10 @@ public final class JobServer implements JobService {
   @Override
   public synchronized JobStatus waitForJobStatusChange(long lastEventId, long timeoutMillis)
       throws SecurityException, RemoteException {
-    
+
     // when should I time out?
     long end = timeoutMillis >= 0 ? System.currentTimeMillis() + timeoutMillis : Long.MAX_VALUE;
-    
+
     // wait loop
     SortedMap<Long, JobStatus> tail;
     while (true) {
@@ -1186,10 +1186,10 @@ public final class JobServer implements JobService {
         wait(end - time);
       } catch (InterruptedException e) { /* nothing to do. */ }
     }
-    
+
     // found an event.
     return tail.values().iterator().next();
-    
+
   }
 
   /* (non-Javadoc)
@@ -1198,11 +1198,11 @@ public final class JobServer implements JobService {
   @Override
   public JobStatus waitForJobStatusChange(UUID jobId, long lastEventId, long timeoutMillis)
       throws IllegalArgumentException, SecurityException, RemoteException {
-    
-    
+
+
     // try to find the job if it is still active.
     ScheduledJob sched = jobs.get(jobId);
-    
+
     // if the job is no longer active, it could be that the caller has not
     // yet received the COMPLETE/CANCELLED status, which will still be in
     // the lookup.
@@ -1215,10 +1215,10 @@ public final class JobServer implements JobService {
       }
       return status;
     }
-    
+
     // delegate to active job to wait for the event.
     return sched.waitForJobStatusChange(lastEventId, timeoutMillis);
-    
+
   }
 
   /* (non-Javadoc)

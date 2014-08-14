@@ -43,7 +43,7 @@ public final class ConsoleState extends Configuration {
 
   @ShellArgument
   public final HubState hub = new HubState();
-  
+
   @ShellArgument
   public final FileLoginManager users = new FileLoginManager();
 
