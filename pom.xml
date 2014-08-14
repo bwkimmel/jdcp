@@ -22,6 +22,11 @@
       <email>intrepidca@gmail.com</email>
     </developer>
   </developers>
+  <scm>
+    <connection>scm:git:git@github.com:bwkimmel/jdcp.git</connection>
+    <developerConnection>scm:git:git@github.com:bwkimmel/jdcp.git</developerConnection>
+    <url>https://github.com/bwkimmel/jdcp</url>
+  </scm>
   <modules>
     <module>jdcp-core</module>
     <module>jdcp-server</module>
