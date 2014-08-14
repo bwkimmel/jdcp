@@ -10,6 +10,12 @@
   <name>Java Distributed Computing Platform</name>
   <description>A client/server based application written in Java for running
       distributed computing jobs.</description>
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>http://www.opensource.org/licenses/mit-license.php</url>
+    </license>
+  </licenses>
   <modules>
     <module>jdcp-core</module>
     <module>jdcp-server</module>
