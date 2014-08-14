@@ -1,0 +1,69 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" 
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2
+                              http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+  <id>bin</id>
+  <formats>
+    <format>tar.gz</format>
+    <format>tar.bz2</format>
+    <format>zip</format>
+  </formats>
+  <fileSets>
+    <fileSet>
+      <directory>${parent.basedir}</directory>
+      <outputDirectory>/</outputDirectory>
+      <includes>
+        <include>LICENSE*</include>
+      </includes>
+    </fileSet>
+
+    <!-- Copy the main jar file -->
+    <fileSet>
+      <directory>${project.build.directory}</directory>
+      <outputDirectory>/</outputDirectory>
+      <includes>
+        <include>${project.build.finalName}.jar</include>
+      </includes>
+    </fileSet>
+
+    <!-- Just copy most files in src/main/bin -->
+    <fileSet>
+      <directory>${project.basedir}/src/main/bin</directory>
+      <outputDirectory>/</outputDirectory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <excludes>
+        <exclude>*.bat</exclude>
+        <exclude>**/*.sh</exclude>
+        <exclude>etc/**/*</exclude>
+      </excludes>
+    </fileSet>
+
+    <!-- Filter .bat files and everything in etc/ -->
+    <fileSet>
+      <directory>${project.basedir}/src/main/bin</directory>
+      <outputDirectory>/</outputDirectory>
+      <includes>
+        <include>*.bat</include>
+        <include>etc/**/*</include>
+      </includes>
+      <excludes>
+        <exclude>**/*.sh</exclude>
+      </excludes>
+      <filtered>true</filtered>
+    </fileSet>
+
+    <!-- Filter .sh files and set make them executable -->
+    <fileSet>
+      <directory>${project.basedir}/src/main/bin</directory>
+      <outputDirectory>/</outputDirectory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>**/*.sh</include>
+      </includes>
+      <filtered>true</filtered>
+    </fileSet>
+
+  </fileSets>
+</assembly>

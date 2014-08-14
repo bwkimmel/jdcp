@@ -1,40 +1,4 @@
-grant CodeBase "file:jdcp-server.jar" {
-    permission java.security.AllPermission;
-};
-
-grant CodeBase "file:jdcp-common.jar" {
-    permission java.security.AllPermission;
-};
-
-grant CodeBase "file:jdcp-worker.jar" {
-	permission java.security.AllPermission;
-};
-
-grant CodeBase "file:jdcp-client.jar" {
-	permission java.security.AllPermission;
-};
-
-grant CodeBase "file:jdcp-console.jar" {
-	permission java.security.AllPermission;
-};
-
-grant CodeBase "file:lib/eandb.jar" {
-    permission java.security.AllPermission;
-};
-
-grant CodeBase "file:lib/derby.jar" {
-	permission java.security.AllPermission;
-};
-
-grant CodeBase "file:lib/derbyclient.jar" {
-	permission java.security.AllPermission;
-};
-
-grant CodeBase "file:lib/log4j-1.2.15.jar" {
-    permission java.security.AllPermission;
-};
-
-grant CodeBase "file:lib/jna.jar" {
+grant CodeBase "file:${project.build.finalName}.jar" {
     permission java.security.AllPermission;
 };
 

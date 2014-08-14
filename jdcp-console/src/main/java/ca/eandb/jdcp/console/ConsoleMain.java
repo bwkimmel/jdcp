@@ -25,6 +25,9 @@
 
 package ca.eandb.jdcp.console;
 
+import java.io.IOException;
+import java.util.Properties;
+
 import org.apache.log4j.PropertyConfigurator;
 
 import ca.eandb.jdcp.JdcpUtil;
@@ -47,8 +50,12 @@ public final class ConsoleMain {
 
 	/**
 	 * @param args
+	 * @throws IOException
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
+	  Properties props = new Properties(System.getProperties());
+	  props.load(ConsoleMain.class.getResourceAsStream("system.properties"));
+	  System.setProperties(props);
 
 		JdcpUtil.initialize();
 		PropertyConfigurator.configure(System.getProperties());

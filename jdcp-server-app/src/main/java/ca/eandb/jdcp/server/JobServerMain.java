@@ -30,8 +30,10 @@ import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.prefs.Preferences;
@@ -55,8 +57,12 @@ public final class JobServerMain {
 	/**
 	 * Runs the JDCP server application.
 	 * @param args Command line arguments.
+	 * @throws IOException
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
+	  Properties props = new Properties(System.getProperties());
+	  props.load(JobServerMain.class.getResourceAsStream("system.properties"));
+	  System.setProperties(props);
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				startServer();

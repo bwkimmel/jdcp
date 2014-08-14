@@ -41,6 +41,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
@@ -50,6 +51,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.sql.SQLException;
 import java.util.Calendar;
+import java.util.Properties;
 import java.util.concurrent.ThreadFactory;
 import java.util.prefs.Preferences;
 
@@ -189,8 +191,12 @@ public final class MainWindow extends JFrame {
 
 	/**
 	 * @param args
+	 * @throws IOException
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
+	  Properties props = new Properties(System.getProperties());
+	  props.load(MainWindow.class.getResourceAsStream("system.properties"));
+	  System.setProperties(props);
 
 		ArgumentProcessor<Options> argProcessor = new ArgumentProcessor<Options>();
 		argProcessor.addOption("ncpus", 'n', new IntegerFieldOption<Options>("numberOfCpus"));
