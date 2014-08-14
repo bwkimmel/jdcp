@@ -42,98 +42,98 @@ import ca.eandb.util.io.FileUtil;
  * @author Brad Kimmel
  */
 public final class FileCachingJobServiceClassLoaderStrategy extends
-		CachingJobServiceClassLoaderStrategy {
+    CachingJobServiceClassLoaderStrategy {
 
-	/** The <code>Logger</code> for this class. */
-	private static final Logger logger = Logger.getLogger(FileCachingJobServiceClassLoaderStrategy.class);
+  /** The <code>Logger</code> for this class. */
+  private static final Logger logger = Logger.getLogger(FileCachingJobServiceClassLoaderStrategy.class);
 
-	/** The root directory in which to store cached class definitions. */
-	private final File directory;
+  /** The root directory in which to store cached class definitions. */
+  private final File directory;
 
-	/**
-	 * Creates a new <code>FileCachingJobServiceClassLoaderStrategy</code>.
-	 * @param service The <code>TaskService</code> from which to obtain class
-	 * 		definitions.
-	 * @param jobId The <code>UUID</code> identifying the job for which to
-	 * 		obtain class definitions.
-	 * @param directory The root directory in which to store cached class
-	 * 		definitions.
-	 * @throws IllegalArgumentException if <code>directory</code> does not
-	 * 		refer to an existing directory.
-	 */
-	public FileCachingJobServiceClassLoaderStrategy(TaskService service,
-			UUID jobId, File directory) {
-		super(service, jobId);
-		this.directory = directory;
-		if (!directory.isDirectory()) {
-			throw new IllegalArgumentException("directory must be a directory.");
-		}
-	}
+  /**
+   * Creates a new <code>FileCachingJobServiceClassLoaderStrategy</code>.
+   * @param service The <code>TaskService</code> from which to obtain class
+   *     definitions.
+   * @param jobId The <code>UUID</code> identifying the job for which to
+   *     obtain class definitions.
+   * @param directory The root directory in which to store cached class
+   *     definitions.
+   * @throws IllegalArgumentException if <code>directory</code> does not
+   *     refer to an existing directory.
+   */
+  public FileCachingJobServiceClassLoaderStrategy(TaskService service,
+      UUID jobId, File directory) {
+    super(service, jobId);
+    this.directory = directory;
+    if (!directory.isDirectory()) {
+      throw new IllegalArgumentException("directory must be a directory.");
+    }
+  }
 
-	/**
-	 * Creates a new <code>FileCachingJobServiceClassLoaderStrategy</code>.
-	 * @param service The <code>JobService</code> from which to obtain class
-	 * 		definitions.
-	 * @param jobId The <code>UUID</code> identifying the job for which to
-	 * 		obtain class definitions.
-	 * @param directory The root directory in which to store cached class
-	 * 		definitions.
-	 * @throws IllegalArgumentException if <code>directory</code> does not
-	 * 		refer to an existing directory.
-	 */
-	public FileCachingJobServiceClassLoaderStrategy(JobService service,
-			UUID jobId, String directory) {
-		this(service, jobId, new File(directory));
-	}
+  /**
+   * Creates a new <code>FileCachingJobServiceClassLoaderStrategy</code>.
+   * @param service The <code>JobService</code> from which to obtain class
+   *     definitions.
+   * @param jobId The <code>UUID</code> identifying the job for which to
+   *     obtain class definitions.
+   * @param directory The root directory in which to store cached class
+   *     definitions.
+   * @throws IllegalArgumentException if <code>directory</code> does not
+   *     refer to an existing directory.
+   */
+  public FileCachingJobServiceClassLoaderStrategy(JobService service,
+      UUID jobId, String directory) {
+    this(service, jobId, new File(directory));
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheLookup(java.lang.String, byte[])
-	 */
-	@Override
-	protected byte[] cacheLookup(String name, byte[] digest) {
-		File file = getCacheEntryFile(name, digest, false);
-		byte[] def = null;
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheLookup(java.lang.String, byte[])
+   */
+  @Override
+  protected byte[] cacheLookup(String name, byte[] digest) {
+    File file = getCacheEntryFile(name, digest, false);
+    byte[] def = null;
 
-		if (file.exists()) {
-			try {
-				def = FileUtil.getFileContents(file);
-			} catch (IOException e) {
-				logger.error("Could not read class definition file", e);
-				def = null;
-			}
-		}
+    if (file.exists()) {
+      try {
+        def = FileUtil.getFileContents(file);
+      } catch (IOException e) {
+        logger.error("Could not read class definition file", e);
+        def = null;
+      }
+    }
 
-		return def;
-	}
+    return def;
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheStore(java.lang.String, byte[], byte[])
-	 */
-	@Override
-	protected void cacheStore(String name, byte[] digest, byte[] def) {
-		File file = getCacheEntryFile(name, digest, true);
-		try {
-			FileUtil.setFileContents(file, def);
-		} catch (IOException e) {
-			logger.error("Could not write class definition file", e);
-		}
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheStore(java.lang.String, byte[], byte[])
+   */
+  @Override
+  protected void cacheStore(String name, byte[] digest, byte[] def) {
+    File file = getCacheEntryFile(name, digest, true);
+    try {
+      FileUtil.setFileContents(file, def);
+    } catch (IOException e) {
+      logger.error("Could not write class definition file", e);
+    }
+  }
 
-	/**
-	 * Gets the <code>File</code> in which to store the given class definition.
-	 * @param name The fully qualified name of the class.
-	 * @param digest The MD5 digest of the class definition.
-	 * @param createDirectory A value indicating whether the directory
-	 * 		containing the file should be created if it does not yet exist.
-	 * @return The <code>File</code> to use for storing the cached class
-	 * 		definition.
-	 */
-	private File getCacheEntryFile(String name, byte[] digest, boolean createDirectory) {
-		File entryDirectory = new File(directory, name.replace('.', '/'));
-		if (createDirectory && !entryDirectory.isDirectory()) {
-			entryDirectory.mkdirs();
-		}
-		return new File(entryDirectory, StringUtil.toHex(digest));
-	}
+  /**
+   * Gets the <code>File</code> in which to store the given class definition.
+   * @param name The fully qualified name of the class.
+   * @param digest The MD5 digest of the class definition.
+   * @param createDirectory A value indicating whether the directory
+   *     containing the file should be created if it does not yet exist.
+   * @return The <code>File</code> to use for storing the cached class
+   *     definition.
+   */
+  private File getCacheEntryFile(String name, byte[] digest, boolean createDirectory) {
+    File entryDirectory = new File(directory, name.replace('.', '/'));
+    if (createDirectory && !entryDirectory.isDirectory()) {
+      entryDirectory.mkdirs();
+    }
+    return new File(entryDirectory, StringUtil.toHex(digest));
+  }
 
 }

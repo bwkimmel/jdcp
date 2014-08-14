@@ -43,64 +43,64 @@ import ca.eandb.jdcp.remote.ProtocolVersionException;
  */
 public class Configuration {
 
-	/**
-	 * A value indicating whether the application should display additional
-	 * diagnostic information.
-	 */
-	public boolean verbose = false;
+  /**
+   * A value indicating whether the application should display additional
+   * diagnostic information.
+   */
+  public boolean verbose = false;
 
-	/**
-	 * The name or IP address of the JDCP server host.
-	 */
-	public String host = "localhost";
+  /**
+   * The name or IP address of the JDCP server host.
+   */
+  public String host = "localhost";
 
-	/**
-	 * The username to use for authentication with the JDCP server.
-	 */
-	public String username = "guest";
+  /**
+   * The username to use for authentication with the JDCP server.
+   */
+  public String username = "guest";
 
-	/**
-	 * The password to use for authentication with the JDCP server.
-	 */
-	public String password = "";
+  /**
+   * The password to use for authentication with the JDCP server.
+   */
+  public String password = "";
 
-	/**
-	 * The digest algorithm that the server uses when it is queried for a hash
-	 * of a particular class.
-	 */
-	public String digestAlgorithm = "MD5";
+  /**
+   * The digest algorithm that the server uses when it is queried for a hash
+   * of a particular class.
+   */
+  public String digestAlgorithm = "MD5";
 
-	/**
-	 * The <code>JobService</code> that the application is connected to.
-	 */
-	private JobService service = null;
+  /**
+   * The <code>JobService</code> that the application is connected to.
+   */
+  private JobService service = null;
 
-	/**
-	 * Obtains the <code>JobService</code> to use for this client session.
-	 * @return
-	 */
-	public JobService getJobService() {
-		if (service == null) {
-			try {
-				Registry registry = LocateRegistry.getRegistry(host, JdcpUtil.DEFAULT_PORT);
-				AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
-				service = auth.authenticate(username, password, JdcpUtil.PROTOCOL_VERSION_ID);
-			} catch (NotBoundException e) {
-				System.err.println("Job service not found at remote host.");
-				System.exit(1);
-			} catch (RemoteException e) {
-				System.err.println("Could not connect to job service.");
-				e.printStackTrace();
-				System.exit(1);
-			} catch (LoginException e) {
-				System.err.println("Login failed.");
-				System.exit(1);
-			} catch (ProtocolVersionException e) {
-				System.err.println("This client is incompatible with the remote server.  Please update the client and try again.");
-				System.exit(1);
-			}
-		}
-		return service;
-	}
+  /**
+   * Obtains the <code>JobService</code> to use for this client session.
+   * @return
+   */
+  public JobService getJobService() {
+    if (service == null) {
+      try {
+        Registry registry = LocateRegistry.getRegistry(host, JdcpUtil.DEFAULT_PORT);
+        AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
+        service = auth.authenticate(username, password, JdcpUtil.PROTOCOL_VERSION_ID);
+      } catch (NotBoundException e) {
+        System.err.println("Job service not found at remote host.");
+        System.exit(1);
+      } catch (RemoteException e) {
+        System.err.println("Could not connect to job service.");
+        e.printStackTrace();
+        System.exit(1);
+      } catch (LoginException e) {
+        System.err.println("Login failed.");
+        System.exit(1);
+      } catch (ProtocolVersionException e) {
+        System.err.println("This client is incompatible with the remote server.  Please update the client and try again.");
+        System.exit(1);
+      }
+    }
+    return service;
+  }
 
 }

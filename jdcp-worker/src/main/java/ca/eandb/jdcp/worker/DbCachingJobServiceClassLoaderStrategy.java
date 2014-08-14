@@ -46,128 +46,128 @@ import ca.eandb.util.sql.DbUtil;
  * @author Brad Kimmel
  */
 public final class DbCachingJobServiceClassLoaderStrategy extends
-		CachingJobServiceClassLoaderStrategy {
+    CachingJobServiceClassLoaderStrategy {
 
-	/** The <code>Logger</code> for this class. */
-	private static final Logger logger = Logger.getLogger(DbCachingJobServiceClassLoaderStrategy.class);
+  /** The <code>Logger</code> for this class. */
+  private static final Logger logger = Logger.getLogger(DbCachingJobServiceClassLoaderStrategy.class);
 
-	/** The <code>DataSource</code> to use to cache class definitions. */
-	private final DataSource ds;
+  /** The <code>DataSource</code> to use to cache class definitions. */
+  private final DataSource ds;
 
-	/**
-	 * Prepares the data source to store cached class definitions.
-	 * @param ds The <code>DataSource</code> to prepare.
-	 * @throws SQLException If an error occurs while communicating with the
-	 * 		database.
-	 */
-	public static void prepareDataSource(DataSource ds) throws SQLException {
-		Connection con = null;
-		String sql;
-		try {
-			con = ds.getConnection();
-			con.setAutoCommit(false);
+  /**
+   * Prepares the data source to store cached class definitions.
+   * @param ds The <code>DataSource</code> to prepare.
+   * @throws SQLException If an error occurs while communicating with the
+   *     database.
+   */
+  public static void prepareDataSource(DataSource ds) throws SQLException {
+    Connection con = null;
+    String sql;
+    try {
+      con = ds.getConnection();
+      con.setAutoCommit(false);
 
-			DatabaseMetaData meta = con.getMetaData();
-			ResultSet rs = meta.getTables(null, null, null, new String[]{"TABLE"});
-			int tableNameColumn = rs.findColumn("TABLE_NAME");
-			int count = 0;
-			while (rs.next()) {
-				String tableName = rs.getString(tableNameColumn);
-				if (tableName.equalsIgnoreCase("CachedClasses")) {
-					count++;
-				}
-			}
+      DatabaseMetaData meta = con.getMetaData();
+      ResultSet rs = meta.getTables(null, null, null, new String[]{"TABLE"});
+      int tableNameColumn = rs.findColumn("TABLE_NAME");
+      int count = 0;
+      while (rs.next()) {
+        String tableName = rs.getString(tableNameColumn);
+        if (tableName.equalsIgnoreCase("CachedClasses")) {
+          count++;
+        }
+      }
 
-			if (count == 0) {
-				String blobType = DbUtil.getTypeName(Types.BLOB, con);
-				String nameType = DbUtil.getTypeName(Types.VARCHAR, 1024, con);
-				String md5Type = DbUtil.getTypeName(Types.BINARY, 16, con);
+      if (count == 0) {
+        String blobType = DbUtil.getTypeName(Types.BLOB, con);
+        String nameType = DbUtil.getTypeName(Types.VARCHAR, 1024, con);
+        String md5Type = DbUtil.getTypeName(Types.BINARY, 16, con);
 
-				sql =	"CREATE TABLE CachedClasses ( \n" +
-						"  Name " + nameType + " NOT NULL, \n" +
-						"  MD5 " + md5Type + " NOT NULL, \n" +
-						"  Definition " + blobType + " NOT NULL, \n" +
-						"  PRIMARY KEY (Name, MD5) \n" +
-						")";
-				DbUtil.update(ds, sql);
-				con.commit();
-			}
+        sql =  "CREATE TABLE CachedClasses ( \n" +
+            "  Name " + nameType + " NOT NULL, \n" +
+            "  MD5 " + md5Type + " NOT NULL, \n" +
+            "  Definition " + blobType + " NOT NULL, \n" +
+            "  PRIMARY KEY (Name, MD5) \n" +
+            ")";
+        DbUtil.update(ds, sql);
+        con.commit();
+      }
 
-			con.setAutoCommit(true);
-		} catch (SQLException e) {
-			DbUtil.rollback(con);
-			throw e;
-		} finally {
-			DbUtil.close(con);
-		}
-	}
+      con.setAutoCommit(true);
+    } catch (SQLException e) {
+      DbUtil.rollback(con);
+      throw e;
+    } finally {
+      DbUtil.close(con);
+    }
+  }
 
-	/**
-	 * Creates a new <code>DbCachingJobServiceClassLoaderStrategy</code>.
-	 * @param service The <code>TaskService</code> from which to obtain class
-	 * 		definitions.
-	 * @param jobId The <code>UUID</code> identifying the job for which to
-	 * 		obtain class definitions.
-	 * @param ds The <code>DataSource</code> to use to store cached class
-	 * 		definitions.
-	 */
-	public DbCachingJobServiceClassLoaderStrategy(TaskService service,
-			UUID jobId, DataSource ds) {
-		super(service, jobId);
-		this.ds = ds;
-	}
+  /**
+   * Creates a new <code>DbCachingJobServiceClassLoaderStrategy</code>.
+   * @param service The <code>TaskService</code> from which to obtain class
+   *     definitions.
+   * @param jobId The <code>UUID</code> identifying the job for which to
+   *     obtain class definitions.
+   * @param ds The <code>DataSource</code> to use to store cached class
+   *     definitions.
+   */
+  public DbCachingJobServiceClassLoaderStrategy(TaskService service,
+      UUID jobId, DataSource ds) {
+    super(service, jobId);
+    this.ds = ds;
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheLookup(java.lang.String, byte[])
-	 */
-	@Override
-	protected byte[] cacheLookup(String name, byte[] digest) {
-		String sql =
-				"SELECT Definition " +
-				"FROM CachedClasses " +
-				"WHERE Name = ? " +
-				"  AND MD5 = ?";
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheLookup(java.lang.String, byte[])
+   */
+  @Override
+  protected byte[] cacheLookup(String name, byte[] digest) {
+    String sql =
+        "SELECT Definition " +
+        "FROM CachedClasses " +
+        "WHERE Name = ? " +
+        "  AND MD5 = ?";
 
-		try {
-			return DbUtil.queryBinary(ds, null, sql, name, digest);
-		} catch (SQLException e) {
-			logger.error("Database error", e);
-		}
+    try {
+      return DbUtil.queryBinary(ds, null, sql, name, digest);
+    } catch (SQLException e) {
+      logger.error("Database error", e);
+    }
 
-		return null;
-	}
+    return null;
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheStore(java.lang.String, byte[], byte[])
-	 */
-	@Override
-	protected void cacheStore(String name, byte[] digest, byte[] def) {
-		try {
-			String sql =
-					"SELECT COUNT(1) " +
-					"FROM CachedClasses " +
-					"WHERE Name = ? " +
-					"  AND MD5 = ?";
-			if (DbUtil.queryInt(ds, 0, sql, name, digest) > 0) {
-				String message = String.format("Overwriting class definition: name='%s', digest=%s", name, StringUtil.toHex(digest));
-				logger.warn(message);
-				DbUtil.update(ds,
-						"UPDATE CachedClasses " +
-						"SET Definition = ? " +
-						"WHERE Name = ? " +
-						"  AND MD5 = ?",
-						def, name, digest);
-			} else {
-				DbUtil.update(ds,
-						"INSERT INTO CachedClasses " +
-						"  (Name, MD5, Definition) " +
-						"VALUES " +
-						"  (?, ?, ?)",
-						name, digest, def);
-			}
-		} catch (SQLException e) {
-			logger.error("Database error", e);
-		}
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheStore(java.lang.String, byte[], byte[])
+   */
+  @Override
+  protected void cacheStore(String name, byte[] digest, byte[] def) {
+    try {
+      String sql =
+          "SELECT COUNT(1) " +
+          "FROM CachedClasses " +
+          "WHERE Name = ? " +
+          "  AND MD5 = ?";
+      if (DbUtil.queryInt(ds, 0, sql, name, digest) > 0) {
+        String message = String.format("Overwriting class definition: name='%s', digest=%s", name, StringUtil.toHex(digest));
+        logger.warn(message);
+        DbUtil.update(ds,
+            "UPDATE CachedClasses " +
+            "SET Definition = ? " +
+            "WHERE Name = ? " +
+            "  AND MD5 = ?",
+            def, name, digest);
+      } else {
+        DbUtil.update(ds,
+            "INSERT INTO CachedClasses " +
+            "  (Name, MD5, Definition) " +
+            "VALUES " +
+            "  (?, ?, ?)",
+            name, digest, def);
+      }
+    } catch (SQLException e) {
+      logger.error("Database error", e);
+    }
+  }
 
 }

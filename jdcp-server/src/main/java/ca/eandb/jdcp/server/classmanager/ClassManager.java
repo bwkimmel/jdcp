@@ -38,26 +38,26 @@ import ca.eandb.util.classloader.ClassLoaderStrategy;
  */
 public interface ClassManager extends ClassLoaderStrategy {
 
-	/**
-	 * Sets a class definition.
-	 * @param name The fully qualified name of the class to define.
-	 * @param def A <code>ByteBuffer</code> containing the definition of the
-	 * 		class.
-	 */
-	void setClassDefinition(String name, ByteBuffer def);
+  /**
+   * Sets a class definition.
+   * @param name The fully qualified name of the class to define.
+   * @param def A <code>ByteBuffer</code> containing the definition of the
+   *     class.
+   */
+  void setClassDefinition(String name, ByteBuffer def);
 
-	/**
-	 * Sets a class definition.
-	 * @param name The fully qualified name of the class to define.
-	 * @param def The definition of the class.
-	 */
-	void setClassDefinition(String name, byte[] def);
+  /**
+   * Sets a class definition.
+   * @param name The fully qualified name of the class to define.
+   * @param def The definition of the class.
+   */
+  void setClassDefinition(String name, byte[] def);
 
-	/**
-	 * Gets the MD5 digest of the class definition.
-	 * @param name The fully qualified name of the class.
-	 * @return The MD5 digest of the class definition.
-	 */
-	byte[] getClassDigest(String name);
+  /**
+   * Gets the MD5 digest of the class definition.
+   * @param name The fully qualified name of the class.
+   * @return The MD5 digest of the class definition.
+   */
+  byte[] getClassDigest(String name);
 
 }

@@ -33,26 +33,26 @@ package ca.eandb.jdcp.job;
  */
 public final class JobExecutionException extends Exception {
 
-	/**
-	 * Serialization Version ID.
-	 */
-	private static final long serialVersionUID = -8692323071682734864L;
+  /**
+   * Serialization Version ID.
+   */
+  private static final long serialVersionUID = -8692323071682734864L;
 
-	/**
-	 * Creates a new <code>JobExecutionException</code>.
-	 * @param cause The cause of this exception.
-	 */
-	public JobExecutionException(Throwable cause) {
-		super(cause);
-	}
+  /**
+   * Creates a new <code>JobExecutionException</code>.
+   * @param cause The cause of this exception.
+   */
+  public JobExecutionException(Throwable cause) {
+    super(cause);
+  }
 
-	/**
-	 * Creates a new <code>JobExecutionException</code>.
-	 * @param message A message describing the exceptional condition.
-	 * @param cause The cause of this exception.
-	 */
-	public JobExecutionException(String message, Throwable cause) {
-		super(message, cause);
-	}
+  /**
+   * Creates a new <code>JobExecutionException</code>.
+   * @param message A message describing the exceptional condition.
+   * @param cause The cause of this exception.
+   */
+  public JobExecutionException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
 }

@@ -38,160 +38,160 @@ import ca.eandb.util.progress.ProgressMonitor;
  * @author Brad Kimmel
  */
 public final class DummyParallelizableJob extends AbstractParallelizableJob
-		implements Serializable {
+    implements Serializable {
 
-	/**
-	 * Initializes the number of tasks to serve and the amount of time to
-	 * delay to simulate the processing of a task.
-	 * @param tasks The number of tasks to serve.
-	 * @param minSleepTime The minimum time (in milliseconds) to sleep to
-	 * 		simulate the processing of a task.
-	 * @param maxSleepTime The maximum time (in milliseconds) to sleep to
-	 * 		simulate the processing of a task.
-	 */
-	public DummyParallelizableJob(int tasks, int minSleepTime, int maxSleepTime) {
-		this.tasks = tasks;
-		this.minSleepTime = minSleepTime;
-		this.maxSleepTime = maxSleepTime;
-		assert(minSleepTime <= maxSleepTime);
-	}
+  /**
+   * Initializes the number of tasks to serve and the amount of time to
+   * delay to simulate the processing of a task.
+   * @param tasks The number of tasks to serve.
+   * @param minSleepTime The minimum time (in milliseconds) to sleep to
+   *     simulate the processing of a task.
+   * @param maxSleepTime The maximum time (in milliseconds) to sleep to
+   *     simulate the processing of a task.
+   */
+  public DummyParallelizableJob(int tasks, int minSleepTime, int maxSleepTime) {
+    this.tasks = tasks;
+    this.minSleepTime = minSleepTime;
+    this.maxSleepTime = maxSleepTime;
+    assert(minSleepTime <= maxSleepTime);
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.job.ParallelizableJob#getNextTask()
-	 */
-	public Object getNextTask() {
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.job.ParallelizableJob#getNextTask()
+   */
+  public Object getNextTask() {
 
-		if (this.nextTask < this.tasks) {
+    if (this.nextTask < this.tasks) {
 
-			System.out.printf("Task %d requested.\n", this.nextTask);
-			return this.nextTask++;
+      System.out.printf("Task %d requested.\n", this.nextTask);
+      return this.nextTask++;
 
-		} else { /* this.nextTask >= this.tasks */
+    } else { /* this.nextTask >= this.tasks */
 
-			System.out.println("No more tasks.");
-			return null;
+      System.out.println("No more tasks.");
+      return null;
 
-		}
+    }
 
-	}
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.job.ParallelizableJob#submitResults(java.lang.Object, java.lang.Object, ca.eandb.util.progress.ProgressMonitor)
-	 */
-	public void submitTaskResults(Object task, Object results, ProgressMonitor monitor) {
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.job.ParallelizableJob#submitResults(java.lang.Object, java.lang.Object, ca.eandb.util.progress.ProgressMonitor)
+   */
+  public void submitTaskResults(Object task, Object results, ProgressMonitor monitor) {
 
-		int taskValue = (Integer) task;
-		int resultValue = (Integer) results;
-		System.out.printf("Received results for task %d: %d.\n", taskValue, resultValue);
+    int taskValue = (Integer) task;
+    int resultValue = (Integer) results;
+    System.out.printf("Received results for task %d: %d.\n", taskValue, resultValue);
 
-		monitor.notifyProgress(++this.numResultsReceived, this.tasks);
+    monitor.notifyProgress(++this.numResultsReceived, this.tasks);
 
-	}
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.job.ParallelizableJob#isComplete()
-	 */
-	public boolean isComplete() {
-		return this.numResultsReceived >= this.tasks;
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.job.ParallelizableJob#isComplete()
+   */
+  public boolean isComplete() {
+    return this.numResultsReceived >= this.tasks;
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.job.ParallelizableJob#finish()
-	 */
-	public void finish() {
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.job.ParallelizableJob#finish()
+   */
+  public void finish() {
 
-		FileOutputStream stream = createFileOutputStream("results.txt");
-		PrintStream results = new PrintStream(stream);
+    FileOutputStream stream = createFileOutputStream("results.txt");
+    PrintStream results = new PrintStream(stream);
 
-		results.printf("DummyParallelizableJob complete (%d tasks).\n", this.tasks);
-		results.flush();
-		results.close();
+    results.printf("DummyParallelizableJob complete (%d tasks).\n", this.tasks);
+    results.flush();
+    results.close();
 
-	}
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.job.ParallelizableJob#worker()
-	 */
-	public TaskWorker worker() {
-		return this.worker;
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.job.ParallelizableJob#worker()
+   */
+  public TaskWorker worker() {
+    return this.worker;
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.job.AbstractParallelizableJob#archiveState(ca.eandb.util.io.Archive)
-	 */
-	@Override
-	protected void archiveState(Archive ar) throws IOException {
-		nextTask = ar.archiveInt(nextTask);
-		numResultsReceived = ar.archiveInt(numResultsReceived);
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.job.AbstractParallelizableJob#archiveState(ca.eandb.util.io.Archive)
+   */
+  @Override
+  protected void archiveState(Archive ar) throws IOException {
+    nextTask = ar.archiveInt(nextTask);
+    numResultsReceived = ar.archiveInt(numResultsReceived);
+  }
 
-	/**
-	 * A random number generator.
-	 */
-	private static final java.util.Random random = new java.util.Random();
+  /**
+   * A random number generator.
+   */
+  private static final java.util.Random random = new java.util.Random();
 
-	/**
-	 * The minimum time (in milliseconds) to sleep to simulate the processing
-	 * of a task.
-	 */
-	private final int minSleepTime;
+  /**
+   * The minimum time (in milliseconds) to sleep to simulate the processing
+   * of a task.
+   */
+  private final int minSleepTime;
 
-	/**
-	 * The maximum time (in milliseconds) to sleep to simulate the processing
-	 * of a task.
-	 */
-	private final int maxSleepTime;
+  /**
+   * The maximum time (in milliseconds) to sleep to simulate the processing
+   * of a task.
+   */
+  private final int maxSleepTime;
 
-	/** The number of tasks to serve. */
-	private final int tasks;
+  /** The number of tasks to serve. */
+  private final int tasks;
 
-	/** The index of the next task to serve. */
-	private transient int nextTask = 0;
+  /** The index of the next task to serve. */
+  private transient int nextTask = 0;
 
-	/** The number of results that have been received. */
-	private transient int numResultsReceived = 0;
+  /** The number of results that have been received. */
+  private transient int numResultsReceived = 0;
 
-	/**
-	 * The task worker to use to process tasks.
-	 */
-	private final TaskWorker worker = new TaskWorker() {
+  /**
+   * The task worker to use to process tasks.
+   */
+  private final TaskWorker worker = new TaskWorker() {
 
-		/*
-		 * (non-Javadoc)
-		 * @see ca.eandb.jdcp.job.TaskWorker#performTask(java.lang.Object, ca.eandb.util.progress.ProgressMonitor)
-		 */
-		public Object performTask(Object task, ProgressMonitor monitor) {
+    /*
+     * (non-Javadoc)
+     * @see ca.eandb.jdcp.job.TaskWorker#performTask(java.lang.Object, ca.eandb.util.progress.ProgressMonitor)
+     */
+    public Object performTask(Object task, ProgressMonitor monitor) {
 
-			int value = (Integer) task;
-			String msg = String.format("Processing task %d.", value);
+      int value = (Integer) task;
+      String msg = String.format("Processing task %d.", value);
 
-			monitor.notifyStatusChanged(msg);
-			System.out.println(msg);
+      monitor.notifyStatusChanged(msg);
+      System.out.println(msg);
 
-			int sleepTime = minSleepTime + random.nextInt(maxSleepTime - minSleepTime + 1);
+      int sleepTime = minSleepTime + random.nextInt(maxSleepTime - minSleepTime + 1);
 
-			try {
-				Thread.sleep(sleepTime);
-			} catch (InterruptedException e) {
-				// nothing to do.
-			}
+      try {
+        Thread.sleep(sleepTime);
+      } catch (InterruptedException e) {
+        // nothing to do.
+      }
 
-			msg = String.format("Done task %d.", value);
-			monitor.notifyStatusChanged(msg);
-			System.out.println(msg);
+      msg = String.format("Done task %d.", value);
+      monitor.notifyStatusChanged(msg);
+      System.out.println(msg);
 
-			return value;
+      return value;
 
-		}
+    }
 
-		/** The serialization version ID. */
-		private static final long serialVersionUID = -4687914341839279922L;
+    /** The serialization version ID. */
+    private static final long serialVersionUID = -4687914341839279922L;
 
-	};
+  };
 
-	/**
-	 * Serialization version ID.
-	 */
-	private static final long serialVersionUID = 4328712633325360415L;
+  /**
+   * Serialization version ID.
+   */
+  private static final long serialVersionUID = 4328712633325360415L;
 
 }

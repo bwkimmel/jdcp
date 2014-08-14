@@ -36,34 +36,34 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class PollingCourtesyMonitor extends AsyncCourtesyMonitor {
 
-	private static final int CORE_THREAD_POOL_SIZE = 2;
+  private static final int CORE_THREAD_POOL_SIZE = 2;
 
-	private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(CORE_THREAD_POOL_SIZE);
+  private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(CORE_THREAD_POOL_SIZE);
 
-	private ScheduledFuture<?> future = null;
+  private ScheduledFuture<?> future = null;
 
-	private final Runnable poll = new Runnable() {
-		public void run() {
-			allow(poll());
-		}
-	};
+  private final Runnable poll = new Runnable() {
+    public void run() {
+      allow(poll());
+    }
+  };
 
-	public synchronized void stopPolling() {
-		future.cancel(true);
-		allow();
-	}
+  public synchronized void stopPolling() {
+    future.cancel(true);
+    allow();
+  }
 
-	public synchronized void startPolling(long initialDelay, long period, TimeUnit unit) {
-		if (future != null) {
-			stopPolling();
-		}
-		executor.scheduleAtFixedRate(poll, initialDelay, period, unit);
-	}
+  public synchronized void startPolling(long initialDelay, long period, TimeUnit unit) {
+    if (future != null) {
+      stopPolling();
+    }
+    executor.scheduleAtFixedRate(poll, initialDelay, period, unit);
+  }
 
-	public void startPolling(long period, TimeUnit unit) {
-		startPolling(0, period, unit);
-	}
+  public void startPolling(long period, TimeUnit unit) {
+    startPolling(0, period, unit);
+  }
 
-	protected abstract boolean poll();
+  protected abstract boolean poll();
 
 }

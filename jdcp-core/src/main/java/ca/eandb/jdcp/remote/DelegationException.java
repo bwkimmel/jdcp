@@ -32,41 +32,41 @@ package ca.eandb.jdcp.remote;
  */
 public final class DelegationException extends RuntimeException {
 
-	/**
-	 * Serialization version ID.
-	 */
-	private static final long serialVersionUID = -8052416531056121484L;
+  /**
+   * Serialization version ID.
+   */
+  private static final long serialVersionUID = -8052416531056121484L;
 
-	/**
-	 * Creates a new <code>DelegationException</code>.
-	 */
-	public DelegationException() {
-		super();
-	}
+  /**
+   * Creates a new <code>DelegationException</code>.
+   */
+  public DelegationException() {
+    super();
+  }
 
-	/**
-	 * Creates a new <code>DelegationException</code>.
-	 * @param message A description of the exceptional condition.
-	 * @param cause The cause of the exceptional condition.
-	 */
-	public DelegationException(String message, Throwable cause) {
-		super(message, cause);
-	}
+  /**
+   * Creates a new <code>DelegationException</code>.
+   * @param message A description of the exceptional condition.
+   * @param cause The cause of the exceptional condition.
+   */
+  public DelegationException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
-	/**
-	 * Creates a new <code>DelegationException</code>.
-	 * @param message A description of the exceptional condition.
-	 */
-	public DelegationException(String message) {
-		super(message);
-	}
+  /**
+   * Creates a new <code>DelegationException</code>.
+   * @param message A description of the exceptional condition.
+   */
+  public DelegationException(String message) {
+    super(message);
+  }
 
-	/**
-	 * Creates a new <code>DelegationException</code>.
-	 * @param cause The cause of the exceptional condition.
-	 */
-	public DelegationException(Throwable cause) {
-		super(cause);
-	}
+  /**
+   * Creates a new <code>DelegationException</code>.
+   * @param cause The cause of the exceptional condition.
+   */
+  public DelegationException(Throwable cause) {
+    super(cause);
+  }
 
 }

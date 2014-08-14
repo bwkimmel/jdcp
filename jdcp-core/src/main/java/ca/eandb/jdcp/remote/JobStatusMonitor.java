@@ -40,103 +40,103 @@ import ca.eandb.util.progress.ProgressMonitorFactory;
  * @author Brad Kimmel
  */
 public final class JobStatusMonitor {
-	
-	/**
-	 * The <code>ProgressMonitorFactory</code> to use to create the
-	 * <code>ProgressMonitor</code>s.
-	 */
-	private final ProgressMonitorFactory factory;
-	
-	/** The internal objects for handling events for each job. */
-	private final Map<UUID, JobMonitor> monitors = new HashMap<UUID, JobMonitor>();
-	
-	/**
-	 * Creates a <code>JobStatusMonitor</code>.
-	 * @param factory The <code>ProgressMonitorFactory</code> to use to create
-	 * 		the <code>ProgressMonitor</code>s.
-	 */
-	public JobStatusMonitor(ProgressMonitorFactory factory) {
-		this.factory = factory;
-	}
+  
+  /**
+   * The <code>ProgressMonitorFactory</code> to use to create the
+   * <code>ProgressMonitor</code>s.
+   */
+  private final ProgressMonitorFactory factory;
+  
+  /** The internal objects for handling events for each job. */
+  private final Map<UUID, JobMonitor> monitors = new HashMap<UUID, JobMonitor>();
+  
+  /**
+   * Creates a <code>JobStatusMonitor</code>.
+   * @param factory The <code>ProgressMonitorFactory</code> to use to create
+   *     the <code>ProgressMonitor</code>s.
+   */
+  public JobStatusMonitor(ProgressMonitorFactory factory) {
+    this.factory = factory;
+  }
 
-	/**
-	 * Gets the <code>JobMonitor</code> for the job that the specified
-	 * <code>JobStatus</code> event is for.
-	 * @param status The <code>JobStatus</code> event for which to obtain the
-	 * 		corresponding <code>JobMonitor</code>.
-	 * @return The <code>JobMonitor</code>.
-	 */
-	private synchronized JobMonitor getJobMonitor(JobStatus status) {
-		UUID jobId = status.getJobId();
-		JobMonitor monitor = monitors.get(jobId);
-		if (monitor == null) {
-			monitor = new JobMonitor(factory.createProgressMonitor(status.getDescription()));
-			monitors.put(jobId, monitor);
-		}
-		return monitor;
-	}
-	
-	/**
-	 * Updates the appropriate <code>ProgressMonitor</code> (creating one if
-	 * necessary) according to the new status of the job.
-	 * @param newStatus The <code>JobStatus</code> indicating the new status of
-	 * 		the job.
-	 */
-	public void updateStatus(JobStatus newStatus) {
-		JobMonitor monitor = getJobMonitor(newStatus);
-		monitor.updateStatus(newStatus);
-	}
+  /**
+   * Gets the <code>JobMonitor</code> for the job that the specified
+   * <code>JobStatus</code> event is for.
+   * @param status The <code>JobStatus</code> event for which to obtain the
+   *     corresponding <code>JobMonitor</code>.
+   * @return The <code>JobMonitor</code>.
+   */
+  private synchronized JobMonitor getJobMonitor(JobStatus status) {
+    UUID jobId = status.getJobId();
+    JobMonitor monitor = monitors.get(jobId);
+    if (monitor == null) {
+      monitor = new JobMonitor(factory.createProgressMonitor(status.getDescription()));
+      monitors.put(jobId, monitor);
+    }
+    return monitor;
+  }
+  
+  /**
+   * Updates the appropriate <code>ProgressMonitor</code> (creating one if
+   * necessary) according to the new status of the job.
+   * @param newStatus The <code>JobStatus</code> indicating the new status of
+   *     the job.
+   */
+  public void updateStatus(JobStatus newStatus) {
+    JobMonitor monitor = getJobMonitor(newStatus);
+    monitor.updateStatus(newStatus);
+  }
 
-	/** Handles <code>JobStatus</code> events for a single job. */
-	private static class JobMonitor { 
-		
-		/** The <code>ProgressMonitor</code> to monitor changes for this job. */
-		private final ProgressMonitor monitor;
-		
-		/** The most recent <code>JobStatus</code> for this job. */
-		private JobStatus status = null;
-		
-		/**
-		 * Creates a new <code>JobMonitor</code>.
-		 * @param monitor The <code>ProgressMonitor</code> to monitor changes
-		 * 		for this job.
-		 */
-		public JobMonitor(ProgressMonitor monitor) {
-			this.monitor = monitor;
-		}
-		
-		/**
-		 * Updates the <code>ProgressMonitor</code> according to the new
-		 * 		status of the job.
-		 * @param newStatus The <code>JobStatus</code> indicating the new
-		 * 		status of the job.
-		 */
-		public synchronized void updateStatus(JobStatus newStatus) {
-			
-			assert(status == null || newStatus.getJobId().equals(status.getJobId()));
-			
-			if (newStatus.isProgressIndeterminant()) {
-				monitor.notifyIndeterminantProgress();
-			} else if (status == null || newStatus.getProgress() != status.getProgress()) {
-				monitor.notifyProgress(newStatus.getProgress());
-			}
-			
-			if (status == null || !newStatus.getStatus().equals(status.getStatus())) {
-				monitor.notifyStatusChanged(newStatus.getStatus());
-			}
-			
-			if (newStatus.isComplete() && (status == null || !status.isComplete())) {
-				monitor.notifyComplete();
-			}
-			
-			if (newStatus.isCancelled() && (status == null || !status.isCancelled())) {
-				monitor.notifyCancelled();
-			}
-			
-			status = newStatus;
-			
-		}
-		
-	}
+  /** Handles <code>JobStatus</code> events for a single job. */
+  private static class JobMonitor { 
+    
+    /** The <code>ProgressMonitor</code> to monitor changes for this job. */
+    private final ProgressMonitor monitor;
+    
+    /** The most recent <code>JobStatus</code> for this job. */
+    private JobStatus status = null;
+    
+    /**
+     * Creates a new <code>JobMonitor</code>.
+     * @param monitor The <code>ProgressMonitor</code> to monitor changes
+     *     for this job.
+     */
+    public JobMonitor(ProgressMonitor monitor) {
+      this.monitor = monitor;
+    }
+    
+    /**
+     * Updates the <code>ProgressMonitor</code> according to the new
+     *     status of the job.
+     * @param newStatus The <code>JobStatus</code> indicating the new
+     *     status of the job.
+     */
+    public synchronized void updateStatus(JobStatus newStatus) {
+      
+      assert(status == null || newStatus.getJobId().equals(status.getJobId()));
+      
+      if (newStatus.isProgressIndeterminant()) {
+        monitor.notifyIndeterminantProgress();
+      } else if (status == null || newStatus.getProgress() != status.getProgress()) {
+        monitor.notifyProgress(newStatus.getProgress());
+      }
+      
+      if (status == null || !newStatus.getStatus().equals(status.getStatus())) {
+        monitor.notifyStatusChanged(newStatus.getStatus());
+      }
+      
+      if (newStatus.isComplete() && (status == null || !status.isComplete())) {
+        monitor.notifyComplete();
+      }
+      
+      if (newStatus.isCancelled() && (status == null || !status.isCancelled())) {
+        monitor.notifyCancelled();
+      }
+      
+      status = newStatus;
+      
+    }
+    
+  }
 
 }

@@ -46,80 +46,80 @@ import ca.eandb.util.rmi.Serialized;
  */
 final class JobInfo {
 
-	private final UUID id;
-	private final ServiceWrapper service;
-	private final Set<Integer> activeTaskIds = new HashSet<Integer>();
-	private Serialized<TaskWorker> worker = null;
-	private final CachingJobServiceClassLoaderStrategy classCache;
+  private final UUID id;
+  private final ServiceWrapper service;
+  private final Set<Integer> activeTaskIds = new HashSet<Integer>();
+  private Serialized<TaskWorker> worker = null;
+  private final CachingJobServiceClassLoaderStrategy classCache;
 
-	public JobInfo(UUID id, ServiceWrapper service, DataSource dataSource, Executor executor) {
-		this.id = id;
-		this.service = service;
-		
-		if (dataSource != null) {
-			this.classCache = new DbCachingJobServiceClassLoaderStrategy(service, id, dataSource);
-		} else {
-			this.classCache = new InternalCachingJobServiceClassLoaderStrategy(service, id);
-		}
+  public JobInfo(UUID id, ServiceWrapper service, DataSource dataSource, Executor executor) {
+    this.id = id;
+    this.service = service;
+    
+    if (dataSource != null) {
+      this.classCache = new DbCachingJobServiceClassLoaderStrategy(service, id, dataSource);
+    } else {
+      this.classCache = new InternalCachingJobServiceClassLoaderStrategy(service, id);
+    }
 
-		initTaskWorker(executor);
-	}
+    initTaskWorker(executor);
+  }
 
-	public static void prepareDataSource(DataSource ds) throws SQLException {
-		DbCachingJobServiceClassLoaderStrategy.prepareDataSource(ds);
-	}
+  public static void prepareDataSource(DataSource ds) throws SQLException {
+    DbCachingJobServiceClassLoaderStrategy.prepareDataSource(ds);
+  }
 
-	private void initTaskWorker(Executor executor) {
-		executor.execute(new Runnable() {
-			public void run() {
-				getTaskWorker();
-			}
-		});
-	}
+  private void initTaskWorker(Executor executor) {
+    executor.execute(new Runnable() {
+      public void run() {
+        getTaskWorker();
+      }
+    });
+  }
 
-	public UUID getJobId() {
-		return id;
-	}
+  public UUID getJobId() {
+    return id;
+  }
 
-	public byte[] getClassDigest(String name) {
-		return classCache.getClassDigest(name);
-	}
+  public byte[] getClassDigest(String name) {
+    return classCache.getClassDigest(name);
+  }
 
-	public byte[] getClassDefinition(String name) {
-		ByteBuffer buf = classCache.getClassDefinition(name);
-		return (buf != null) ? buf.array() : null;
-	}
+  public byte[] getClassDefinition(String name) {
+    ByteBuffer buf = classCache.getClassDefinition(name);
+    return (buf != null) ? buf.array() : null;
+  }
 
-	public synchronized Serialized<TaskWorker> getTaskWorker() {
-		if (worker == null) {
-			worker = service.getTaskWorker(id);
-		}
-		return worker;
-	}
+  public synchronized Serialized<TaskWorker> getTaskWorker() {
+    if (worker == null) {
+      worker = service.getTaskWorker(id);
+    }
+    return worker;
+  }
 
-	public void submitTaskResults(int taskId, Serialized<Object> results) {
-		service.submitTaskResults(id, taskId, results);
-		activeTaskIds.remove(taskId);
-	}
+  public void submitTaskResults(int taskId, Serialized<Object> results) {
+    service.submitTaskResults(id, taskId, results);
+    activeTaskIds.remove(taskId);
+  }
 
-	public void reportException(int taskId, Exception e) {
-		service.reportException(id, taskId, e);
-	}
+  public void reportException(int taskId, Exception e) {
+    service.reportException(id, taskId, e);
+  }
 
-	public boolean isTaskComplete(int taskId) {
-		return !activeTaskIds.contains(taskId);
-	}
+  public boolean isTaskComplete(int taskId) {
+    return !activeTaskIds.contains(taskId);
+  }
 
-	public void registerTask(int taskId) {
-		activeTaskIds.add(taskId);
-	}
+  public void registerTask(int taskId) {
+    activeTaskIds.add(taskId);
+  }
 
-	public void removeTask(int taskId) {
-		activeTaskIds.remove(taskId);
-	}
+  public void removeTask(int taskId) {
+    activeTaskIds.remove(taskId);
+  }
 
-	public Set<Integer> getActiveTasks() {
-		return activeTaskIds;
-	}
+  public Set<Integer> getActiveTasks() {
+    return activeTaskIds;
+  }
 
 }

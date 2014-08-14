@@ -34,10 +34,10 @@ import ca.eandb.jdcp.remote.JobService;
  */
 public interface JobServiceFactory {
 
-	/**
-	 * Connects to a <code>JobService</code>.
-	 * @return The <code>JobService</code>.
-	 */
-	JobService connect();
+  /**
+   * Connects to a <code>JobService</code>.
+   * @return The <code>JobService</code>.
+   */
+  JobService connect();
 
 }

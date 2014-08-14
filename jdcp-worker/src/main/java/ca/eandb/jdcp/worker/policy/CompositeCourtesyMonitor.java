@@ -37,42 +37,42 @@ import java.util.List;
  */
 public final class CompositeCourtesyMonitor implements CourtesyMonitor {
 
-	/** The <code>List</code> of <code>CourtesyMonitor</code>s. */
-	private final List<CourtesyMonitor> monitors = new ArrayList<CourtesyMonitor>();
+  /** The <code>List</code> of <code>CourtesyMonitor</code>s. */
+  private final List<CourtesyMonitor> monitors = new ArrayList<CourtesyMonitor>();
 
-	/**
-	 * Adds a <code>CourtesyMonitor</code> to this
-	 * <code>CompositeCourtesyMonitor</code>.
-	 * @param monitor The <code>CourtesyMonitor</code> to add.
-	 * @return This <code>CompositeCourtesyMonitor</code> (for method
-	 * 		chaining).
-	 */
-	public CompositeCourtesyMonitor add(CourtesyMonitor monitor) {
-		monitors.add(monitor);
-		return this;
-	}
+  /**
+   * Adds a <code>CourtesyMonitor</code> to this
+   * <code>CompositeCourtesyMonitor</code>.
+   * @param monitor The <code>CourtesyMonitor</code> to add.
+   * @return This <code>CompositeCourtesyMonitor</code> (for method
+   *     chaining).
+   */
+  public CompositeCourtesyMonitor add(CourtesyMonitor monitor) {
+    monitors.add(monitor);
+    return this;
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.policy.CourtesyMonitor#allowTasksToRun()
-	 */
-	public boolean allowTasksToRun() {
-		for (CourtesyMonitor monitor : monitors) {
-			if (!monitor.allowTasksToRun()) {
-				return false;
-			}
-		}
-		return true;
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.policy.CourtesyMonitor#allowTasksToRun()
+   */
+  public boolean allowTasksToRun() {
+    for (CourtesyMonitor monitor : monitors) {
+      if (!monitor.allowTasksToRun()) {
+        return false;
+      }
+    }
+    return true;
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.policy.CourtesyMonitor#waitFor()
-	 */
-	public void waitFor() throws InterruptedException {
-		while (!allowTasksToRun()) {
-			for (CourtesyMonitor monitor : monitors) {
-				monitor.waitFor();
-			}
-		}
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.policy.CourtesyMonitor#waitFor()
+   */
+  public void waitFor() throws InterruptedException {
+    while (!allowTasksToRun()) {
+      for (CourtesyMonitor monitor : monitors) {
+        monitor.waitFor();
+      }
+    }
+  }
 
 }

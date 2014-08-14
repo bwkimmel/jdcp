@@ -49,72 +49,72 @@ import ca.eandb.util.auth.FixedCallbackHandler;
  * @author Brad Kimmel
  */
 public final class AuthenticationServer extends UnicastRemoteObject implements
-		AuthenticationService {
+    AuthenticationService {
 
-	/**
-	 * Serialization version ID.
-	 */
-	private static final long serialVersionUID = 6823054390091081114L;
+  /**
+   * Serialization version ID.
+   */
+  private static final long serialVersionUID = 6823054390091081114L;
 
-	/**
-	 * The name of the login configuration to use to create
-	 * <code>LoginContext</code>s.
-	 */
-	private static final String LOGIN_CONFIGURATION_NAME = "JobService";
+  /**
+   * The name of the login configuration to use to create
+   * <code>LoginContext</code>s.
+   */
+  private static final String LOGIN_CONFIGURATION_NAME = "JobService";
 
-	/** The <code>JobService</code> for which to authenticate users. */
-	private final JobService service;
+  /** The <code>JobService</code> for which to authenticate users. */
+  private final JobService service;
 
-	/**
-	 * Creates a new <code>AuthenticationServer</code>.
-	 * @param service The <code>JobService</code> to authenticate for.
-	 * @throws RemoteException If a communication error occurs.
-	 */
-	public AuthenticationServer(JobService service) throws RemoteException {
-		this.service = service;
-	}
+  /**
+   * Creates a new <code>AuthenticationServer</code>.
+   * @param service The <code>JobService</code> to authenticate for.
+   * @throws RemoteException If a communication error occurs.
+   */
+  public AuthenticationServer(JobService service) throws RemoteException {
+    this.service = service;
+  }
 
-	/**
-	 * Creates a new <code>AuthenticationServer</code>.
-	 * @param service The <code>JobService</code> to authenticate for.
-	 * @param port The port to listen on.
-	 * @throws RemoteException If a communication error occurs.
-	 */
-	public AuthenticationServer(JobService service, int port) throws RemoteException {
-		super(port);
-		this.service = service;
-	}
+  /**
+   * Creates a new <code>AuthenticationServer</code>.
+   * @param service The <code>JobService</code> to authenticate for.
+   * @param port The port to listen on.
+   * @throws RemoteException If a communication error occurs.
+   */
+  public AuthenticationServer(JobService service, int port) throws RemoteException {
+    super(port);
+    this.service = service;
+  }
 
-	/**
-	 * Creates a new <code>AuthenticationServer</code>.
-	 * @param service The <code>JobService</code> to authenticate for.
-	 * @param port The port to listen on.
-	 * @param csf
-	 * @param ssf
-	 * @throws RemoteException If a communication error occurs.
-	 */
-	public AuthenticationServer(JobService service, int port, RMIClientSocketFactory csf,
-			RMIServerSocketFactory ssf) throws RemoteException {
-		super(port, csf, ssf);
-		this.service = service;
-	}
+  /**
+   * Creates a new <code>AuthenticationServer</code>.
+   * @param service The <code>JobService</code> to authenticate for.
+   * @param port The port to listen on.
+   * @param csf
+   * @param ssf
+   * @throws RemoteException If a communication error occurs.
+   */
+  public AuthenticationServer(JobService service, int port, RMIClientSocketFactory csf,
+      RMIServerSocketFactory ssf) throws RemoteException {
+    super(port, csf, ssf);
+    this.service = service;
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.remote.AuthenticationService#authenticate(java.lang.String, java.lang.String, java.util.UUID)
-	 */
-	public JobService authenticate(final String username, final String password, UUID protocolVersionId)
-			throws RemoteException, LoginException, ProtocolVersionException {
-		
-		if (!protocolVersionId.equals(JdcpUtil.PROTOCOL_VERSION_ID)) {
-			throw new ProtocolVersionException();
-		}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.remote.AuthenticationService#authenticate(java.lang.String, java.lang.String, java.util.UUID)
+   */
+  public JobService authenticate(final String username, final String password, UUID protocolVersionId)
+      throws RemoteException, LoginException, ProtocolVersionException {
+    
+    if (!protocolVersionId.equals(JdcpUtil.PROTOCOL_VERSION_ID)) {
+      throw new ProtocolVersionException();
+    }
 
-		CallbackHandler handler = FixedCallbackHandler.forNameAndPassword(username, password);
-		LoginContext context = new LoginContext(LOGIN_CONFIGURATION_NAME, handler);
-		context.login();
+    CallbackHandler handler = FixedCallbackHandler.forNameAndPassword(username, password);
+    LoginContext context = new LoginContext(LOGIN_CONFIGURATION_NAME, handler);
+    context.login();
 
-		return new JobServiceProxy(context.getSubject(), service);
+    return new JobServiceProxy(context.getSubject(), service);
 
-	}
+  }
 
 }

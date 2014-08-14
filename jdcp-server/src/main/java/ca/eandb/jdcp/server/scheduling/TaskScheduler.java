@@ -36,64 +36,64 @@ import ca.eandb.jdcp.job.TaskDescription;
  */
 public interface TaskScheduler {
 
-	/**
-	 * Sets the priority of a job.  The job priority is a hint to the scheduler
-	 * which it may use to determine the order in which tasks are served.
-	 * @param jobId The <code>UUID</code> identifying the job for which to set
-	 * 		the priority.
-	 * @param priority The priority to set for the specified job.
-	 */
-	void setJobPriority(UUID jobId, int priority);
+  /**
+   * Sets the priority of a job.  The job priority is a hint to the scheduler
+   * which it may use to determine the order in which tasks are served.
+   * @param jobId The <code>UUID</code> identifying the job for which to set
+   *     the priority.
+   * @param priority The priority to set for the specified job.
+   */
+  void setJobPriority(UUID jobId, int priority);
 
-	/**
-	 * Adds a task to be scheduled.
-	 * @param task An <code>TaskDescription</code> describing the task to be
-	 * 		performed.
-	 */
-	void add(TaskDescription task);
+  /**
+   * Adds a task to be scheduled.
+   * @param task An <code>TaskDescription</code> describing the task to be
+   *     performed.
+   */
+  void add(TaskDescription task);
 
-	/**
-	 * Removes a task from the schedule.
-	 * @param jobId The <code>UUID</code> identifying the job associated with
-	 * 		the task to be removed.
-	 * @param taskId The identifier for the task to be removed.
-	 * @return The <code>TaskDescription</code> describing the specified task.
-	 */
-	TaskDescription remove(UUID jobId, int taskId);
+  /**
+   * Removes a task from the schedule.
+   * @param jobId The <code>UUID</code> identifying the job associated with
+   *     the task to be removed.
+   * @param taskId The identifier for the task to be removed.
+   * @return The <code>TaskDescription</code> describing the specified task.
+   */
+  TaskDescription remove(UUID jobId, int taskId);
 
-	/**
-	 * Retrieves the specified task.
-	 * @param jobId The <code>UUID</code> identifying the job associated with
-	 * 		the task to retrieve.
-	 * @param taskId The identifier for the task to be retrieved.
-	 * @return The <code>TaskDescription</code> describing the specified task,
-	 * 		or <code>null</code> if no such task exists.
-	 */
-	TaskDescription get(UUID jobId, int taskId);
+  /**
+   * Retrieves the specified task.
+   * @param jobId The <code>UUID</code> identifying the job associated with
+   *     the task to retrieve.
+   * @param taskId The identifier for the task to be retrieved.
+   * @return The <code>TaskDescription</code> describing the specified task,
+   *     or <code>null</code> if no such task exists.
+   */
+  TaskDescription get(UUID jobId, int taskId);
 
-	/**
-	 * Determines if the specified task exists.
-	 * @param jobId The <code>UUID</code> identifying the job associated with
-	 * 		the task to retrieve.
-	 * @param taskId The identifier for the task to be retrieved.
-	 * @return A value indicating if the specified task exists.
-	 */
-	boolean contains(UUID jobId, int taskId);
+  /**
+   * Determines if the specified task exists.
+   * @param jobId The <code>UUID</code> identifying the job associated with
+   *     the task to retrieve.
+   * @param taskId The identifier for the task to be retrieved.
+   * @return A value indicating if the specified task exists.
+   */
+  boolean contains(UUID jobId, int taskId);
 
-	/**
-	 * Gets the next task to be served.
-	 * @return A <code>TaskDescription</code> describing the next task to be
-	 * 		served.
-	 * @see ca.eandb.jdcp.job.TaskDescription
-	 */
-	TaskDescription getNextTask();
+  /**
+   * Gets the next task to be served.
+   * @return A <code>TaskDescription</code> describing the next task to be
+   *     served.
+   * @see ca.eandb.jdcp.job.TaskDescription
+   */
+  TaskDescription getNextTask();
 
-	/**
-	 * Removes all tasks from the schedule that are associated with the
-	 * specified job.
-	 * @param jobId The <code>UUID</code> identifying the job for which all
-	 * 		tasks are to be removed.
-	 */
-	void removeJob(UUID jobId);
+  /**
+   * Removes all tasks from the schedule that are associated with the
+   * specified job.
+   * @param jobId The <code>UUID</code> identifying the job for which all
+   *     tasks are to be removed.
+   */
+  void removeJob(UUID jobId);
 
 }

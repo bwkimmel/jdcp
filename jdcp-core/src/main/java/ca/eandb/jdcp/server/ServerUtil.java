@@ -33,33 +33,33 @@ import ca.eandb.jdcp.job.HostService;
  */
 public final class ServerUtil {
 
-	/** The active <code>HostService</code>s. */
-	private static final ThreadLocal<HostService> services = new ThreadLocal<HostService>();
+  /** The active <code>HostService</code>s. */
+  private static final ThreadLocal<HostService> services = new ThreadLocal<HostService>();
 
-	/**
-	 * Gets the active <code>HostService</code> for this thread.
-	 * @return The active <code>HostService</code> for this thread.
-	 */
-	public static HostService getHostService() {
-		return services.get();
-	}
+  /**
+   * Gets the active <code>HostService</code> for this thread.
+   * @return The active <code>HostService</code> for this thread.
+   */
+  public static HostService getHostService() {
+    return services.get();
+  }
 
-	/**
-	 * Sets the active <code>HostService</code> for this thread.
-	 * @param service The <code>HostService</code> to use for this thread.
-	 */
-	/* package */ static void setHostService(HostService service) {
-		services.set(service);
-	}
+  /**
+   * Sets the active <code>HostService</code> for this thread.
+   * @param service The <code>HostService</code> to use for this thread.
+   */
+  /* package */ static void setHostService(HostService service) {
+    services.set(service);
+  }
 
-	/**
-	 * Removes the active <code>HostService</code> for this thread.
-	 */
-	/* package */ static void clearHostService() {
-		services.set(null);
-	}
+  /**
+   * Removes the active <code>HostService</code> for this thread.
+   */
+  /* package */ static void clearHostService() {
+    services.set(null);
+  }
 
-	/** This constructor is private to prevent instances from being created. */
-	private ServerUtil() {}
+  /** This constructor is private to prevent instances from being created. */
+  private ServerUtil() {}
 
 }

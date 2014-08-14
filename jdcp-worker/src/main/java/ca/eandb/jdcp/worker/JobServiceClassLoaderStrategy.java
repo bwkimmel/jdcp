@@ -40,46 +40,46 @@ import ca.eandb.util.classloader.ClassLoaderStrategy;
  */
 public final class JobServiceClassLoaderStrategy implements ClassLoaderStrategy {
 
-	/** The <code>TaskService</code> to obtain class definitions from. */
-	private final TaskService service;
+  /** The <code>TaskService</code> to obtain class definitions from. */
+  private final TaskService service;
 
-	/**
-	 * The <code>UUID</code> identifying the job for which to obtain the
-	 * associated class definitions.
-	 */
-	private final UUID jobId;
+  /**
+   * The <code>UUID</code> identifying the job for which to obtain the
+   * associated class definitions.
+   */
+  private final UUID jobId;
 
-	/**
-	 * Creates a new <code>JobServiceClassLoaderStrategy</code>.
-	 * @param service The <code>TaskService</code> to obtain class definitions
-	 * 		from.
-	 * @param jobId The <code>UUID</code> identifying the job for which to
-	 * 		obtain the associated class definitions.
-	 */
-	public JobServiceClassLoaderStrategy(TaskService service, UUID jobId) {
-		this.service = service;
-		this.jobId = jobId;
-	}
+  /**
+   * Creates a new <code>JobServiceClassLoaderStrategy</code>.
+   * @param service The <code>TaskService</code> to obtain class definitions
+   *     from.
+   * @param jobId The <code>UUID</code> identifying the job for which to
+   *     obtain the associated class definitions.
+   */
+  public JobServiceClassLoaderStrategy(TaskService service, UUID jobId) {
+    this.service = service;
+    this.jobId = jobId;
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.util.classloader.ClassLoaderStrategy#getClassDefinition(java.lang.String)
-	 */
-	public ByteBuffer getClassDefinition(String name) {
+  /* (non-Javadoc)
+   * @see ca.eandb.util.classloader.ClassLoaderStrategy#getClassDefinition(java.lang.String)
+   */
+  public ByteBuffer getClassDefinition(String name) {
 
-		try {
+    try {
 
-			byte[] def = service.getClassDefinition(name, jobId);
+      byte[] def = service.getClassDefinition(name, jobId);
 
-			if (def != null) {
-				return ByteBuffer.wrap(def);
-			}
+      if (def != null) {
+        return ByteBuffer.wrap(def);
+      }
 
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
+    } catch (RemoteException e) {
+      e.printStackTrace();
+    }
 
-		return null;
+    return null;
 
-	}
+  }
 
 }

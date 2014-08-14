@@ -33,13 +33,13 @@ import ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor;
  *
  */
 public final class Win32CourtesyMonitorFactory extends
-		StandardCourtesyMonitorFactory {
+    StandardCourtesyMonitorFactory {
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.policy.CourtesyMonitorFactory#createPowerCourtesyMonitor()
-	 */
-	public PowerCourtesyMonitor createPowerCourtesyMonitor() {
-		return new Win32PowerCourtesyMonitor();
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.policy.CourtesyMonitorFactory#createPowerCourtesyMonitor()
+   */
+  public PowerCourtesyMonitor createPowerCourtesyMonitor() {
+    return new Win32PowerCourtesyMonitor();
+  }
 
 }

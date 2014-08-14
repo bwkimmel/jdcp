@@ -38,29 +38,29 @@ import ca.eandb.util.args.UnrecognizedCommand;
  */
 public final class ClientMain {
 
-	/**
-	 * Application entry point.
-	 * @param args Command line arguments.
-	 */
-	public static void main(String[] args) {
+  /**
+   * Application entry point.
+   * @param args Command line arguments.
+   */
+  public static void main(String[] args) {
 
-		ArgumentProcessor<Configuration> argProcessor = new ArgumentProcessor<Configuration>("");
+    ArgumentProcessor<Configuration> argProcessor = new ArgumentProcessor<Configuration>("");
 
-		argProcessor.addOption("verbose", 'V', new BooleanFieldOption<Configuration>("verbose"));
-		argProcessor.addOption("host", 'h', new StringFieldOption<Configuration>("host"));
-		argProcessor.addOption("username", 'u', new StringFieldOption<Configuration>("username"));
-		argProcessor.addOption("password", 'p', new StringFieldOption<Configuration>("password"));
+    argProcessor.addOption("verbose", 'V', new BooleanFieldOption<Configuration>("verbose"));
+    argProcessor.addOption("host", 'h', new StringFieldOption<Configuration>("host"));
+    argProcessor.addOption("username", 'u', new StringFieldOption<Configuration>("username"));
+    argProcessor.addOption("password", 'p', new StringFieldOption<Configuration>("password"));
 
-		argProcessor.addCommand("verify", new VerifyCommand());
-		argProcessor.addCommand("sync", new SynchronizeCommand());
-		argProcessor.addCommand("idle", new SetIdleTimeCommand());
-		argProcessor.addCommand("script", new ScriptCommand());
-		argProcessor.addCommand("connect", new ConnectCommand());
+    argProcessor.addCommand("verify", new VerifyCommand());
+    argProcessor.addCommand("sync", new SynchronizeCommand());
+    argProcessor.addCommand("idle", new SetIdleTimeCommand());
+    argProcessor.addCommand("script", new ScriptCommand());
+    argProcessor.addCommand("connect", new ConnectCommand());
 
-		argProcessor.setDefaultCommand(UnrecognizedCommand.getInstance());
+    argProcessor.setDefaultCommand(UnrecognizedCommand.getInstance());
 
-		argProcessor.process(args, new Configuration());
+    argProcessor.process(args, new Configuration());
 
-	}
+  }
 
 }

@@ -33,21 +33,21 @@ package ca.eandb.jdcp.server.classmanager;
  */
 public interface ChildClassManager extends ClassManager {
 
-	/**
-	 * Gets the identifier for this <code>ChildClassManager</code>.  This
-	 * identifier may be used to obtain an instance of this
-	 * <code>ChildClassManager</code> using
-	 * {@link ParentClassManager#getChildClassManager(int)}.
-	 * @return The identifier for this <code>ChildClassManager</code>.
-	 * @see ParentClassManager#getChildClassManager(int)
-	 */
-	int getChildId();
+  /**
+   * Gets the identifier for this <code>ChildClassManager</code>.  This
+   * identifier may be used to obtain an instance of this
+   * <code>ChildClassManager</code> using
+   * {@link ParentClassManager#getChildClassManager(int)}.
+   * @return The identifier for this <code>ChildClassManager</code>.
+   * @see ParentClassManager#getChildClassManager(int)
+   */
+  int getChildId();
 
-	/**
-	 * Releases this <code>ChildClassManager</code>.  Any further use of this
-	 * <code>ClassManager</code> after this method is called may result in an
-	 * <code>IllegalStateException</code> being thrown.
-	 */
-	void release();
+  /**
+   * Releases this <code>ChildClassManager</code>.  Any further use of this
+   * <code>ClassManager</code> after this method is called may result in an
+   * <code>IllegalStateException</code> being thrown.
+   */
+  void release();
 
 }

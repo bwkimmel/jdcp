@@ -35,19 +35,19 @@ package ca.eandb.jdcp.server.classmanager;
  */
 public interface ParentClassManager extends ClassManager {
 
-	/**
-	 * Creates a new child <code>ClassManager</code>.
-	 * @return The new child <code>ClassManager</code>.
-	 */
-	ChildClassManager createChildClassManager();
+  /**
+   * Creates a new child <code>ClassManager</code>.
+   * @return The new child <code>ClassManager</code>.
+   */
+  ChildClassManager createChildClassManager();
 
-	/**
-	 * Retrieves an existing <code>ChildClassManager</code>.
-	 * @param id The identifier for the <code>ChildClassManager</code> to
-	 * 		retrieve.
-	 * @return The <code>ChildClassManager</code> with the specified ID, or
-	 * 		<code>null</code> if there is no such child.
-	 */
-	ChildClassManager getChildClassManager(int id);
+  /**
+   * Retrieves an existing <code>ChildClassManager</code>.
+   * @param id The identifier for the <code>ChildClassManager</code> to
+   *     retrieve.
+   * @return The <code>ChildClassManager</code> with the specified ID, or
+   *     <code>null</code> if there is no such child.
+   */
+  ChildClassManager getChildClassManager(int id);
 
 }

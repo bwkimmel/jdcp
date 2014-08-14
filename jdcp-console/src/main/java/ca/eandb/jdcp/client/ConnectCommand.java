@@ -37,24 +37,24 @@ import ca.eandb.util.args.StringFieldOption;
  */
 public final class ConnectCommand implements Command<Configuration> {
 
-	private static final ArgumentProcessor<Configuration> argProcessor = new ArgumentProcessor<Configuration>();
+  private static final ArgumentProcessor<Configuration> argProcessor = new ArgumentProcessor<Configuration>();
 
-	static {
-		argProcessor.addOption("host", 'h', new StringFieldOption<Configuration>("host"));
-		argProcessor.addOption("username", 'u', new StringFieldOption<Configuration>("username"));
-		argProcessor.addOption("password", 'p', new StringFieldOption<Configuration>("password"));
-		argProcessor.setDefaultCommand(new Command<Configuration>() {
-			public void process(Queue<String> argq, Configuration state) {
-				state.getJobService();
-			}
-		});
-	}
+  static {
+    argProcessor.addOption("host", 'h', new StringFieldOption<Configuration>("host"));
+    argProcessor.addOption("username", 'u', new StringFieldOption<Configuration>("username"));
+    argProcessor.addOption("password", 'p', new StringFieldOption<Configuration>("password"));
+    argProcessor.setDefaultCommand(new Command<Configuration>() {
+      public void process(Queue<String> argq, Configuration state) {
+        state.getJobService();
+      }
+    });
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.util.args.AbstractCommand#process(java.util.Queue, java.lang.Object)
-	 */
-	public void process(Queue<String> argq, Configuration state) {
-		argProcessor.process(argq, state);
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.util.args.AbstractCommand#process(java.util.Queue, java.lang.Object)
+   */
+  public void process(Queue<String> argq, Configuration state) {
+    argProcessor.process(argq, state);
+  }
 
 }

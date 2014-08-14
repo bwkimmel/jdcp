@@ -31,18 +31,18 @@ package ca.eandb.jdcp.worker.policy;
  */
 public final class UnconditionalCourtesyMonitor implements CourtesyMonitor {
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.policy.CourtesyMonitor#allowTasksToRun()
-	 */
-	public boolean allowTasksToRun() {
-		return true;
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.policy.CourtesyMonitor#allowTasksToRun()
+   */
+  public boolean allowTasksToRun() {
+    return true;
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.policy.BlockingCourtesyMonitor#waitFor()
-	 */
-	public void waitFor() {
-		/* nothing to do. */
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.policy.BlockingCourtesyMonitor#waitFor()
+   */
+  public void waitFor() {
+    /* nothing to do. */
+  }
 
 }

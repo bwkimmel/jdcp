@@ -38,14 +38,14 @@ import com.sun.jna.Platform;
  */
 public interface CourtesyMonitorFactory {
 
-	public static final CourtesyMonitorFactory INSTANCE = Platform.isWindows() ? new Win32CourtesyMonitorFactory()
-			: Platform.isMac() ? new OSXCourtesyMonitorFactory()
-					: new StandardCourtesyMonitorFactory();
+  public static final CourtesyMonitorFactory INSTANCE = Platform.isWindows() ? new Win32CourtesyMonitorFactory()
+      : Platform.isMac() ? new OSXCourtesyMonitorFactory()
+          : new StandardCourtesyMonitorFactory();
 
-	PowerCourtesyMonitor createPowerCourtesyMonitor();
+  PowerCourtesyMonitor createPowerCourtesyMonitor();
 
-	PollingCourtesyMonitor createExecCourtesyMonitor(String cmd);
+  PollingCourtesyMonitor createExecCourtesyMonitor(String cmd);
 
-	PollingCourtesyMonitor createExecCourtesyMonitor(String cmd, File workingDir);
+  PollingCourtesyMonitor createExecCourtesyMonitor(String cmd, File workingDir);
 
 }

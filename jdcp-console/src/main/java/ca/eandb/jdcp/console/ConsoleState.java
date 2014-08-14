@@ -35,16 +35,16 @@ import ca.eandb.util.auth.FileLoginManager;
  */
 public final class ConsoleState extends Configuration {
 
-	@ShellArgument
-	public final WorkerState worker = new WorkerState();
+  @ShellArgument
+  public final WorkerState worker = new WorkerState();
 
-	@ShellArgument
-	public final ServerState server = new ServerState();
+  @ShellArgument
+  public final ServerState server = new ServerState();
 
-	@ShellArgument
-	public final HubState hub = new HubState();
-	
-	@ShellArgument
-	public final FileLoginManager users = new FileLoginManager();
+  @ShellArgument
+  public final HubState hub = new HubState();
+  
+  @ShellArgument
+  public final FileLoginManager users = new FileLoginManager();
 
 }

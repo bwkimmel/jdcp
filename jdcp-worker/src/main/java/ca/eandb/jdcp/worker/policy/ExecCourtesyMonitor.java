@@ -36,37 +36,37 @@ import org.apache.log4j.Logger;
  */
 public final class ExecCourtesyMonitor extends PollingCourtesyMonitor {
 
-	private static final Logger logger = Logger.getLogger(ExecCourtesyMonitor.class);
+  private static final Logger logger = Logger.getLogger(ExecCourtesyMonitor.class);
 
-	private final String command;
+  private final String command;
 
-	private final File workingDirectory;
+  private final File workingDirectory;
 
-	public ExecCourtesyMonitor(String command) {
-		this(command, null);
-	}
+  public ExecCourtesyMonitor(String command) {
+    this(command, null);
+  }
 
-	public ExecCourtesyMonitor(String command, File workingDirectory) {
-		this.command = command;
-		this.workingDirectory = workingDirectory;
-	}
+  public ExecCourtesyMonitor(String command, File workingDirectory) {
+    this.command = command;
+    this.workingDirectory = workingDirectory;
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.policy.PollingCourtesyMonitor#poll()
-	 */
-	public boolean poll() {
-		try {
-			Process process = Runtime.getRuntime().exec(command, null,
-					workingDirectory);
-			while (true) {
-				try {
-					return process.waitFor() == 0;
-				} catch (InterruptedException e) {}
-			}
-		} catch (IOException e) {
-			logger.error("Could not execute courtesy script", e);
-			return true;
-		}
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.policy.PollingCourtesyMonitor#poll()
+   */
+  public boolean poll() {
+    try {
+      Process process = Runtime.getRuntime().exec(command, null,
+          workingDirectory);
+      while (true) {
+        try {
+          return process.waitFor() == 0;
+        } catch (InterruptedException e) {}
+      }
+    } catch (IOException e) {
+      logger.error("Could not execute courtesy script", e);
+      return true;
+    }
+  }
 
 }

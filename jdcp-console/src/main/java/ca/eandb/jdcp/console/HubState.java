@@ -43,123 +43,123 @@ import ca.eandb.util.args.OptionArgument;
  */
 public final class HubState {
 
-	/** The <code>Logger</code> to log messages to. */
-	private static final Logger logger = Logger.getLogger(HubState.class);
+  /** The <code>Logger</code> to log messages to. */
+  private static final Logger logger = Logger.getLogger(HubState.class);
 
-	/** The RMI <code>Registry</code> to register the server with. */
-	private Registry registry = null;
+  /** The RMI <code>Registry</code> to register the server with. */
+  private Registry registry = null;
 
-	/** The running <code>JobHub</code>. */
-	private JobHub jobHub = null;
+  /** The running <code>JobHub</code>. */
+  private JobHub jobHub = null;
 
-	/**
-	 * Gets the RMI <code>Registry</code> to register the server with, creating
-	 * it if necessary.
-	 * @return The RMI <code>Registry</code> to register the server with.
-	 * @throws RemoteException If an error occurs while attempting to create
-	 * 		the <code>Registry</code>.
-	 */
-	public synchronized Registry getRegistry() throws RemoteException {
-		if (registry == null) {
-			registry = LocateRegistry.createRegistry(JdcpUtil.DEFAULT_PORT);
-		}
-		return registry;
-	}
+  /**
+   * Gets the RMI <code>Registry</code> to register the server with, creating
+   * it if necessary.
+   * @return The RMI <code>Registry</code> to register the server with.
+   * @throws RemoteException If an error occurs while attempting to create
+   *     the <code>Registry</code>.
+   */
+  public synchronized Registry getRegistry() throws RemoteException {
+    if (registry == null) {
+      registry = LocateRegistry.createRegistry(JdcpUtil.DEFAULT_PORT);
+    }
+    return registry;
+  }
 
-	/**
-	 * Starts the hub.
-	 */
-	@CommandArgument
-	public void start() {
-		System.out.println("Starting hub");
-		try {
+  /**
+   * Starts the hub.
+   */
+  @CommandArgument
+  public void start() {
+    System.out.println("Starting hub");
+    try {
 
-			Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-			EmbeddedDataSource ds = new EmbeddedDataSource();
-			ds.setConnectionAttributes("create=true");
-			ds.setDatabaseName("classes");
+      Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+      EmbeddedDataSource ds = new EmbeddedDataSource();
+      ds.setConnectionAttributes("create=true");
+      ds.setDatabaseName("classes");
 
-			JobHub.prepareDataSource(ds);
+      JobHub.prepareDataSource(ds);
 
-			logger.info("Initializing service");
-			jobHub = new JobHub(ds);
-			AuthenticationServer authServer = new AuthenticationServer(jobHub, JdcpUtil.DEFAULT_PORT);
+      logger.info("Initializing service");
+      jobHub = new JobHub(ds);
+      AuthenticationServer authServer = new AuthenticationServer(jobHub, JdcpUtil.DEFAULT_PORT);
 
-			logger.info("Binding service");
-			Registry registry = getRegistry();
-			registry.bind("AuthenticationService", authServer);
+      logger.info("Binding service");
+      Registry registry = getRegistry();
+      registry.bind("AuthenticationService", authServer);
 
-			logger.info("Hub ready");
-			System.out.println("Hub started");
+      logger.info("Hub ready");
+      System.out.println("Hub started");
 
-		} catch (Exception e) {
-			System.err.println("Failed to start hub");
-			logger.error("Failed to start hub", e);
-		}
-	}
+    } catch (Exception e) {
+      System.err.println("Failed to start hub");
+      logger.error("Failed to start hub", e);
+    }
+  }
 
-	/**
-	 * Stops the hub.
-	 */
-	@CommandArgument
-	public void stop() {
-		try {
-			jobHub.shutdown();
-			jobHub = null;
-			Registry registry = getRegistry();
-			registry.unbind("AuthenticationService");
-			System.out.println("Hub stopped");
-		} catch (Exception e) {
-			logger.error("An error occurred while stopping the hub", e);
-			System.err.println("Hub did not shut down cleanly, see log for details.");
-		}
-	}
+  /**
+   * Stops the hub.
+   */
+  @CommandArgument
+  public void stop() {
+    try {
+      jobHub.shutdown();
+      jobHub = null;
+      Registry registry = getRegistry();
+      registry.unbind("AuthenticationService");
+      System.out.println("Hub stopped");
+    } catch (Exception e) {
+      logger.error("An error occurred while stopping the hub", e);
+      System.err.println("Hub did not shut down cleanly, see log for details.");
+    }
+  }
 
-	@CommandArgument
-	public void connect(
-			@OptionArgument("host") String host,
-			@OptionArgument("username") String username,
-			@OptionArgument("password") String password) {
+  @CommandArgument
+  public void connect(
+      @OptionArgument("host") String host,
+      @OptionArgument("username") String username,
+      @OptionArgument("password") String password) {
 
-		JobHub hub = jobHub;
-		if (hub == null) {
-			System.err.println("Hub not running.");
-		}
-		if (host.equals("")) {
-			host = "localhost";
-		}
-		if (username.equals("")) {
-			username = "guest";
-		}
+    JobHub hub = jobHub;
+    if (hub == null) {
+      System.err.println("Hub not running.");
+    }
+    if (host.equals("")) {
+      host = "localhost";
+    }
+    if (username.equals("")) {
+      username = "guest";
+    }
 
-		System.out.printf("Connecting hub to %s\n", host);
-		hub.connect(host, username, password);
-	}
+    System.out.printf("Connecting hub to %s\n", host);
+    hub.connect(host, username, password);
+  }
 
-	@CommandArgument
-	public void disconnect(@OptionArgument("host") String host) {
-		JobHub hub = jobHub;
-		if (hub == null) {
-			System.err.println("Hub not running.");
-		}
-		if (host.equals("")) {
-			host = "localhost";
-		}
+  @CommandArgument
+  public void disconnect(@OptionArgument("host") String host) {
+    JobHub hub = jobHub;
+    if (hub == null) {
+      System.err.println("Hub not running.");
+    }
+    if (host.equals("")) {
+      host = "localhost";
+    }
 
-		System.out.printf("Disconnecting hub from %s\n", host);
-		hub.disconnect(host);
-	}
+    System.out.printf("Disconnecting hub from %s\n", host);
+    hub.disconnect(host);
+  }
 
-	/**
-	 * Prints the status of the hub.
-	 */
-	@CommandArgument
-	public void stat() {
-		if (this.jobHub == null) {
-			System.err.println("Hub not running");
-			return;
-		}
-		System.out.println("Hub running");
-	}
+  /**
+   * Prints the status of the hub.
+   */
+  @CommandArgument
+  public void stat() {
+    if (this.jobHub == null) {
+      System.err.println("Hub not running");
+      return;
+    }
+    System.out.println("Hub running");
+  }
 
 }

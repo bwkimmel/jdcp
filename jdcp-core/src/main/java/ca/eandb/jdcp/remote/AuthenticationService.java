@@ -37,19 +37,19 @@ import javax.security.auth.login.LoginException;
  */
 public interface AuthenticationService extends Remote {
 
-	/**
-	 * Authenticates a user.
-	 * @param username The username identifying the user to authenticate.
-	 * @param password The password of the user to authenticate.
-	 * @param protocolVersionId The <code>UUID</code> indicating the protocol
-	 * 		expected by the client.
-	 * @return The <code>JobService</code> to use for this session.
-	 * @throws LoginException if the user name or password are invalid.
-	 * @throws ProtocolVersionException if the protocol expected by the client
-	 * 		(as indicated by <code>protocolVersionId</code>) is incompatible
-	 * 		with the protocol expected by the server.
-	 */
-	JobService authenticate(String username, String password, UUID protocolVersionId)
-			throws RemoteException, LoginException, ProtocolVersionException;
+  /**
+   * Authenticates a user.
+   * @param username The username identifying the user to authenticate.
+   * @param password The password of the user to authenticate.
+   * @param protocolVersionId The <code>UUID</code> indicating the protocol
+   *     expected by the client.
+   * @return The <code>JobService</code> to use for this session.
+   * @throws LoginException if the user name or password are invalid.
+   * @throws ProtocolVersionException if the protocol expected by the client
+   *     (as indicated by <code>protocolVersionId</code>) is incompatible
+   *     with the protocol expected by the server.
+   */
+  JobService authenticate(String username, String password, UUID protocolVersionId)
+      throws RemoteException, LoginException, ProtocolVersionException;
 
 }

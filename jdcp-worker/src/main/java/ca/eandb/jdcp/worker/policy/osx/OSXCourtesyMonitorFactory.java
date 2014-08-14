@@ -33,17 +33,17 @@ import ca.eandb.jdcp.worker.policy.StandardCourtesyMonitorFactory;
  * @author Brad Kimmel
  */
 public final class OSXCourtesyMonitorFactory extends
-		StandardCourtesyMonitorFactory {
+    StandardCourtesyMonitorFactory {
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.policy.StandardCourtesyMonitorFactory#createPowerCourtesyMonitor()
-	 */
-	public PowerCourtesyMonitor createPowerCourtesyMonitor() {
-		// TODO Implement OSXPowerCourtesyMonitor and uncomment the following
-		// line.
-		//return new OSXPowerCourtesyMonitor();
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.policy.StandardCourtesyMonitorFactory#createPowerCourtesyMonitor()
+   */
+  public PowerCourtesyMonitor createPowerCourtesyMonitor() {
+    // TODO Implement OSXPowerCourtesyMonitor and uncomment the following
+    // line.
+    //return new OSXPowerCourtesyMonitor();
 
-		return null;
-	}
+    return null;
+  }
 
 }

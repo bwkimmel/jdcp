@@ -239,17 +239,17 @@ public interface Kernel32 extends W32API {
      */
     int GetShortPathName(String lpszLongPath, char[] lpdzShortPath, int cchBuffer);
 
-	class SYSTEM_POWER_STATUS extends Structure {
-		public byte ACLineStatus;
-		public byte BatteryFlag;
-		public byte BatteryLifePercent;
-		public byte Reserved1;
-		public int BatteryLifeTime;
-		public int BatteryFullLifeTime;
-	};
+  class SYSTEM_POWER_STATUS extends Structure {
+    public byte ACLineStatus;
+    public byte BatteryFlag;
+    public byte BatteryLifePercent;
+    public byte Reserved1;
+    public int BatteryLifeTime;
+    public int BatteryFullLifeTime;
+  };
 
-	void GetSystemPowerStatus(SYSTEM_POWER_STATUS status);
+  void GetSystemPowerStatus(SYSTEM_POWER_STATUS status);
 
-	int GetTickCount();
+  int GetTickCount();
 
 }

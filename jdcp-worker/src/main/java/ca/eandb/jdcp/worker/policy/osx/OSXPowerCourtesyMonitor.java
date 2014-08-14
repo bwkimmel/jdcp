@@ -36,87 +36,87 @@ import ca.eandb.util.UnexpectedException;
  * @author Brad Kimmel
  */
 public final class OSXPowerCourtesyMonitor extends AsyncCourtesyMonitor
-		implements PowerCourtesyMonitor {
+    implements PowerCourtesyMonitor {
 
-	/**
-	 * A value indicating whether tasks should run only if A/C power is
-	 * connected.
-	 */
-	private boolean requireAC = true;
+  /**
+   * A value indicating whether tasks should run only if A/C power is
+   * connected.
+   */
+  private boolean requireAC = true;
 
-	/**
-	 * This value sets the battery life percentage below which tasks will be
-	 * suspended.  If {@link #requireAC} is set, this value has no effect.
-	 */
-	private int minBatteryLifePercent = 0;
+  /**
+   * This value sets the battery life percentage below which tasks will be
+   * suspended.  If {@link #requireAC} is set, this value has no effect.
+   */
+  private int minBatteryLifePercent = 0;
 
-	/**
-	 * This value sets the battery life percentage below which tasks will be
-	 * suspended while the battery is charging.
-	 */
-	private int minBatteryLifePercentWhileCharging = 0;
+  /**
+   * This value sets the battery life percentage below which tasks will be
+   * suspended while the battery is charging.
+   */
+  private int minBatteryLifePercentWhileCharging = 0;
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor#isRequireAC()
-	 */
-	public final boolean isRequireAC() {
-		return requireAC;
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor#isRequireAC()
+   */
+  public final boolean isRequireAC() {
+    return requireAC;
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor#setRequireAC(boolean)
-	 */
-	public final void setRequireAC(boolean requireAC) {
-		this.requireAC = requireAC;
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor#setRequireAC(boolean)
+   */
+  public final void setRequireAC(boolean requireAC) {
+    this.requireAC = requireAC;
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor#getMinBatteryLifePercent()
-	 */
-	public final int getMinBatteryLifePercent() {
-		return minBatteryLifePercent;
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor#getMinBatteryLifePercent()
+   */
+  public final int getMinBatteryLifePercent() {
+    return minBatteryLifePercent;
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor#setMinBatteryLifePercent(int)
-	 */
-	public final void setMinBatteryLifePercent(int minBatteryLifePercent) {
-		this.minBatteryLifePercent = minBatteryLifePercent;
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor#setMinBatteryLifePercent(int)
+   */
+  public final void setMinBatteryLifePercent(int minBatteryLifePercent) {
+    this.minBatteryLifePercent = minBatteryLifePercent;
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor#getMinBatteryLifePercentWhileCharging()
-	 */
-	public final int getMinBatteryLifePercentWhileCharging() {
-		return minBatteryLifePercentWhileCharging;
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor#getMinBatteryLifePercentWhileCharging()
+   */
+  public final int getMinBatteryLifePercentWhileCharging() {
+    return minBatteryLifePercentWhileCharging;
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor#setMinBatteryLifePercentWhileCharging(int)
-	 */
-	public final void setMinBatteryLifePercentWhileCharging(
-			int minBatteryLifePercentWhileCharging) {
-		this.minBatteryLifePercentWhileCharging = minBatteryLifePercentWhileCharging;
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor#setMinBatteryLifePercentWhileCharging(int)
+   */
+  public final void setMinBatteryLifePercentWhileCharging(
+      int minBatteryLifePercentWhileCharging) {
+    this.minBatteryLifePercentWhileCharging = minBatteryLifePercentWhileCharging;
+  }
 
-	/**
-	 * Creates a new <code>OSXPowerCourtesyMonitor</code>.
-	 */
-	public OSXPowerCourtesyMonitor() {
-		if (!Platform.isMac()) {
-			throw new UnexpectedException("This class requires Mac OS");
-		}
-		update();
-		// TODO Start a thread to receive events when the power status changes.
-	}
+  /**
+   * Creates a new <code>OSXPowerCourtesyMonitor</code>.
+   */
+  public OSXPowerCourtesyMonitor() {
+    if (!Platform.isMac()) {
+      throw new UnexpectedException("This class requires Mac OS");
+    }
+    update();
+    // TODO Start a thread to receive events when the power status changes.
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor#update()
-	 */
-	public void update() {
-		// TODO Determine the power status and call allow() or disallow()
-		// depending on that status.
-		allow(true);
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor#update()
+   */
+  public void update() {
+    // TODO Determine the power status and call allow() or disallow()
+    // depending on that status.
+    allow(true);
+  }
 
 }

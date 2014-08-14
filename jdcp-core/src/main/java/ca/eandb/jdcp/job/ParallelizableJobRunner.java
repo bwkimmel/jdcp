@@ -50,291 +50,291 @@ import ca.eandb.util.progress.ProgressMonitorFactory;
  */
 public final class ParallelizableJobRunner implements Runnable {
 
-	/**
-	 * Creates a new <code>ParallelizableJobRunner</code>.
-	 * @param job The <code>ParallelizableJob</code> to run.
-	 * @param workingDirectory The working directory for the job.
-	 * @param executor The <code>Executor</code> to use to run worker threads.
-	 * @param maxConcurrentWorkers The maximum number of concurrent tasks to
-	 * 		process.
-	 * @param monitorFactory The <code>ProgressMonitorFactory</code> to use to
-	 * 		create <code>ProgressMonitor</code>s for worker tasks.
-	 * @param monitor The <code>ProgressMonitor</code> to report overall job
-	 * 		progress to.
-	 */
-	public ParallelizableJobRunner(ParallelizableJob job, File workingDirectory, Executor executor, int maxConcurrentWorkers, ProgressMonitorFactory monitorFactory, ProgressMonitor monitor) {
-		this.job = new JobExecutionWrapper(job);
-		this.workingDirectory = workingDirectory;
-		this.executor = executor;
-		this.workerSlot = new Semaphore(maxConcurrentWorkers);
-		this.maxConcurrentWorkers = maxConcurrentWorkers;
-		this.monitorFactory = monitorFactory;
-		this.monitor = monitor;
-	}
+  /**
+   * Creates a new <code>ParallelizableJobRunner</code>.
+   * @param job The <code>ParallelizableJob</code> to run.
+   * @param workingDirectory The working directory for the job.
+   * @param executor The <code>Executor</code> to use to run worker threads.
+   * @param maxConcurrentWorkers The maximum number of concurrent tasks to
+   *     process.
+   * @param monitorFactory The <code>ProgressMonitorFactory</code> to use to
+   *     create <code>ProgressMonitor</code>s for worker tasks.
+   * @param monitor The <code>ProgressMonitor</code> to report overall job
+   *     progress to.
+   */
+  public ParallelizableJobRunner(ParallelizableJob job, File workingDirectory, Executor executor, int maxConcurrentWorkers, ProgressMonitorFactory monitorFactory, ProgressMonitor monitor) {
+    this.job = new JobExecutionWrapper(job);
+    this.workingDirectory = workingDirectory;
+    this.executor = executor;
+    this.workerSlot = new Semaphore(maxConcurrentWorkers);
+    this.maxConcurrentWorkers = maxConcurrentWorkers;
+    this.monitorFactory = monitorFactory;
+    this.monitor = monitor;
+  }
 
-	/**
-	 * Creates a new <code>ParallelizableJobRunner</code>.
-	 * @param job The <code>ParallelizableJob</code> to run.
-	 * @param workingDirectory The working directory for the job.
-	 * @param maxConcurrentWorkers The maximum number of concurrent tasks to
-	 * 		process.
-	 * @param monitorFactory The <code>ProgressMonitorFactory</code> to use to
-	 * 		create <code>ProgressMonitor</code>s for worker tasks.
-	 * @param monitor The <code>ProgressMonitor</code> to report overall job
-	 * 		progress to.
-	 */
-	public ParallelizableJobRunner(ParallelizableJob job, File workingDirectory, int maxConcurrentWorkers, ProgressMonitorFactory monitorFactory, ProgressMonitor monitor) {
-		this(job, workingDirectory, Executors.newFixedThreadPool(maxConcurrentWorkers, new BackgroundThreadFactory()), maxConcurrentWorkers, monitorFactory, monitor);
-	}
+  /**
+   * Creates a new <code>ParallelizableJobRunner</code>.
+   * @param job The <code>ParallelizableJob</code> to run.
+   * @param workingDirectory The working directory for the job.
+   * @param maxConcurrentWorkers The maximum number of concurrent tasks to
+   *     process.
+   * @param monitorFactory The <code>ProgressMonitorFactory</code> to use to
+   *     create <code>ProgressMonitor</code>s for worker tasks.
+   * @param monitor The <code>ProgressMonitor</code> to report overall job
+   *     progress to.
+   */
+  public ParallelizableJobRunner(ParallelizableJob job, File workingDirectory, int maxConcurrentWorkers, ProgressMonitorFactory monitorFactory, ProgressMonitor monitor) {
+    this(job, workingDirectory, Executors.newFixedThreadPool(maxConcurrentWorkers, new BackgroundThreadFactory()), maxConcurrentWorkers, monitorFactory, monitor);
+  }
 
-	/**
-	 * Creates a new <code>ParallelizableJobRunner</code>.
-	 * @param job The <code>ParallelizableJob</code> to run.
-	 * @param workingDirectory The working directory for the job.
-	 * @param executor The <code>Executor</code> to use to run worker threads.
-	 * @param maxConcurrentWorkers The maximum number of concurrent tasks to
-	 * 		process.
-	 */
-	public ParallelizableJobRunner(ParallelizableJob job, File workingDirectory, Executor executor, int maxConcurrentWorkers) {
-		this(job, workingDirectory, executor, maxConcurrentWorkers, DummyProgressMonitorFactory.getInstance(), DummyProgressMonitor.getInstance());
-	}
+  /**
+   * Creates a new <code>ParallelizableJobRunner</code>.
+   * @param job The <code>ParallelizableJob</code> to run.
+   * @param workingDirectory The working directory for the job.
+   * @param executor The <code>Executor</code> to use to run worker threads.
+   * @param maxConcurrentWorkers The maximum number of concurrent tasks to
+   *     process.
+   */
+  public ParallelizableJobRunner(ParallelizableJob job, File workingDirectory, Executor executor, int maxConcurrentWorkers) {
+    this(job, workingDirectory, executor, maxConcurrentWorkers, DummyProgressMonitorFactory.getInstance(), DummyProgressMonitor.getInstance());
+  }
 
-	/**
-	 * Creates a new <code>ParallelizableJobRunner</code>.
-	 * @param job The <code>ParallelizableJob</code> to run.
-	 * @param workingDirectory The working directory for the job.
-	 * @param executor The <code>Executor</code> to use to run worker threads.
-	 * @param maxConcurrentWorkers The maximum number of concurrent tasks to
-	 * 		process.
-	 */
-	public ParallelizableJobRunner(ParallelizableJob job, String workingDirectory, Executor executor, int maxConcurrentWorkers) {
-		this(job, new File(workingDirectory), executor, maxConcurrentWorkers);
-	}
+  /**
+   * Creates a new <code>ParallelizableJobRunner</code>.
+   * @param job The <code>ParallelizableJob</code> to run.
+   * @param workingDirectory The working directory for the job.
+   * @param executor The <code>Executor</code> to use to run worker threads.
+   * @param maxConcurrentWorkers The maximum number of concurrent tasks to
+   *     process.
+   */
+  public ParallelizableJobRunner(ParallelizableJob job, String workingDirectory, Executor executor, int maxConcurrentWorkers) {
+    this(job, new File(workingDirectory), executor, maxConcurrentWorkers);
+  }
 
-	/**
-	 * Creates a new <code>ParallelizableJobRunner</code>.
-	 * @param job The <code>ParallelizableJob</code> to run.
-	 * @param workingDirectory The working directory for the job.
-	 * @param maxConcurrentWorkers The maximum number of concurrent tasks to
-	 * 		process.
-	 */
-	public ParallelizableJobRunner(ParallelizableJob job, File workingDirectory, int maxConcurrentWorkers) {
-		this(job, workingDirectory, Executors.newFixedThreadPool(maxConcurrentWorkers, new BackgroundThreadFactory()), maxConcurrentWorkers);
-	}
+  /**
+   * Creates a new <code>ParallelizableJobRunner</code>.
+   * @param job The <code>ParallelizableJob</code> to run.
+   * @param workingDirectory The working directory for the job.
+   * @param maxConcurrentWorkers The maximum number of concurrent tasks to
+   *     process.
+   */
+  public ParallelizableJobRunner(ParallelizableJob job, File workingDirectory, int maxConcurrentWorkers) {
+    this(job, workingDirectory, Executors.newFixedThreadPool(maxConcurrentWorkers, new BackgroundThreadFactory()), maxConcurrentWorkers);
+  }
 
-	/**
-	 * Creates a new <code>ParallelizableJobRunner</code>.
-	 * @param job The <code>ParallelizableJob</code> to run.
-	 * @param workingDirectory The working directory for the job.
-	 * @param maxConcurrentWorkers The maximum number of concurrent tasks to
-	 * 		process.
-	 */
-	public ParallelizableJobRunner(ParallelizableJob job, String workingDirectory, int maxConcurrentWorkers) {
-		this(job, new File(workingDirectory), maxConcurrentWorkers);
-	}
+  /**
+   * Creates a new <code>ParallelizableJobRunner</code>.
+   * @param job The <code>ParallelizableJob</code> to run.
+   * @param workingDirectory The working directory for the job.
+   * @param maxConcurrentWorkers The maximum number of concurrent tasks to
+   *     process.
+   */
+  public ParallelizableJobRunner(ParallelizableJob job, String workingDirectory, int maxConcurrentWorkers) {
+    this(job, new File(workingDirectory), maxConcurrentWorkers);
+  }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Runnable#run()
-	 */
-	public synchronized void run() {
+  /* (non-Javadoc)
+   * @see java.lang.Runnable#run()
+   */
+  public synchronized void run() {
 
-		int taskNumber = 0;
-		boolean complete = false;
+    int taskNumber = 0;
+    boolean complete = false;
 
-		try {
+    try {
 
-			TaskWorker taskWorker = job.worker();
-			this.job.setHostService(host);
-			this.job.initialize();
+      TaskWorker taskWorker = job.worker();
+      this.job.setHostService(host);
+      this.job.initialize();
 
-			/* Task loop. */
-			while (!this.monitor.isCancelPending()) {
+      /* Task loop. */
+      while (!this.monitor.isCancelPending()) {
 
-				try {
+        try {
 
-					/* Acquire one of the slots for processing a task -- this
-					 * limits the processing to the specified number of concurrent
-					 * tasks.
-					 */
-					this.workerSlot.acquire();
+          /* Acquire one of the slots for processing a task -- this
+           * limits the processing to the specified number of concurrent
+           * tasks.
+           */
+          this.workerSlot.acquire();
 
-					/* Get the next task to run.  If there are no further tasks,
-					 * then wait for the remaining tasks to finish.
-					 */
-					Object task = this.job.getNextTask();
-					if (task == null) {
-						this.workerSlot.acquire(this.maxConcurrentWorkers - 1);
-						complete = true;
-						break;
-					}
+          /* Get the next task to run.  If there are no further tasks,
+           * then wait for the remaining tasks to finish.
+           */
+          Object task = this.job.getNextTask();
+          if (task == null) {
+            this.workerSlot.acquire(this.maxConcurrentWorkers - 1);
+            complete = true;
+            break;
+          }
 
-					/* Create a worker and process the task. */
-					Worker worker = new Worker(taskWorker, task, getWorkerProgressMonitor());
+          /* Create a worker and process the task. */
+          Worker worker = new Worker(taskWorker, task, getWorkerProgressMonitor());
 
-					notifyStatusChanged(String.format("Starting worker %d", ++taskNumber));
-					this.executor.execute(worker);
+          notifyStatusChanged(String.format("Starting worker %d", ++taskNumber));
+          this.executor.execute(worker);
 
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
 
-			}
+      }
 
-			this.job.finish();
+      this.job.finish();
 
-		} catch (JobExecutionException e) {
+    } catch (JobExecutionException e) {
 
-			throw new RuntimeException(e);
+      throw new RuntimeException(e);
 
-		}
+    }
 
-		if (!complete) {
-			monitor.notifyCancelled();
-		} else {
-			monitor.notifyComplete();
-		}
+    if (!complete) {
+      monitor.notifyCancelled();
+    } else {
+      monitor.notifyComplete();
+    }
 
-	}
-	
-	/**
-	 * Gets an available <code>ProgressMonitor</code> to use for the next task.
-	 * @return An available <code>ProgressMonitor</code>.
-	 */
-	private synchronized ProgressMonitor getWorkerProgressMonitor() {
-		ProgressMonitor monitor;
-		if (numProgressMonitors < maxConcurrentWorkers) {
-			String title = String.format("Worker (%d)", numProgressMonitors++);
-			monitor = new PermanentProgressMonitor(monitorFactory.createProgressMonitor(title));
-		} else {
-			monitor = workerMonitorQueue.remove();
-		}
-		return monitor;
-	}
+  }
+  
+  /**
+   * Gets an available <code>ProgressMonitor</code> to use for the next task.
+   * @return An available <code>ProgressMonitor</code>.
+   */
+  private synchronized ProgressMonitor getWorkerProgressMonitor() {
+    ProgressMonitor monitor;
+    if (numProgressMonitors < maxConcurrentWorkers) {
+      String title = String.format("Worker (%d)", numProgressMonitors++);
+      monitor = new PermanentProgressMonitor(monitorFactory.createProgressMonitor(title));
+    } else {
+      monitor = workerMonitorQueue.remove();
+    }
+    return monitor;
+  }
 
-	/**
-	 * Notifies the progress monitor that the status has changed.
-	 * @param status A <code>String</code> describing the status.
-	 */
-	private void notifyStatusChanged(String status) {
-		synchronized (monitor) {
-			this.monitor.notifyStatusChanged(status);
-		}
-	}
+  /**
+   * Notifies the progress monitor that the status has changed.
+   * @param status A <code>String</code> describing the status.
+   */
+  private void notifyStatusChanged(String status) {
+    synchronized (monitor) {
+      this.monitor.notifyStatusChanged(status);
+    }
+  }
 
-	/**
-	 * Submits results for a task.
-	 * @param task An <code>Object</code> describing the task for which results
-	 * 		are being submitted.
-	 * @param results An <code>Object</code> describing the results.
-	 * @throws JobExecutionException
-	 */
-	private void submitResults(Object task, Object results) throws JobExecutionException {
-		synchronized (monitor) {
-			this.job.submitTaskResults(task, results, monitor);
-		}
-	}
+  /**
+   * Submits results for a task.
+   * @param task An <code>Object</code> describing the task for which results
+   *     are being submitted.
+   * @param results An <code>Object</code> describing the results.
+   * @throws JobExecutionException
+   */
+  private void submitResults(Object task, Object results) throws JobExecutionException {
+    synchronized (monitor) {
+      this.job.submitTaskResults(task, results, monitor);
+    }
+  }
 
-	/**
-	 * Processes tasks for a <code>ParallelizableJob</code>.
-	 * @author Brad Kimmel
-	 */
-	private class Worker implements Runnable {
+  /**
+   * Processes tasks for a <code>ParallelizableJob</code>.
+   * @author Brad Kimmel
+   */
+  private class Worker implements Runnable {
 
-		/**
-		 * Creates a new <code>Worker</code>.
-		 * @param task An <code>Object</code> describing the task to be
-		 * 		processed by the worker.
-		 * @param monitor The <code>ProgressMonitor</code> to report progress
-		 * 		to.
-		 */
-		public Worker(TaskWorker worker, Object task, ProgressMonitor monitor) {
-			this.worker = worker;
-			this.task = task;
-			this.monitor = monitor;
-		}
+    /**
+     * Creates a new <code>Worker</code>.
+     * @param task An <code>Object</code> describing the task to be
+     *     processed by the worker.
+     * @param monitor The <code>ProgressMonitor</code> to report progress
+     *     to.
+     */
+    public Worker(TaskWorker worker, Object task, ProgressMonitor monitor) {
+      this.worker = worker;
+      this.task = task;
+      this.monitor = monitor;
+    }
 
-		/* (non-Javadoc)
-		 * @see java.lang.Runnable#run()
-		 */
-		public void run() {
-			try {
-				submitResults(task, worker.performTask(task, monitor));
-			} catch (JobExecutionException e) {
-				throw new RuntimeException(e);
-			} finally {
-				workerMonitorQueue.add(monitor);
-				workerSlot.release();
-			}
-		}
+    /* (non-Javadoc)
+     * @see java.lang.Runnable#run()
+     */
+    public void run() {
+      try {
+        submitResults(task, worker.performTask(task, monitor));
+      } catch (JobExecutionException e) {
+        throw new RuntimeException(e);
+      } finally {
+        workerMonitorQueue.add(monitor);
+        workerSlot.release();
+      }
+    }
 
-		/** The <code>ProgressMonitor</code> to report progress to. */
-		private final ProgressMonitor monitor;
+    /** The <code>ProgressMonitor</code> to report progress to. */
+    private final ProgressMonitor monitor;
 
-		/** An <code>Object</code> describing the task to be processed. */
-		private final Object task;
+    /** An <code>Object</code> describing the task to be processed. */
+    private final Object task;
 
-		/** The <code>TaskWorker</code> to use to perform the task. */
-		private final TaskWorker worker;
+    /** The <code>TaskWorker</code> to use to perform the task. */
+    private final TaskWorker worker;
 
-	}
+  }
 
-	private final HostService host = new HostService() {
+  private final HostService host = new HostService() {
 
-		public FileOutputStream createFileOutputStream(String path) {
-			File file = new File(workingDirectory, path);
-			File directory = file.getParentFile();
-			directory.mkdirs();
-			try {
-				return new FileOutputStream(file);
-			} catch (FileNotFoundException e) {
-				throw new UnexpectedException(e);
-			}
-		}
+    public FileOutputStream createFileOutputStream(String path) {
+      File file = new File(workingDirectory, path);
+      File directory = file.getParentFile();
+      directory.mkdirs();
+      try {
+        return new FileOutputStream(file);
+      } catch (FileNotFoundException e) {
+        throw new UnexpectedException(e);
+      }
+    }
 
-		public RandomAccessFile createRandomAccessFile(String path) {
-			File file = new File(workingDirectory, path);
-			File directory = file.getParentFile();
-			directory.mkdirs();
-			try {
-				return new RandomAccessFile(file, "rw");
-			} catch (FileNotFoundException e) {
-				throw new UnexpectedException(e);
-			}
-		}
+    public RandomAccessFile createRandomAccessFile(String path) {
+      File file = new File(workingDirectory, path);
+      File directory = file.getParentFile();
+      directory.mkdirs();
+      try {
+        return new RandomAccessFile(file, "rw");
+      } catch (FileNotFoundException e) {
+        throw new UnexpectedException(e);
+      }
+    }
 
-	};
+  };
 
-	/**
-	 * The <code>ProgressMonitorFactory</code> to use to create
-	 * <code>ProgressMonitor</code>s for worker tasks.
-	 */
-	private final ProgressMonitorFactory monitorFactory;
+  /**
+   * The <code>ProgressMonitorFactory</code> to use to create
+   * <code>ProgressMonitor</code>s for worker tasks.
+   */
+  private final ProgressMonitorFactory monitorFactory;
 
-	/** The <code>ParallelizableJob</code> to be run. */
-	private final JobExecutionWrapper job;
+  /** The <code>ParallelizableJob</code> to be run. */
+  private final JobExecutionWrapper job;
 
-	/** The working directory for this job. */
-	private final File workingDirectory;
+  /** The working directory for this job. */
+  private final File workingDirectory;
 
-	/**
-	 * The <code>Semaphore</code> to use to limit the number of concurrent
-	 * threads.
-	 */
-	private final Semaphore workerSlot;
+  /**
+   * The <code>Semaphore</code> to use to limit the number of concurrent
+   * threads.
+   */
+  private final Semaphore workerSlot;
 
-	/** The <code>Executor</code> to use to run worker threads. */
-	private final Executor executor;
+  /** The <code>Executor</code> to use to run worker threads. */
+  private final Executor executor;
 
-	/** The maximum number of concurrent tasks to process. */
-	private final int maxConcurrentWorkers;
-	
-	/** The <code>Queue</code> of <code>ProgressMonitor</code>s for workers. */
-	private final Queue<ProgressMonitor> workerMonitorQueue = new ConcurrentLinkedQueue<ProgressMonitor>(); 
+  /** The maximum number of concurrent tasks to process. */
+  private final int maxConcurrentWorkers;
+  
+  /** The <code>Queue</code> of <code>ProgressMonitor</code>s for workers. */
+  private final Queue<ProgressMonitor> workerMonitorQueue = new ConcurrentLinkedQueue<ProgressMonitor>(); 
 
-	/** The number of child <code>ProgressMonitor</code>s created. */
-	private int numProgressMonitors = 0;
+  /** The number of child <code>ProgressMonitor</code>s created. */
+  private int numProgressMonitors = 0;
 
-	/** The current <code>ProgressMonitor</code>. */
-	private ProgressMonitor monitor;
+  /** The current <code>ProgressMonitor</code>. */
+  private ProgressMonitor monitor;
 
 }

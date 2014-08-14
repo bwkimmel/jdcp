@@ -54,102 +54,102 @@ import ca.eandb.util.progress.ProgressPanel;
  */
 public final class JobServerMain {
 
-	/**
-	 * Runs the JDCP server application.
-	 * @param args Command line arguments.
-	 * @throws IOException
-	 */
-	public static void main(String[] args) throws IOException {
-	  Properties props = new Properties(System.getProperties());
-	  props.load(JobServerMain.class.getResourceAsStream("system.properties"));
-	  System.setProperties(props);
-		javax.swing.SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				startServer();
-			}
-		});
-	}
+  /**
+   * Runs the JDCP server application.
+   * @param args Command line arguments.
+   * @throws IOException
+   */
+  public static void main(String[] args) throws IOException {
+    Properties props = new Properties(System.getProperties());
+    props.load(JobServerMain.class.getResourceAsStream("system.properties"));
+    System.setProperties(props);
+    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+      public void run() {
+        startServer();
+      }
+    });
+  }
 
-	/**
-	 * Starts the JDCP server.
-	 */
-	private static void startServer() {
+  /**
+   * Starts the JDCP server.
+   */
+  private static void startServer() {
 
-		try {
+    try {
 
-			JdcpUtil.initialize();
+      JdcpUtil.initialize();
 
-			Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-			EmbeddedDataSource ds = new EmbeddedDataSource();
-			ds.setConnectionAttributes("create=true");
-			ds.setDatabaseName("classes");
+      Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+      EmbeddedDataSource ds = new EmbeddedDataSource();
+      ds.setConnectionAttributes("create=true");
+      ds.setDatabaseName("classes");
 
-			System.err.print("Initializing progress monitor...");
-			ProgressPanel panel = new ProgressPanel();
-			panel.setPreferredSize(new Dimension(500, 350));
-			System.err.println("OK");
+      System.err.print("Initializing progress monitor...");
+      ProgressPanel panel = new ProgressPanel();
+      panel.setPreferredSize(new Dimension(500, 350));
+      System.err.println("OK");
 
-			System.err.print("Initializing folders...");
-			Preferences pref = Preferences
-					.userNodeForPackage(JobServer.class);
-			String path = pref.get("rootDirectory", "./server");
-			File rootDirectory = new File(path);
-			File jobsDirectory = new File(rootDirectory, "jobs");
+      System.err.print("Initializing folders...");
+      Preferences pref = Preferences
+          .userNodeForPackage(JobServer.class);
+      String path = pref.get("rootDirectory", "./server");
+      File rootDirectory = new File(path);
+      File jobsDirectory = new File(rootDirectory, "jobs");
 
-			rootDirectory.mkdir();
-			jobsDirectory.mkdir();
-			System.err.println("OK");
+      rootDirectory.mkdir();
+      jobsDirectory.mkdir();
+      System.err.println("OK");
 
-			System.err.print("Initializing service...");
-			DbClassManager classManager = new DbClassManager(ds);
-			classManager.prepareDataSource();
+      System.err.print("Initializing service...");
+      DbClassManager classManager = new DbClassManager(ds);
+      classManager.prepareDataSource();
 
-			TaskScheduler scheduler = new PrioritySerialTaskScheduler();
-			Executor executor = Executors.newCachedThreadPool();
-			JobServer jobServer = new JobServer(jobsDirectory, panel, scheduler, classManager, executor);
-			AuthenticationServer authServer = new AuthenticationServer(jobServer, JdcpUtil.DEFAULT_PORT);
-			System.err.println("OK");
+      TaskScheduler scheduler = new PrioritySerialTaskScheduler();
+      Executor executor = Executors.newCachedThreadPool();
+      JobServer jobServer = new JobServer(jobsDirectory, panel, scheduler, classManager, executor);
+      AuthenticationServer authServer = new AuthenticationServer(jobServer, JdcpUtil.DEFAULT_PORT);
+      System.err.println("OK");
 
-			System.err.print("Exporting service stubs...");
-//			JobService jobStub = (JobService) UnicastRemoteObject.exportObject(
-//					jobServer, 0);
-			System.err.println("OK");
+      System.err.print("Exporting service stubs...");
+//      JobService jobStub = (JobService) UnicastRemoteObject.exportObject(
+//          jobServer, 0);
+      System.err.println("OK");
 
-			System.err.print("Binding service...");
-			final Registry registry = LocateRegistry.createRegistry(JdcpUtil.DEFAULT_PORT);
-			registry.bind("AuthenticationService", authServer);
-			System.err.println("OK");
+      System.err.print("Binding service...");
+      final Registry registry = LocateRegistry.createRegistry(JdcpUtil.DEFAULT_PORT);
+      registry.bind("AuthenticationService", authServer);
+      System.err.println("OK");
 
-			System.err.println("Server ready");
+      System.err.println("Server ready");
 
-			JFrame frame = new JFrame("JDCP Server");
-			frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+      JFrame frame = new JFrame("JDCP Server");
+      frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-			frame.getContentPane().add(panel);
-			frame.pack();
+      frame.getContentPane().add(panel);
+      frame.pack();
 
-			frame.addWindowListener(new WindowAdapter() {
-				public void windowClosed(WindowEvent event) {
-					System.err.print("Shutting down...");
-					try {
-						registry.unbind("AuthenticationService");
-						System.err.println("OK");
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-					System.exit(0);
-				}
-			});
+      frame.addWindowListener(new WindowAdapter() {
+        public void windowClosed(WindowEvent event) {
+          System.err.print("Shutting down...");
+          try {
+            registry.unbind("AuthenticationService");
+            System.err.println("OK");
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+          System.exit(0);
+        }
+      });
 
-			frame.setVisible(true);
+      frame.setVisible(true);
 
-		} catch (Exception e) {
+    } catch (Exception e) {
 
-			System.err.println("Server exception:");
-			e.printStackTrace();
+      System.err.println("Server exception:");
+      e.printStackTrace();
 
-		}
+    }
 
-	}
+  }
 
 }

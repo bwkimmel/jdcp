@@ -35,16 +35,16 @@ package ca.eandb.jdcp.worker.policy;
  */
 public interface CourtesyMonitor {
 
-	/**
-	 * Determines whether tasks should be allowed to run.
-	 * @return A value indicating whether tasks should be allowed to run.
-	 */
-	boolean allowTasksToRun();
+  /**
+   * Determines whether tasks should be allowed to run.
+   * @return A value indicating whether tasks should be allowed to run.
+   */
+  boolean allowTasksToRun();
 
-	/**
-	 * Waits until tasks are allowed to run.
-	 * @throws InterruptedException If this thread was interrupted.
-	 */
-	void waitFor() throws InterruptedException;
+  /**
+   * Waits until tasks are allowed to run.
+   * @throws InterruptedException If this thread was interrupted.
+   */
+  void waitFor() throws InterruptedException;
 
 }

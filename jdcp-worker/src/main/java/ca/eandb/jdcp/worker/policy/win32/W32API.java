@@ -67,16 +67,16 @@ public interface W32API extends StdCallLibrary, W32Errors {
     }
 
     class WORD extends IntegerType {
-    	public WORD() { this(0); }
-    	public WORD(long value) { super(2, value); }
+      public WORD() { this(0); }
+      public WORD(long value) { super(2, value); }
     }
     class DWORD extends IntegerType {
-    	public DWORD() { this(0); }
-    	public DWORD(long value) { super(4, value); }
+      public DWORD() { this(0); }
+      public DWORD(long value) { super(4, value); }
     }
     class LONG extends IntegerType {
-    	public LONG() { this(0); }
-    	public LONG(long value) { super(Native.LONG_SIZE, value); }
+      public LONG() { this(0); }
+      public LONG(long value) { super(Native.LONG_SIZE, value); }
     }
 
     class ATOM extends WORD { }
@@ -101,7 +101,7 @@ public interface W32API extends StdCallLibrary, W32Errors {
 
     /** Special HWND value. */
     HWND HWND_BROADCAST = new HWND(Pointer.createConstant(0xFFFF));
-	HWND HWND_MESSAGE = new HWND(Pointer.createConstant(-3));
+  HWND HWND_MESSAGE = new HWND(Pointer.createConstant(-3));
 
     /** LPHANDLE */
     class HANDLEByReference extends ByReference {

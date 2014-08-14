@@ -38,45 +38,45 @@ import ca.eandb.util.StringUtil;
  * @author Brad Kimmel
  */
 public final class InternalCachingJobServiceClassLoaderStrategy extends
-		CachingJobServiceClassLoaderStrategy {
+    CachingJobServiceClassLoaderStrategy {
 
-	/** A <code>Map</code> storing cached class definitions. */
-	private static final Map<String, byte[]> cache = new HashMap<String, byte[]>();
+  /** A <code>Map</code> storing cached class definitions. */
+  private static final Map<String, byte[]> cache = new HashMap<String, byte[]>();
 
-	/**
-	 * Creates a new <code>InternalCachingJobServiceClassLoaderStrategy</code>.
-	 * @param service The <code>TaskService</code> from which to obtain class
-	 * 		definitions.
-	 * @param jobId The <code>UUID</code> identifying the job for which to
-	 * 		obtain class definitions.
-	 */
-	public InternalCachingJobServiceClassLoaderStrategy(TaskService service,
-			UUID jobId) {
-		super(service, jobId);
-	}
+  /**
+   * Creates a new <code>InternalCachingJobServiceClassLoaderStrategy</code>.
+   * @param service The <code>TaskService</code> from which to obtain class
+   *     definitions.
+   * @param jobId The <code>UUID</code> identifying the job for which to
+   *     obtain class definitions.
+   */
+  public InternalCachingJobServiceClassLoaderStrategy(TaskService service,
+      UUID jobId) {
+    super(service, jobId);
+  }
 
-	/**
-	 * Gets a unique key corresponding to the specified class name/digest pair.
-	 * @param name The name of the class.
-	 * @param digest The class digest.
-	 * @return The key to use for the cache map.
-	 */
-	private String getKey(String name, byte[] digest) {
-		return name + "$$" + StringUtil.toHex(digest);
-	}
+  /**
+   * Gets a unique key corresponding to the specified class name/digest pair.
+   * @param name The name of the class.
+   * @param digest The class digest.
+   * @return The key to use for the cache map.
+   */
+  private String getKey(String name, byte[] digest) {
+    return name + "$$" + StringUtil.toHex(digest);
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheLookup(java.lang.String, byte[])
-	 */
-	protected byte[] cacheLookup(String name, byte[] digest) {
-		return cache.get(getKey(name, digest));
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheLookup(java.lang.String, byte[])
+   */
+  protected byte[] cacheLookup(String name, byte[] digest) {
+    return cache.get(getKey(name, digest));
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheStore(java.lang.String, byte[], byte[])
-	 */
-	protected void cacheStore(String name, byte[] digest, byte[] def) {
-		cache.put(getKey(name, digest), def);
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheStore(java.lang.String, byte[], byte[])
+   */
+  protected void cacheStore(String name, byte[] digest, byte[] def) {
+    cache.put(getKey(name, digest), def);
+  }
 
 }

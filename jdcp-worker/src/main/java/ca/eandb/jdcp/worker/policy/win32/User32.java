@@ -232,23 +232,23 @@ public interface User32 extends W32API {
         LRESULT callback(int nCode, WPARAM wParam, KBDLLHOOKSTRUCT lParam);
     }
     class CWPSTRUCT extends Structure {
-    	public LPARAM lParam;
-    	public WPARAM wParam;
-    	public int message;
-    	public HWND hwnd;
+      public LPARAM lParam;
+      public WPARAM wParam;
+      public int message;
+      public HWND hwnd;
     }
     interface CallWndProc extends HOOKPROC {
-    	LRESULT callback(int nCode, WPARAM wParam, CWPSTRUCT lParam);
+      LRESULT callback(int nCode, WPARAM wParam, CWPSTRUCT lParam);
     }
     class CWPRETSTRUCT extends Structure {
-    	public LRESULT lResult;
-    	public LPARAM lParam;
-    	public WPARAM wParam;
-    	public int message;
-    	public HWND hwnd;
+      public LRESULT lResult;
+      public LPARAM lParam;
+      public WPARAM wParam;
+      public int message;
+      public HWND hwnd;
     }
     interface CallWndRetProc extends HOOKPROC {
-    	LRESULT callback(int nCode, WPARAM wParam, CWPRETSTRUCT lParam);
+      LRESULT callback(int nCode, WPARAM wParam, CWPRETSTRUCT lParam);
     }
     HHOOK SetWindowsHookEx(int idHook, HOOKPROC lpfn, HINSTANCE hMod, int dwThreadId);
     LRESULT CallNextHookEx(HHOOK hhk, int nCode, WPARAM wParam, LPARAM lParam);
@@ -271,74 +271,74 @@ public interface User32 extends W32API {
     void PostQuitMessage(int nExitCode);
 
     // WPARAM values for WM_POWERBROADCAST message
-	int PBT_APMPOWERSTATUSCHANGE = 0xA;
-	int PBT_APMRESUMEAUTOMATIC = 0x12;
-	int PBT_APMRESUMESUSPEND = 0x7;
-	int PBT_APMSUSPEND = 0x4;
-	int PBT_POWERSETTINGCHANGE = 0x8013;
+  int PBT_APMPOWERSTATUSCHANGE = 0xA;
+  int PBT_APMRESUMEAUTOMATIC = 0x12;
+  int PBT_APMRESUMESUSPEND = 0x7;
+  int PBT_APMSUSPEND = 0x4;
+  int PBT_POWERSETTINGCHANGE = 0x8013;
 
-	// WPARAM value for WM_POWERBROADCAST message (WS2003, XP, W2000)
-	int PBT_APMBATTERYLOW = 0x9;
-	int PBT_APMOEMEVENT = 0xB;
-	int PBT_APMQUERYSUSPEND = 0x0;
-	int PBT_APMQUERYSUSPENDFAILED = 0x2;
-	int PBT_APMRESUMECRITICAL = 0x6;
+  // WPARAM value for WM_POWERBROADCAST message (WS2003, XP, W2000)
+  int PBT_APMBATTERYLOW = 0x9;
+  int PBT_APMOEMEVENT = 0xB;
+  int PBT_APMQUERYSUSPEND = 0x0;
+  int PBT_APMQUERYSUSPENDFAILED = 0x2;
+  int PBT_APMRESUMECRITICAL = 0x6;
 
-	/**
-	 * May be returned from WM_POWERBROADCAST in response to message with
-	 * WPARAM value PBT_APMQUERYSUSPEND or PBT_APMQUERYSUSPENDFAILED
-	 * (WS2003, XP, W2000).
-	 */
-	int BROADCAST_QUERY_DENY = 0x424D5144;
+  /**
+   * May be returned from WM_POWERBROADCAST in response to message with
+   * WPARAM value PBT_APMQUERYSUSPEND or PBT_APMQUERYSUSPENDFAILED
+   * (WS2003, XP, W2000).
+   */
+  int BROADCAST_QUERY_DENY = 0x424D5144;
 
-	interface WindowProc extends StdCallCallback {
-		LRESULT callback(HWND hWnd, int uMsg, WPARAM wParam, LPARAM lParam);
-	}
+  interface WindowProc extends StdCallCallback {
+    LRESULT callback(HWND hWnd, int uMsg, WPARAM wParam, LPARAM lParam);
+  }
 
-	class WNDCLASS extends Structure {
-		public int style;
-		public WindowProc lpfnWndProc;
-		public int cbClsExtra;
-		public int cbWndExtra;
-		public HINSTANCE hInstance;
-		public HICON hIcon;
-		public HCURSOR hCursor;
-		public HBRUSH hbrBackground;
-		public String lpszMenuName;
-		public String lpszClassName;
-	}
+  class WNDCLASS extends Structure {
+    public int style;
+    public WindowProc lpfnWndProc;
+    public int cbClsExtra;
+    public int cbWndExtra;
+    public HINSTANCE hInstance;
+    public HICON hIcon;
+    public HCURSOR hCursor;
+    public HBRUSH hbrBackground;
+    public String lpszMenuName;
+    public String lpszClassName;
+  }
 
-	int CS_GLOBALCLASS = 16384;
+  int CS_GLOBALCLASS = 16384;
 
-	ATOM RegisterClass(WNDCLASS lpWndClass);
+  ATOM RegisterClass(WNDCLASS lpWndClass);
 
-	HWND CreateWindow(char[] lpClassName, char[] lpWindowName, int dwStyle, int x, int y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, Pointer lpParam);
-	HWND CreateWindow(byte[] lpClassName, byte[] lpWindowName, int dwStyle, int x, int y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, Pointer lpParam);
-	boolean DestroyWindow(HWND hWnd);
-	LRESULT DefWindowProc(HWND hWnd, int uMsg, WPARAM wParam, LPARAM lParam);
-	int WS_OVERLAPPEDWINDOW = 0xCF0000;
-	int CS_VREDRAW = 1;
-	int CS_HREDRAW = 2;
-	HWND CreateWindowEx(
-		    int dwExStyle,
-		    String lpClassName,
-		    String lpWindowName,
-		    int dwStyle,
-		    int x,
-		    int y,
-		    int nWidth,
-		    int nHeight,
-		    HWND hWndParent,
-		    HMENU hMenu,
-		    HINSTANCE hInstance,
-		    Pointer lpParam
-		);
+  HWND CreateWindow(char[] lpClassName, char[] lpWindowName, int dwStyle, int x, int y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, Pointer lpParam);
+  HWND CreateWindow(byte[] lpClassName, byte[] lpWindowName, int dwStyle, int x, int y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, Pointer lpParam);
+  boolean DestroyWindow(HWND hWnd);
+  LRESULT DefWindowProc(HWND hWnd, int uMsg, WPARAM wParam, LPARAM lParam);
+  int WS_OVERLAPPEDWINDOW = 0xCF0000;
+  int CS_VREDRAW = 1;
+  int CS_HREDRAW = 2;
+  HWND CreateWindowEx(
+        int dwExStyle,
+        String lpClassName,
+        String lpWindowName,
+        int dwStyle,
+        int x,
+        int y,
+        int nWidth,
+        int nHeight,
+        HWND hWndParent,
+        HMENU hMenu,
+        HINSTANCE hInstance,
+        Pointer lpParam
+    );
 
 
-	int SW_SHOWDEFAULT = 10;
-	boolean ShowWindow(HWND hWnd, int nCmdShow);
-	boolean UpdateWindow(HWND hWnd);
+  int SW_SHOWDEFAULT = 10;
+  boolean ShowWindow(HWND hWnd, int nCmdShow);
+  boolean UpdateWindow(HWND hWnd);
 
-	HWND GetParent(HWND hWnd);
+  HWND GetParent(HWND hWnd);
 
 }

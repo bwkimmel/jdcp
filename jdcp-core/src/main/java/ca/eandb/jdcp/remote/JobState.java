@@ -31,26 +31,26 @@ package ca.eandb.jdcp.remote;
  */
 public enum JobState {
 
-	/** The job has been created but has not yet begun. */
-	NEW,
-	
-	/** The job is being processed. */
-	RUNNING,
-	
-	/**
-	 * The job has stalled.  That is, results have been submitted for all
-	 * pending tasks, but the job is not complete
-	 * ({@link ca.eandb.jdcp.job.ParallelizableJob#isComplete()} returns
-	 * <code>false</code>) and the job is not creating new tasks
-	 * ({@link ca.eandb.jdcp.job.ParallelizableJob#getNextTask()} returns
-	 * <code>null</code>).
-	 */
-	STALLED,
-	
-	/** The job is complete. */
-	COMPLETE,
-	
-	/** The job has been cancelled. */
-	CANCELLED
-	
+  /** The job has been created but has not yet begun. */
+  NEW,
+  
+  /** The job is being processed. */
+  RUNNING,
+  
+  /**
+   * The job has stalled.  That is, results have been submitted for all
+   * pending tasks, but the job is not complete
+   * ({@link ca.eandb.jdcp.job.ParallelizableJob#isComplete()} returns
+   * <code>false</code>) and the job is not creating new tasks
+   * ({@link ca.eandb.jdcp.job.ParallelizableJob#getNextTask()} returns
+   * <code>null</code>).
+   */
+  STALLED,
+  
+  /** The job is complete. */
+  COMPLETE,
+  
+  /** The job has been cancelled. */
+  CANCELLED
+  
 }

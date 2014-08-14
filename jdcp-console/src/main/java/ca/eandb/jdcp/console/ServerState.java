@@ -54,198 +54,198 @@ import ca.eandb.util.progress.ProgressStateFactory;
  */
 public final class ServerState {
 
-	/** The <code>Logger</code> to log messages to. */
-	private static final Logger logger = Logger.getLogger(ServerState.class);
+  /** The <code>Logger</code> to log messages to. */
+  private static final Logger logger = Logger.getLogger(ServerState.class);
 
-	/**
-	 * The <code>ProgressMonitor</code>s for tracking the overall progress of
-	 * each job running on the server.
-	 */
-	private List<ProgressState> jobProgressStates = null;
+  /**
+   * The <code>ProgressMonitor</code>s for tracking the overall progress of
+   * each job running on the server.
+   */
+  private List<ProgressState> jobProgressStates = null;
 
-	/** The RMI <code>Registry</code> to register the server with. */
-	private Registry registry = null;
+  /** The RMI <code>Registry</code> to register the server with. */
+  private Registry registry = null;
 
-	/** The running <code>JobServer</code>. */
-	private JobServer jobServer = null;
+  /** The running <code>JobServer</code>. */
+  private JobServer jobServer = null;
 
-	/**
-	 * Gets the RMI <code>Registry</code> to register the server with, creating
-	 * it if necessary.
-	 * @return The RMI <code>Registry</code> to register the server with.
-	 * @throws RemoteException If an error occurs while attempting to create
-	 * 		the <code>Registry</code>.
-	 */
-	public synchronized Registry getRegistry() throws RemoteException {
-		if (registry == null) {
-			registry = LocateRegistry.createRegistry(JdcpUtil.DEFAULT_PORT);
-		}
-		return registry;
-	}
+  /**
+   * Gets the RMI <code>Registry</code> to register the server with, creating
+   * it if necessary.
+   * @return The RMI <code>Registry</code> to register the server with.
+   * @throws RemoteException If an error occurs while attempting to create
+   *     the <code>Registry</code>.
+   */
+  public synchronized Registry getRegistry() throws RemoteException {
+    if (registry == null) {
+      registry = LocateRegistry.createRegistry(JdcpUtil.DEFAULT_PORT);
+    }
+    return registry;
+  }
 
-	/**
-	 * Removes completed and cancelled jobs from the stat list.
-	 */
-	@CommandArgument
-	public void clean() {
-		for (int i = 0; i < jobProgressStates.size();) {
-			ProgressState state = jobProgressStates.get(i);
-			if (state.isCancelled() || state.isComplete()) {
-				jobProgressStates.remove(i);
-			} else {
-				i++;
-			}
-		}
-	}
+  /**
+   * Removes completed and cancelled jobs from the stat list.
+   */
+  @CommandArgument
+  public void clean() {
+    for (int i = 0; i < jobProgressStates.size();) {
+      ProgressState state = jobProgressStates.get(i);
+      if (state.isCancelled() || state.isComplete()) {
+        jobProgressStates.remove(i);
+      } else {
+        i++;
+      }
+    }
+  }
 
-	/**
-	 * Starts the server.
-	 */
-	@CommandArgument
-	public void start() {
-		System.out.println("Starting server");
-		try {
+  /**
+   * Starts the server.
+   */
+  @CommandArgument
+  public void start() {
+    System.out.println("Starting server");
+    try {
 
-			Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-			EmbeddedDataSource ds = new EmbeddedDataSource();
-			ds.setConnectionAttributes("create=true");
-			ds.setDatabaseName("classes");
+      Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+      EmbeddedDataSource ds = new EmbeddedDataSource();
+      ds.setConnectionAttributes("create=true");
+      ds.setDatabaseName("classes");
 
-			logger.info("Initializing jobProgressStates monitor");
-			ProgressStateFactory factory = new ProgressStateFactory();
-			jobProgressStates = factory.getProgressStates();
+      logger.info("Initializing jobProgressStates monitor");
+      ProgressStateFactory factory = new ProgressStateFactory();
+      jobProgressStates = factory.getProgressStates();
 
-			logger.info("Initializing folders...");
-			Preferences pref = Preferences
-					.userNodeForPackage(JobServer.class);
-			String path = pref.get("rootDirectory", "./server");
-			File rootDirectory = new File(path);
-			File jobsDirectory = new File(rootDirectory, "jobs");
+      logger.info("Initializing folders...");
+      Preferences pref = Preferences
+          .userNodeForPackage(JobServer.class);
+      String path = pref.get("rootDirectory", "./server");
+      File rootDirectory = new File(path);
+      File jobsDirectory = new File(rootDirectory, "jobs");
 
-			rootDirectory.mkdir();
-			jobsDirectory.mkdir();
+      rootDirectory.mkdir();
+      jobsDirectory.mkdir();
 
-			logger.info("Initializing service");
-			DbClassManager classManager = new DbClassManager(ds);
-			classManager.prepareDataSource();
+      logger.info("Initializing service");
+      DbClassManager classManager = new DbClassManager(ds);
+      classManager.prepareDataSource();
 
-			TaskScheduler scheduler = new PrioritySerialTaskScheduler();
-			Executor executor = Executors.newCachedThreadPool();
-			jobServer = new JobServer(jobsDirectory, factory, scheduler, classManager, executor);
-			AuthenticationServer authServer = new AuthenticationServer(jobServer, JdcpUtil.DEFAULT_PORT);
+      TaskScheduler scheduler = new PrioritySerialTaskScheduler();
+      Executor executor = Executors.newCachedThreadPool();
+      jobServer = new JobServer(jobsDirectory, factory, scheduler, classManager, executor);
+      AuthenticationServer authServer = new AuthenticationServer(jobServer, JdcpUtil.DEFAULT_PORT);
 
-			logger.info("Binding service");
-			Registry registry = getRegistry();
-			registry.bind("AuthenticationService", authServer);
+      logger.info("Binding service");
+      Registry registry = getRegistry();
+      registry.bind("AuthenticationService", authServer);
 
-			logger.info("Server ready");
-			System.out.println("Server started");
+      logger.info("Server ready");
+      System.out.println("Server started");
 
-		} catch (Exception e) {
-			System.err.println("Failed to start server");
-			logger.error("Failed to start server", e);
-		}
-	}
+    } catch (Exception e) {
+      System.err.println("Failed to start server");
+      logger.error("Failed to start server", e);
+    }
+  }
 
-	/**
-	 * Cancels a job.
-	 * @param index The 1-based index of the job to cancel.
-	 */
-	@CommandArgument
-	public void cancel(int index) {
-		if (jobProgressStates == null) {
-			System.err.println("Server not running");
-			return;
-		}
-		if (index <= 0 || index > jobProgressStates.size()) {
-			System.err.println("Invalid job number");
-		}
-		ProgressState state = jobProgressStates.get(index - 1);
-		state.setCancelPending();
-	}
+  /**
+   * Cancels a job.
+   * @param index The 1-based index of the job to cancel.
+   */
+  @CommandArgument
+  public void cancel(int index) {
+    if (jobProgressStates == null) {
+      System.err.println("Server not running");
+      return;
+    }
+    if (index <= 0 || index > jobProgressStates.size()) {
+      System.err.println("Invalid job number");
+    }
+    ProgressState state = jobProgressStates.get(index - 1);
+    state.setCancelPending();
+  }
 
-	/**
-	 * Stops the server.
-	 */
-	@CommandArgument
-	public void stop() {
-		try {
-			Registry registry = getRegistry();
-			registry.unbind("AuthenticationService");
-			this.jobProgressStates = null;
-			System.out.println("Server stopped");
-		} catch (Exception e) {
-			logger.error("An error occurred while stopping the server", e);
-			System.err.println("Server did not shut down cleanly, see log for details.");
-		}
-	}
+  /**
+   * Stops the server.
+   */
+  @CommandArgument
+  public void stop() {
+    try {
+      Registry registry = getRegistry();
+      registry.unbind("AuthenticationService");
+      this.jobProgressStates = null;
+      System.out.println("Server stopped");
+    } catch (Exception e) {
+      logger.error("An error occurred while stopping the server", e);
+      System.err.println("Server did not shut down cleanly, see log for details.");
+    }
+  }
 
-	/**
-	 * Prints the status of the jobs running on the server.
-	 * @param index The 1-based index of the job to print the status of, or
-	 * 		zero to print the status of all jobs.
-	 */
-	@CommandArgument
-	public void stat(int index) {
-		if (this.jobProgressStates == null) {
-			System.err.println("Server not running");
-			return;
-		}
-		if (index == 0) {
-			List<ProgressState> progress = new ArrayList<ProgressState>(this.jobProgressStates);
-			if (progress != null) {
-				System.out.println("   # Title                     Progress Status                          ");
-				System.out.println("------------------------------------------------------------------------");
-				for (int i = 0, n = progress.size(); i < n; i++) {
-					ProgressState state = progress.get(i);
-					char flag = ' ';
-					if (state.isComplete()) {
-						flag = '*';
-					} else if (state.isCancelled()) {
-						flag = 'X';
-					} else if (state.isCancelPending()) {
-						flag = 'C';
-					}
-					String title = state.getTitle();
-					if (title.length() > 25) {
-						title = title.substring(0, 24) + ">";
-					}
-					String status = state.getStatus();
-					if (status.length() > 32) {
-						status = status.substring(0, 31) + ">";
-					}
-					String progStr = (state.isIndeterminant() ? "????????" : String.format(" % 6.2f%%", 100.0 * state.getProgress()));
-					System.out.printf("%c% 3d %-25s %s %-33s\n",
-							flag, i + 1, title, progStr, status);
-				}
-			}
-		} else if (index > 0 && index <= this.jobProgressStates.size()) {
-			ProgressState state = this.jobProgressStates.get(index - 1);
-			System.out.printf("Job #%d", index);
-			if (state.isComplete()) {
-				System.out.print(" [COMPLETE]");
-			} else if (state.isCancelled()) {
-				System.out.print(" [CANCELLED]");
-			} else if (state.isCancelPending()) {
-				System.out.print(" [CANCEL PENDING]");
-			}
-			System.out.println();
-			System.out.printf("Title    : %s\n", state.getTitle());
-			if (state.isIndeterminant()) {
-				System.out.print("Progress : ???");
-			} else {
-				System.out.printf("Progress : %.2f%%", 100.0 * state.getProgress());
-			}
-			int maximum = state.getMaximum();
-			int value = state.getValue();
-			if (maximum > 0) {
-				System.out.printf(" (%d/%d)", value, maximum);
-			}
-			System.out.println();
-			System.out.printf("Status   : %s\n", state.getStatus());
-		} else {
-			System.err.println("Invalid job number");
-		}
-	}
+  /**
+   * Prints the status of the jobs running on the server.
+   * @param index The 1-based index of the job to print the status of, or
+   *     zero to print the status of all jobs.
+   */
+  @CommandArgument
+  public void stat(int index) {
+    if (this.jobProgressStates == null) {
+      System.err.println("Server not running");
+      return;
+    }
+    if (index == 0) {
+      List<ProgressState> progress = new ArrayList<ProgressState>(this.jobProgressStates);
+      if (progress != null) {
+        System.out.println("   # Title                     Progress Status                          ");
+        System.out.println("------------------------------------------------------------------------");
+        for (int i = 0, n = progress.size(); i < n; i++) {
+          ProgressState state = progress.get(i);
+          char flag = ' ';
+          if (state.isComplete()) {
+            flag = '*';
+          } else if (state.isCancelled()) {
+            flag = 'X';
+          } else if (state.isCancelPending()) {
+            flag = 'C';
+          }
+          String title = state.getTitle();
+          if (title.length() > 25) {
+            title = title.substring(0, 24) + ">";
+          }
+          String status = state.getStatus();
+          if (status.length() > 32) {
+            status = status.substring(0, 31) + ">";
+          }
+          String progStr = (state.isIndeterminant() ? "????????" : String.format(" % 6.2f%%", 100.0 * state.getProgress()));
+          System.out.printf("%c% 3d %-25s %s %-33s\n",
+              flag, i + 1, title, progStr, status);
+        }
+      }
+    } else if (index > 0 && index <= this.jobProgressStates.size()) {
+      ProgressState state = this.jobProgressStates.get(index - 1);
+      System.out.printf("Job #%d", index);
+      if (state.isComplete()) {
+        System.out.print(" [COMPLETE]");
+      } else if (state.isCancelled()) {
+        System.out.print(" [CANCELLED]");
+      } else if (state.isCancelPending()) {
+        System.out.print(" [CANCEL PENDING]");
+      }
+      System.out.println();
+      System.out.printf("Title    : %s\n", state.getTitle());
+      if (state.isIndeterminant()) {
+        System.out.print("Progress : ???");
+      } else {
+        System.out.printf("Progress : %.2f%%", 100.0 * state.getProgress());
+      }
+      int maximum = state.getMaximum();
+      int value = state.getValue();
+      if (maximum > 0) {
+        System.out.printf(" (%d/%d)", value, maximum);
+      }
+      System.out.println();
+      System.out.printf("Status   : %s\n", state.getStatus());
+    } else {
+      System.err.println("Invalid job number");
+    }
+  }
 
 }

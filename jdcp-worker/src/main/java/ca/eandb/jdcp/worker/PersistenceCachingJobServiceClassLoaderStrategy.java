@@ -50,152 +50,152 @@ import ca.eandb.util.UnexpectedException;
  * @author Brad Kimmel
  */
 public final class PersistenceCachingJobServiceClassLoaderStrategy extends
-		CachingJobServiceClassLoaderStrategy {
+    CachingJobServiceClassLoaderStrategy {
 
-	/** The base <code>URL</code> to use for storing class definitions. */
-	private final URL baseUrl;
+  /** The base <code>URL</code> to use for storing class definitions. */
+  private final URL baseUrl;
 
-	/**
-	 * The <code>PersistenceService</code> to use for storing class
-	 * definitions.
-	 */
-	private final PersistenceService persistenceService;
+  /**
+   * The <code>PersistenceService</code> to use for storing class
+   * definitions.
+   */
+  private final PersistenceService persistenceService;
 
-	/**
-	 * Creates a new
-	 * <code>PersistenceCachingJobServiceClassLoaderStrategy</code>.  The
-	 * <code>BasicService</code> is used to determine the code base
-	 * <code>URL</code>.
-	 * @param service The <code>TaskService</code> from which to obtain class
-	 * 		definitions.
-	 * @param jobId The <code>UUID</code> identifying the job for which to
-	 * 		obtain class definitions.
-	 * @throws UnavailableServiceException If <code>PersistenceService</code>
-	 * 		or <code>BasicService</code> is unavailable.
-	 * @see javax.jnlp.PersistenceService
-	 * @see javax.jnlp.BasicService
-	 */
-	public PersistenceCachingJobServiceClassLoaderStrategy(TaskService service,
-			UUID jobId) throws UnavailableServiceException {
-		super(service, jobId);
-		BasicService basicService = (BasicService) ServiceManager.lookup("javax.jnlp.BasicService");
-		this.baseUrl = basicService.getCodeBase();
-		this.persistenceService = (PersistenceService) ServiceManager.lookup("javax.jnlp.PersistenceService");
-	}
+  /**
+   * Creates a new
+   * <code>PersistenceCachingJobServiceClassLoaderStrategy</code>.  The
+   * <code>BasicService</code> is used to determine the code base
+   * <code>URL</code>.
+   * @param service The <code>TaskService</code> from which to obtain class
+   *     definitions.
+   * @param jobId The <code>UUID</code> identifying the job for which to
+   *     obtain class definitions.
+   * @throws UnavailableServiceException If <code>PersistenceService</code>
+   *     or <code>BasicService</code> is unavailable.
+   * @see javax.jnlp.PersistenceService
+   * @see javax.jnlp.BasicService
+   */
+  public PersistenceCachingJobServiceClassLoaderStrategy(TaskService service,
+      UUID jobId) throws UnavailableServiceException {
+    super(service, jobId);
+    BasicService basicService = (BasicService) ServiceManager.lookup("javax.jnlp.BasicService");
+    this.baseUrl = basicService.getCodeBase();
+    this.persistenceService = (PersistenceService) ServiceManager.lookup("javax.jnlp.PersistenceService");
+  }
 
-	/**
-	 * Creates a new
-	 * <code>PersistenceCachingJobServiceClassLoaderStrategy</code>.
-	 * @param service The <code>JobService</code> from which to obtain class
-	 * 		definitions.
-	 * @param jobId The <code>UUID</code> identifying the job for which to
-	 * 		obtain class definitions.
-	 * @param baseUrl The base <code>URL</code> to use for storing class
-	 * 		definitions.
-	 * @throws UnavailableServiceException If <code>PersistenceService</code>
-	 * 		is unavailable.
-	 * @see javax.jnlp.PersistenceService
-	 */
-	public PersistenceCachingJobServiceClassLoaderStrategy(JobService service,
-			UUID jobId, URL baseUrl) throws UnavailableServiceException {
-		super(service, jobId);
-		this.baseUrl = baseUrl;
-		this.persistenceService = (PersistenceService) ServiceManager.lookup("javax.jnlp.PersistenceService");
-	}
+  /**
+   * Creates a new
+   * <code>PersistenceCachingJobServiceClassLoaderStrategy</code>.
+   * @param service The <code>JobService</code> from which to obtain class
+   *     definitions.
+   * @param jobId The <code>UUID</code> identifying the job for which to
+   *     obtain class definitions.
+   * @param baseUrl The base <code>URL</code> to use for storing class
+   *     definitions.
+   * @throws UnavailableServiceException If <code>PersistenceService</code>
+   *     is unavailable.
+   * @see javax.jnlp.PersistenceService
+   */
+  public PersistenceCachingJobServiceClassLoaderStrategy(JobService service,
+      UUID jobId, URL baseUrl) throws UnavailableServiceException {
+    super(service, jobId);
+    this.baseUrl = baseUrl;
+    this.persistenceService = (PersistenceService) ServiceManager.lookup("javax.jnlp.PersistenceService");
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheLookup(java.lang.String, byte[])
-	 */
-	@Override
-	protected byte[] cacheLookup(String name, byte[] digest) {
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheLookup(java.lang.String, byte[])
+   */
+  @Override
+  protected byte[] cacheLookup(String name, byte[] digest) {
 
-		try {
+    try {
 
-			URL url = getUrlForCacheEntry(name, digest);
-			FileContents contents = persistenceService.get(url);
+      URL url = getUrlForCacheEntry(name, digest);
+      FileContents contents = persistenceService.get(url);
 
-			/* If we get here, the digest is okay, so read the data. */
-			InputStream in = contents.getInputStream();
-			byte[] def = new byte[(int) contents.getLength()];
+      /* If we get here, the digest is okay, so read the data. */
+      InputStream in = contents.getInputStream();
+      byte[] def = new byte[(int) contents.getLength()];
 
-			in.read(def);
+      in.read(def);
 
-			return def;
+      return def;
 
-		} catch (FileNotFoundException e) {
+    } catch (FileNotFoundException e) {
 
-			/*
-			 * Nothing to do.  This just means there is no cached item with the
-			 * specified key.
-			 */
+      /*
+       * Nothing to do.  This just means there is no cached item with the
+       * specified key.
+       */
 
-		} catch (MalformedURLException e) {
+    } catch (MalformedURLException e) {
 
-			/*
-			 * This should not happen.  getUrlForCacheEntry should ensure that the
-			 * URL is valid.
-			 */
-			throw new UnexpectedException(e);
+      /*
+       * This should not happen.  getUrlForCacheEntry should ensure that the
+       * URL is valid.
+       */
+      throw new UnexpectedException(e);
 
-		} catch (IOException e) {
+    } catch (IOException e) {
 
-			e.printStackTrace();
+      e.printStackTrace();
 
-		}
+    }
 
-		return null;
+    return null;
 
-	}
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheStore(java.lang.String, byte[], byte[])
-	 */
-	@Override
-	protected void cacheStore(String name, byte[] digest, byte[] def) {
-		URL url = getUrlForCacheEntry(name, digest);
-		write(url, def);
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheStore(java.lang.String, byte[], byte[])
+   */
+  @Override
+  protected void cacheStore(String name, byte[] digest, byte[] def) {
+    URL url = getUrlForCacheEntry(name, digest);
+    write(url, def);
+  }
 
-	/**
-	 * Gets the <code>URL</code> for storing the specified class definition.
-	 * @param name The fully qualified name of the class.
-	 * @param digest The MD5 digest of the class definition.
-	 * @return The <code>URL</code> to use.
-	 */
-	private URL getUrlForCacheEntry(String name, byte[] digest) {
-		try {
-			return new URL(baseUrl, name.replace('.', '/') + StringUtil.toHex(digest));
-		} catch (MalformedURLException e) {
-			throw new UnexpectedException(e);
-		}
-	}
+  /**
+   * Gets the <code>URL</code> for storing the specified class definition.
+   * @param name The fully qualified name of the class.
+   * @param digest The MD5 digest of the class definition.
+   * @return The <code>URL</code> to use.
+   */
+  private URL getUrlForCacheEntry(String name, byte[] digest) {
+    try {
+      return new URL(baseUrl, name.replace('.', '/') + StringUtil.toHex(digest));
+    } catch (MalformedURLException e) {
+      throw new UnexpectedException(e);
+    }
+  }
 
-	/**
-	 * Writes data to persistent storage.
-	 * @param url The <code>URL</code> to associate with the data.
-	 * @param data The data to write.
-	 */
-	private void write(URL url, byte[] data) {
+  /**
+   * Writes data to persistent storage.
+   * @param url The <code>URL</code> to associate with the data.
+   * @param data The data to write.
+   */
+  private void write(URL url, byte[] data) {
 
-		try {
+    try {
 
-			if (persistenceService.create(url, data.length) < data.length) {
-				persistenceService.delete(url);
-				throw new RuntimeException("Could not allocate enough space in persistence store.");
-			}
+      if (persistenceService.create(url, data.length) < data.length) {
+        persistenceService.delete(url);
+        throw new RuntimeException("Could not allocate enough space in persistence store.");
+      }
 
-			FileContents contents = persistenceService.get(url);
-			OutputStream out = contents.getOutputStream(true);
+      FileContents contents = persistenceService.get(url);
+      OutputStream out = contents.getOutputStream(true);
 
-			out.write(data);
+      out.write(data);
 
-		} catch (IOException e) {
+    } catch (IOException e) {
 
-			e.printStackTrace();
-			throw new RuntimeException("Could not write data to persistence store.", e);
+      e.printStackTrace();
+      throw new RuntimeException("Could not write data to persistence store.", e);
 
-		}
+    }
 
-	}
+  }
 
 }

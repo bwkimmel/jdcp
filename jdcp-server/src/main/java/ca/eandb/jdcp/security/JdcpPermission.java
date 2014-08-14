@@ -33,17 +33,17 @@ import java.security.BasicPermission;
  */
 public final class JdcpPermission extends BasicPermission {
 
-	/**
-	 * Serialization version ID.
-	 */
-	private static final long serialVersionUID = 7740220114085223696L;
+  /**
+   * Serialization version ID.
+   */
+  private static final long serialVersionUID = 7740220114085223696L;
 
-	/**
-	 * Creates a new <code>JdcpPermission</code>.
-	 * @param name The name of the permission.
-	 */
-	public JdcpPermission(String name) {
-		super(name);
-	}
+  /**
+   * Creates a new <code>JdcpPermission</code>.
+   * @param name The name of the permission.
+   */
+  public JdcpPermission(String name) {
+    super(name);
+  }
 
 }

@@ -49,90 +49,90 @@ import ca.eandb.util.args.StringFieldOption;
  */
 public final class ScriptCommand implements Command<Configuration> {
 
-	private static final boolean SCRIPTING_SUPPORTED = Double.parseDouble(System.getProperty("java.specification.version")) >= 1.6;
+  private static final boolean SCRIPTING_SUPPORTED = Double.parseDouble(System.getProperty("java.specification.version")) >= 1.6;
 
-	private static final String SCRIPTING_NOT_SUPPORTED_MESSAGE = "Scripting requires Java SE 6 or higher.";
+  private static final String SCRIPTING_NOT_SUPPORTED_MESSAGE = "Scripting requires Java SE 6 or higher.";
 
-	private static final String DEFAULT_LANGUAGE = "JavaScript";
+  private static final String DEFAULT_LANGUAGE = "JavaScript";
 
-	/**
-	 * Command line options specific to the <code>ScriptCommand</code>.
-	 * @author Brad Kimmel
-	 */
-	public static class Options {
+  /**
+   * Command line options specific to the <code>ScriptCommand</code>.
+   * @author Brad Kimmel
+   */
+  public static class Options {
 
-		/** The <code>File</code> from which to read the script. */
-		public File file;
+    /** The <code>File</code> from which to read the script. */
+    public File file;
 
-		/** The language in which the script was written. */
-		public String language = null;
+    /** The language in which the script was written. */
+    public String language = null;
 
-	}
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.util.args.Command#process(java.util.Queue, java.lang.Object)
-	 */
-	public void process(Queue<String> argq, final Configuration conf) {
-		if (SCRIPTING_SUPPORTED) {
+  /* (non-Javadoc)
+   * @see ca.eandb.util.args.Command#process(java.util.Queue, java.lang.Object)
+   */
+  public void process(Queue<String> argq, final Configuration conf) {
+    if (SCRIPTING_SUPPORTED) {
 
-			ArgumentProcessor<Options> argProcessor = new ArgumentProcessor<Options>();
+      ArgumentProcessor<Options> argProcessor = new ArgumentProcessor<Options>();
 
-			argProcessor.addOption("file", 'f', new FileFieldOption<Options>("file", true));
-			argProcessor.addOption("language", 'l', new StringFieldOption<Options>("language"));
+      argProcessor.addOption("file", 'f', new FileFieldOption<Options>("file", true));
+      argProcessor.addOption("language", 'l', new StringFieldOption<Options>("language"));
 
-			argProcessor.setDefaultCommand(new AbstractCommand<Options>() {
-				protected void run(String[] args, Options options) {
-					try {
-						ScriptEngineManager factory = new ScriptEngineManager();
-						ScriptEngine engine = getScriptEngine(factory, options);
-						if (engine == null) {
-							System.err.println("Unrecognized language");
-							System.exit(1);
-						}
-						InputStream in = (options.file != null)
-								? new FileInputStream(options.file)
-								: System.in;
-						Reader reader = new InputStreamReader(in);
+      argProcessor.setDefaultCommand(new AbstractCommand<Options>() {
+        protected void run(String[] args, Options options) {
+          try {
+            ScriptEngineManager factory = new ScriptEngineManager();
+            ScriptEngine engine = getScriptEngine(factory, options);
+            if (engine == null) {
+              System.err.println("Unrecognized language");
+              System.exit(1);
+            }
+            InputStream in = (options.file != null)
+                ? new FileInputStream(options.file)
+                : System.in;
+            Reader reader = new InputStreamReader(in);
 
-						engine.put("jdcp", new ScriptFacade(conf));
-						engine.put("args", args);
-						engine.eval(reader);
-					} catch (ScriptException e) {
-						e.printStackTrace();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			});
+            engine.put("jdcp", new ScriptFacade(conf));
+            engine.put("args", args);
+            engine.eval(reader);
+          } catch (ScriptException e) {
+            e.printStackTrace();
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+        }
+      });
 
-			argProcessor.process(argq, new Options());
+      argProcessor.process(argq, new Options());
 
-		} else { // Java specification version < 1.6, scripting not supported
-			System.err.println(SCRIPTING_NOT_SUPPORTED_MESSAGE);
-		}
-	}
+    } else { // Java specification version < 1.6, scripting not supported
+      System.err.println(SCRIPTING_NOT_SUPPORTED_MESSAGE);
+    }
+  }
 
-	/**
-	 * Gets the <code>ScriptEngine</code> to use for interpreting the script.
-	 * @param factory The <code>ScriptEngineManager</code> to use to create the
-	 * 		<code>ScriptEngine</code>.
-	 * @param options The command line options for this
-	 * 		<code>ScriptCommand</code>.
-	 * @return The <code>ScriptEngine</code> to use.
-	 */
-	private ScriptEngine getScriptEngine(ScriptEngineManager factory, Options options) {
-		if (options.language != null) {
-			return factory.getEngineByName(options.language);
-		}
-		if (options.file != null) {
-			String fileName = options.file.getName();
-			int separator = fileName.lastIndexOf('.');
-			if (separator < 0) {
-				String extension = fileName.substring(separator + 1);
-				return factory.getEngineByExtension(extension);
-			}
-		}
-		return factory.getEngineByName(DEFAULT_LANGUAGE);
-	}
+  /**
+   * Gets the <code>ScriptEngine</code> to use for interpreting the script.
+   * @param factory The <code>ScriptEngineManager</code> to use to create the
+   *     <code>ScriptEngine</code>.
+   * @param options The command line options for this
+   *     <code>ScriptCommand</code>.
+   * @return The <code>ScriptEngine</code> to use.
+   */
+  private ScriptEngine getScriptEngine(ScriptEngineManager factory, Options options) {
+    if (options.language != null) {
+      return factory.getEngineByName(options.language);
+    }
+    if (options.file != null) {
+      String fileName = options.file.getName();
+      int separator = fileName.lastIndexOf('.');
+      if (separator < 0) {
+        String extension = fileName.substring(separator + 1);
+        return factory.getEngineByExtension(extension);
+      }
+    }
+    return factory.getEngineByName(DEFAULT_LANGUAGE);
+  }
 
 }

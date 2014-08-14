@@ -39,93 +39,93 @@ import ca.eandb.util.progress.ProgressMonitor;
  */
 public class TaskReversedJob implements ParallelizableJob {
 
-	/** Serialization version ID. */
-	private static final long serialVersionUID = -6185355912678518969L;
+  /** Serialization version ID. */
+  private static final long serialVersionUID = -6185355912678518969L;
 
-	/** The underlying <code>ParallelizableJob</code>. */
-	private final ParallelizableJob inner;
+  /** The underlying <code>ParallelizableJob</code>. */
+  private final ParallelizableJob inner;
 
-	/** The list of unassigned tasks. */
-	private final Stack<Object> tasks = new Stack<Object>();
+  /** The list of unassigned tasks. */
+  private final Stack<Object> tasks = new Stack<Object>();
 
-	/**
-	 * Creates a new <code>TaskRandomziedJob</code>.
-	 * @param inner The <code>ParallelizableJob</code> whose tasks to execute
-	 * 		in random order.
-	 */
-	public TaskReversedJob(ParallelizableJob inner) {
-		this.inner = inner;
-	}
+  /**
+   * Creates a new <code>TaskRandomziedJob</code>.
+   * @param inner The <code>ParallelizableJob</code> whose tasks to execute
+   *     in random order.
+   */
+  public TaskReversedJob(ParallelizableJob inner) {
+    this.inner = inner;
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.job.ParallelizableJob#getNextTask()
-	 */
-	public Object getNextTask() throws Exception {
-		while (true) {
-			Object task = inner.getNextTask();
-			if (task == null) {
-				break;
-			}
-			tasks.push(task);
-		}
-		return tasks.isEmpty() ? null : tasks.pop();
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.job.ParallelizableJob#getNextTask()
+   */
+  public Object getNextTask() throws Exception {
+    while (true) {
+      Object task = inner.getNextTask();
+      if (task == null) {
+        break;
+      }
+      tasks.push(task);
+    }
+    return tasks.isEmpty() ? null : tasks.pop();
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.job.ParallelizableJob#isComplete()
-	 */
-	public boolean isComplete() throws Exception {
-		return inner.isComplete();
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.job.ParallelizableJob#isComplete()
+   */
+  public boolean isComplete() throws Exception {
+    return inner.isComplete();
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.job.ParallelizableJob#submitTaskResults(java.lang.Object, java.lang.Object, ca.eandb.util.progress.ProgressMonitor)
-	 */
-	public void submitTaskResults(Object task, Object results,
-			ProgressMonitor monitor) throws Exception {
-		inner.submitTaskResults(task, results, monitor);
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.job.ParallelizableJob#submitTaskResults(java.lang.Object, java.lang.Object, ca.eandb.util.progress.ProgressMonitor)
+   */
+  public void submitTaskResults(Object task, Object results,
+      ProgressMonitor monitor) throws Exception {
+    inner.submitTaskResults(task, results, monitor);
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.job.AbstractParallelizableJob#finish()
-	 */
-	public void finish() throws Exception {
-		inner.finish();
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.job.AbstractParallelizableJob#finish()
+   */
+  public void finish() throws Exception {
+    inner.finish();
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.job.AbstractParallelizableJob#initialize()
-	 */
-	public void initialize() throws Exception {
-		inner.initialize();
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.job.AbstractParallelizableJob#initialize()
+   */
+  public void initialize() throws Exception {
+    inner.initialize();
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.job.AbstractParallelizableJob#restoreState(java.io.ObjectInput)
-	 */
-	public void restoreState(ObjectInput input) throws Exception {
-		inner.restoreState(input);
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.job.AbstractParallelizableJob#restoreState(java.io.ObjectInput)
+   */
+  public void restoreState(ObjectInput input) throws Exception {
+    inner.restoreState(input);
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.job.AbstractParallelizableJob#saveState(java.io.ObjectOutput)
-	 */
-	public void saveState(ObjectOutput output) throws Exception {
-		inner.saveState(output);
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.job.AbstractParallelizableJob#saveState(java.io.ObjectOutput)
+   */
+  public void saveState(ObjectOutput output) throws Exception {
+    inner.saveState(output);
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.job.AbstractParallelizableJob#setHostService(ca.eandb.jdcp.job.HostService)
-	 */
-	public void setHostService(HostService host) {
-		inner.setHostService(host);
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.job.AbstractParallelizableJob#setHostService(ca.eandb.jdcp.job.HostService)
+   */
+  public void setHostService(HostService host) {
+    inner.setHostService(host);
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.job.ParallelizableJob#worker()
-	 */
-	public TaskWorker worker() throws Exception {
-		return inner.worker();
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.job.ParallelizableJob#worker()
+   */
+  public TaskWorker worker() throws Exception {
+    return inner.worker();
+  }
 
 }

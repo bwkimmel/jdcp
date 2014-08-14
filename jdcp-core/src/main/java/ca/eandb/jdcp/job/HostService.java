@@ -36,24 +36,24 @@ import java.io.RandomAccessFile;
  */
 public interface HostService {
 
-	/**
-	 * Creates a file in the job's working directory.
-	 * @param path The path of the file to create, relative to the job's
-	 * 		working directory.
-	 * @return A <code>RandomAccessFile</code> for the newly created file.
-	 * @throws IllegalArgumentException If the path is absolute or refers
-	 * 		to the parent directory ("..").
-	 */
-	RandomAccessFile createRandomAccessFile(String path);
+  /**
+   * Creates a file in the job's working directory.
+   * @param path The path of the file to create, relative to the job's
+   *     working directory.
+   * @return A <code>RandomAccessFile</code> for the newly created file.
+   * @throws IllegalArgumentException If the path is absolute or refers
+   *     to the parent directory ("..").
+   */
+  RandomAccessFile createRandomAccessFile(String path);
 
-	/**
-	 * Creates a file in the job's working directory.
-	 * @param path The path of the file to create, relative to the job's
-	 * 		working directory.
-	 * @return A <code>FileOutputStream</code> for the newly created file.
-	 * @throws IllegalArgumentException If the path is absolute or refers
-	 * 		to the parent directory ("..").
-	 */
-	FileOutputStream createFileOutputStream(String path);
+  /**
+   * Creates a file in the job's working directory.
+   * @param path The path of the file to create, relative to the job's
+   *     working directory.
+   * @return A <code>FileOutputStream</code> for the newly created file.
+   * @throws IllegalArgumentException If the path is absolute or refers
+   *     to the parent directory ("..").
+   */
+  FileOutputStream createFileOutputStream(String path);
 
 }

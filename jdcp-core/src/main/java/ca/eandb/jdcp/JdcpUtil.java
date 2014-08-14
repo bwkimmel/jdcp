@@ -51,144 +51,144 @@ import ca.eandb.util.rmi.Serialized;
  */
 public final class JdcpUtil {
 
-	/** The default port that a JDCP server listens on. */
-	public static final int DEFAULT_PORT = 5327;
+  /** The default port that a JDCP server listens on. */
+  public static final int DEFAULT_PORT = 5327;
 
-	/**
-	 * Uniquely identifies the protocol used for communication between clients
-	 * and a server.  This is used for verifying protocol compatibility when
-	 * authenticating with the server.
-	 */
-	public static final UUID PROTOCOL_VERSION_ID = UUID.fromString("E818C36E-2EA4-4BA4-B793-C96B818E85FF");
+  /**
+   * Uniquely identifies the protocol used for communication between clients
+   * and a server.  This is used for verifying protocol compatibility when
+   * authenticating with the server.
+   */
+  public static final UUID PROTOCOL_VERSION_ID = UUID.fromString("E818C36E-2EA4-4BA4-B793-C96B818E85FF");
 
-	/**
-	 * Connects to a JDCP server.
-	 * @param host The host name of the server to send the job to.
-	 * @param username The user name to use to authenticate with the server.
-	 * @param password The password to use to authenticate with the server.
-	 * @return The <code>JobService</code> to use to communicate with the
-	 * 		server.
-	 * @throws RemoteException If a failure occurs in attempting to communicate
-	 * 		with the server.
-	 * @throws LoginException If the login attempt fails.
-	 * @throws NotBoundException If the <code>AuthenticationService</code>
-	 * 		could not be found at the server.
-	 * @throws ProtocolVersionException If this client is incompatible with the
-	 * 		server.
-	 */
-	public static JobService connect(String host, String username,
-			String password) throws RemoteException, NotBoundException,
-			LoginException, ProtocolVersionException {
-		Registry registry = LocateRegistry.getRegistry(host, DEFAULT_PORT);
-		AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
-		return auth.authenticate(username, password, PROTOCOL_VERSION_ID);
-	}
-	
-	/**
-	 * Submits a job to a server for processing.
-	 * @param job The <code>ParallelizableJob</code> to be processed.
-	 * @param description A description of the job.
-	 * @param host The host name of the server to send the job to.
-	 * @param username The user name to use to authenticate with the server.
-	 * @param password The password to use to authenticate with the server.
-	 * @return The <code>UUID</code> assigned to the job.
-	 * @throws SecurityException If the user does not have access to perform
-	 * 		the requested action on the server.
-	 * @throws RemoteException If a failure occurs in attempting to communicate
-	 * 		with the server.
-	 * @throws ClassNotFoundException If deserialization of the job at the
-	 * 		server requires a class that could not be found on the server.
-	 * @throws JobExecutionException If the submitted job threw an exception at
-	 * 		the server during initialization.
-	 * @throws LoginException If the login attempt fails.
-	 * @throws NotBoundException If the <code>AuthenticationService</code>
-	 * 		could not be found at the server.
-	 * @throws ProtocolVersionException If this client is incompatible with the
-	 * 		server.
-	 */
-	public static UUID submitJob(ParallelizableJob job, String description,
-			String host, String username, String password)
-			throws SecurityException, RemoteException, ClassNotFoundException,
-			JobExecutionException, LoginException, NotBoundException, ProtocolVersionException {
+  /**
+   * Connects to a JDCP server.
+   * @param host The host name of the server to send the job to.
+   * @param username The user name to use to authenticate with the server.
+   * @param password The password to use to authenticate with the server.
+   * @return The <code>JobService</code> to use to communicate with the
+   *     server.
+   * @throws RemoteException If a failure occurs in attempting to communicate
+   *     with the server.
+   * @throws LoginException If the login attempt fails.
+   * @throws NotBoundException If the <code>AuthenticationService</code>
+   *     could not be found at the server.
+   * @throws ProtocolVersionException If this client is incompatible with the
+   *     server.
+   */
+  public static JobService connect(String host, String username,
+      String password) throws RemoteException, NotBoundException,
+      LoginException, ProtocolVersionException {
+    Registry registry = LocateRegistry.getRegistry(host, DEFAULT_PORT);
+    AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
+    return auth.authenticate(username, password, PROTOCOL_VERSION_ID);
+  }
+  
+  /**
+   * Submits a job to a server for processing.
+   * @param job The <code>ParallelizableJob</code> to be processed.
+   * @param description A description of the job.
+   * @param host The host name of the server to send the job to.
+   * @param username The user name to use to authenticate with the server.
+   * @param password The password to use to authenticate with the server.
+   * @return The <code>UUID</code> assigned to the job.
+   * @throws SecurityException If the user does not have access to perform
+   *     the requested action on the server.
+   * @throws RemoteException If a failure occurs in attempting to communicate
+   *     with the server.
+   * @throws ClassNotFoundException If deserialization of the job at the
+   *     server requires a class that could not be found on the server.
+   * @throws JobExecutionException If the submitted job threw an exception at
+   *     the server during initialization.
+   * @throws LoginException If the login attempt fails.
+   * @throws NotBoundException If the <code>AuthenticationService</code>
+   *     could not be found at the server.
+   * @throws ProtocolVersionException If this client is incompatible with the
+   *     server.
+   */
+  public static UUID submitJob(ParallelizableJob job, String description,
+      String host, String username, String password)
+      throws SecurityException, RemoteException, ClassNotFoundException,
+      JobExecutionException, LoginException, NotBoundException, ProtocolVersionException {
 
-		Serialized<ParallelizableJob> payload = new Serialized<ParallelizableJob>(job);
-		JobService service = connect(host, username, password);
+    Serialized<ParallelizableJob> payload = new Serialized<ParallelizableJob>(job);
+    JobService service = connect(host, username, password);
 
-		return service.submitJob(payload, description);
+    return service.submitJob(payload, description);
 
-	}
+  }
 
-	/**
-	 * Submits a job to a server for processing.
-	 * @param job The <code>ParallelizableJob</code> to be processed.
-	 * @param description A description of the job.
-	 * @param host The host name of the server to send the job to.
-	 * @param username The user name to use to authenticate with the server.
-	 * @param password The password to use to authenticate with the server.
-	 * @return The <code>UUID</code> assigned to the job.
-	 * @throws SecurityException If the user does not have access to perform
-	 * 		the requested action on the server.
-	 * @throws RemoteException If a failure occurs in attempting to communicate
-	 * 		with the server.
-	 * @throws ClassNotFoundException If deserialization of the job at the
-	 * 		server requires a class that could not be found on the server.
-	 * @throws JobExecutionException If the submitted job threw an exception at
-	 * 		the server during initialization.
-	 * @throws LoginException If the login attempt fails.
-	 * @throws NotBoundException If the <code>AuthenticationService</code>
-	 * 		could not be found at the server.
-	 * @throws ProtocolVersionException If this client is incompatible with the
-	 * 		server.
-	 */
-	public static void registerTaskService(String name, TaskService taskService,
-			String host, String username, String password)
-			throws SecurityException, RemoteException, ClassNotFoundException,
-			JobExecutionException, LoginException, NotBoundException, ProtocolVersionException {
+  /**
+   * Submits a job to a server for processing.
+   * @param job The <code>ParallelizableJob</code> to be processed.
+   * @param description A description of the job.
+   * @param host The host name of the server to send the job to.
+   * @param username The user name to use to authenticate with the server.
+   * @param password The password to use to authenticate with the server.
+   * @return The <code>UUID</code> assigned to the job.
+   * @throws SecurityException If the user does not have access to perform
+   *     the requested action on the server.
+   * @throws RemoteException If a failure occurs in attempting to communicate
+   *     with the server.
+   * @throws ClassNotFoundException If deserialization of the job at the
+   *     server requires a class that could not be found on the server.
+   * @throws JobExecutionException If the submitted job threw an exception at
+   *     the server during initialization.
+   * @throws LoginException If the login attempt fails.
+   * @throws NotBoundException If the <code>AuthenticationService</code>
+   *     could not be found at the server.
+   * @throws ProtocolVersionException If this client is incompatible with the
+   *     server.
+   */
+  public static void registerTaskService(String name, TaskService taskService,
+      String host, String username, String password)
+      throws SecurityException, RemoteException, ClassNotFoundException,
+      JobExecutionException, LoginException, NotBoundException, ProtocolVersionException {
 
-		JobService service = connect(host, username, password);
-		service.registerTaskService(name, taskService);
+    JobService service = connect(host, username, password);
+    service.registerTaskService(name, taskService);
 
-	}
+  }
 
-	/**
-	 * Gets the currently active <code>HostService</code>.
-	 * @return The active <code>HostService</code> if the current thread is
-	 * 		executing on a job server, <code>null</code> otherwise.
-	 */
-	public static HostService getHostService() {
-		return ServerUtil.getHostService();
-	}
+  /**
+   * Gets the currently active <code>HostService</code>.
+   * @return The active <code>HostService</code> if the current thread is
+   *     executing on a job server, <code>null</code> otherwise.
+   */
+  public static HostService getHostService() {
+    return ServerUtil.getHostService();
+  }
 
-	/**
-	 * Gets the folder at which JDCP application data is stored.
-	 * @return The <code>File</code> representing the folder at which JDCP
-	 * 		application data is stored.
-	 */
-	public static File getHomeDirectory() {
-		initialize();
-		return new File(System.getProperty("jdcp.home"));
-	}
+  /**
+   * Gets the folder at which JDCP application data is stored.
+   * @return The <code>File</code> representing the folder at which JDCP
+   *     application data is stored.
+   */
+  public static File getHomeDirectory() {
+    initialize();
+    return new File(System.getProperty("jdcp.home"));
+  }
 
-	/**
-	 * Performs initialization for the currently running JDCP
-	 * application.
-	 */
-	public static void initialize() {
-		String homeDirName = System.getProperty("jdcp.home");
-		File homeDir;
-		if (homeDirName != null) {
-			homeDir = new File(homeDirName);
-		} else {
-			homeDir = FileUtil.getApplicationDataDirectory("jdcp");
-			System.setProperty("jdcp.home", homeDir.getPath());
-		}
-		homeDir.mkdir();
-		if (System.getProperty("derby.system.home") == null) {
-			System.setProperty("derby.system.home", homeDir.getPath());
-		}
-	}
+  /**
+   * Performs initialization for the currently running JDCP
+   * application.
+   */
+  public static void initialize() {
+    String homeDirName = System.getProperty("jdcp.home");
+    File homeDir;
+    if (homeDirName != null) {
+      homeDir = new File(homeDirName);
+    } else {
+      homeDir = FileUtil.getApplicationDataDirectory("jdcp");
+      System.setProperty("jdcp.home", homeDir.getPath());
+    }
+    homeDir.mkdir();
+    if (System.getProperty("derby.system.home") == null) {
+      System.setProperty("derby.system.home", homeDir.getPath());
+    }
+  }
 
-	/** This constructor is private to prevent instances from being created. */
-	private JdcpUtil() {}
+  /** This constructor is private to prevent instances from being created. */
+  private JdcpUtil() {}
 
 }

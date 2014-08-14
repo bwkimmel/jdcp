@@ -32,56 +32,56 @@ package ca.eandb.jdcp.worker.policy;
  */
 public abstract class AsyncCourtesyMonitor implements CourtesyMonitor {
 
-	/** A flag indicating if tasks should be allowed to run. */
-	private boolean allow = true;
+  /** A flag indicating if tasks should be allowed to run. */
+  private boolean allow = true;
 
-	/**
-	 * Sets whether tasks should be allowed to run.
-	 * @param state A value indicating whether tasks should be allowed to run.
-	 */
-	protected final void allow(boolean state) {
-		if (state) {
-			allow();
-		} else {
-			disallow();
-		}
-	}
+  /**
+   * Sets whether tasks should be allowed to run.
+   * @param state A value indicating whether tasks should be allowed to run.
+   */
+  protected final void allow(boolean state) {
+    if (state) {
+      allow();
+    } else {
+      disallow();
+    }
+  }
 
-	/**
-	 * Allows tasks to run.
-	 * Equivalent to <code>allow(true)</code>.
-	 * @see #allow(boolean)
-	 */
-	protected synchronized final void allow() {
-		if (!allow) {
-			allow = true;
-			notifyAll();
-		}
-	}
+  /**
+   * Allows tasks to run.
+   * Equivalent to <code>allow(true)</code>.
+   * @see #allow(boolean)
+   */
+  protected synchronized final void allow() {
+    if (!allow) {
+      allow = true;
+      notifyAll();
+    }
+  }
 
-	/**
-	 * Prevents tasks from running.
-	 * Equivalent to <code>allow(false)</code>.
-	 * @see #allow(boolean)
-	 */
-	protected synchronized final void disallow() {
-		allow = false;
-	}
+  /**
+   * Prevents tasks from running.
+   * Equivalent to <code>allow(false)</code>.
+   * @see #allow(boolean)
+   */
+  protected synchronized final void disallow() {
+    allow = false;
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.policy.CourtesyMonitor#allowTasksToRun()
-	 */
-	public final synchronized boolean allowTasksToRun() {
-		return allow;
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.policy.CourtesyMonitor#allowTasksToRun()
+   */
+  public final synchronized boolean allowTasksToRun() {
+    return allow;
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.policy.CourtesyMonitor#waitFor()
-	 */
-	public final synchronized void waitFor() throws InterruptedException {
-		if (!allow) {
-			wait();
-		}
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.policy.CourtesyMonitor#waitFor()
+   */
+  public final synchronized void waitFor() throws InterruptedException {
+    if (!allow) {
+      wait();
+    }
+  }
 
 }

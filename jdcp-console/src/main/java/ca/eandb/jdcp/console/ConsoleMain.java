@@ -48,35 +48,35 @@ import ca.eandb.util.args.UnrecognizedCommand;
  */
 public final class ConsoleMain {
 
-	/**
-	 * @param args
-	 * @throws IOException
-	 */
-	public static void main(String[] args) throws IOException {
-	  Properties props = new Properties(System.getProperties());
-	  props.load(ConsoleMain.class.getResourceAsStream("system.properties"));
-	  System.setProperties(props);
+  /**
+   * @param args
+   * @throws IOException
+   */
+  public static void main(String[] args) throws IOException {
+    Properties props = new Properties(System.getProperties());
+    props.load(ConsoleMain.class.getResourceAsStream("system.properties"));
+    System.setProperties(props);
 
-		JdcpUtil.initialize();
-		PropertyConfigurator.configure(System.getProperties());
+    JdcpUtil.initialize();
+    PropertyConfigurator.configure(System.getProperties());
 
-		ArgumentProcessor<ConsoleState> argProcessor = new ArgumentProcessor<ConsoleState>("");
+    ArgumentProcessor<ConsoleState> argProcessor = new ArgumentProcessor<ConsoleState>("");
 
-		argProcessor.addOption("verbose", 'V', new BooleanFieldOption<Configuration>("verbose"));
-		argProcessor.addOption("host", 'h', new StringFieldOption<Configuration>("host"));
-		argProcessor.addOption("username", 'u', new StringFieldOption<Configuration>("username"));
-		argProcessor.addOption("password", 'p', new StringFieldOption<Configuration>("password"));
+    argProcessor.addOption("verbose", 'V', new BooleanFieldOption<Configuration>("verbose"));
+    argProcessor.addOption("host", 'h', new StringFieldOption<Configuration>("host"));
+    argProcessor.addOption("username", 'u', new StringFieldOption<Configuration>("username"));
+    argProcessor.addOption("password", 'p', new StringFieldOption<Configuration>("password"));
 
-		argProcessor.addCommand("verify", new VerifyCommand());
-		argProcessor.addCommand("sync", new SynchronizeCommand());
-		argProcessor.addCommand("idle", new SetIdleTimeCommand());
-		argProcessor.addCommand("script", new ScriptCommand());
-		argProcessor.addCommand("connect", new ConnectCommand());
+    argProcessor.addCommand("verify", new VerifyCommand());
+    argProcessor.addCommand("sync", new SynchronizeCommand());
+    argProcessor.addCommand("idle", new SetIdleTimeCommand());
+    argProcessor.addCommand("script", new ScriptCommand());
+    argProcessor.addCommand("connect", new ConnectCommand());
 
-		argProcessor.setDefaultCommand(UnrecognizedCommand.getInstance());
+    argProcessor.setDefaultCommand(UnrecognizedCommand.getInstance());
 
-		argProcessor.processAnnotations(ConsoleState.class);
-		argProcessor.process(args, new ConsoleState());
-	}
+    argProcessor.processAnnotations(ConsoleState.class);
+    argProcessor.process(args, new ConsoleState());
+  }
 
 }

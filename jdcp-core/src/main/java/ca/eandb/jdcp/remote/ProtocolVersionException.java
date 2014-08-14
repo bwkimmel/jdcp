@@ -32,22 +32,22 @@ package ca.eandb.jdcp.remote;
  */
 public final class ProtocolVersionException extends Exception {
 
-	/** Serialization version ID. */
-	private static final long serialVersionUID = -909825261111187078L;
+  /** Serialization version ID. */
+  private static final long serialVersionUID = -909825261111187078L;
 
-	/**
-	 * Creates a new <code>ProtocolVersionException</code>.
-	 */
-	public ProtocolVersionException() {
-		/* nothing to do. */
-	}
+  /**
+   * Creates a new <code>ProtocolVersionException</code>.
+   */
+  public ProtocolVersionException() {
+    /* nothing to do. */
+  }
 
-	/**
-	 * Creates a new <code>ProtocolVersionException</code>.
-	 * @param message A message describing the exceptional condition.
-	 */
-	public ProtocolVersionException(String message) {
-		super(message);
-	}
+  /**
+   * Creates a new <code>ProtocolVersionException</code>.
+   * @param message A message describing the exceptional condition.
+   */
+  public ProtocolVersionException(String message) {
+    super(message);
+  }
 
 }

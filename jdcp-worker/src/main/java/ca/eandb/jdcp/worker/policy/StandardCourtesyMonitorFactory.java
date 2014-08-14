@@ -32,28 +32,28 @@ import java.io.File;
  *
  */
 public class StandardCourtesyMonitorFactory implements
-		CourtesyMonitorFactory {
+    CourtesyMonitorFactory {
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.policy.CourtesyMonitorFactory#createExecCourtesyMonitor(java.lang.String)
-	 */
-	public PollingCourtesyMonitor createExecCourtesyMonitor(String cmd) {
-		return new ExecCourtesyMonitor(cmd);
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.policy.CourtesyMonitorFactory#createExecCourtesyMonitor(java.lang.String)
+   */
+  public PollingCourtesyMonitor createExecCourtesyMonitor(String cmd) {
+    return new ExecCourtesyMonitor(cmd);
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.policy.CourtesyMonitorFactory#createExecCourtesyMonitor(java.lang.String, java.io.File)
-	 */
-	public PollingCourtesyMonitor createExecCourtesyMonitor(String cmd,
-			File workingDir) {
-		return new ExecCourtesyMonitor(cmd, workingDir);
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.policy.CourtesyMonitorFactory#createExecCourtesyMonitor(java.lang.String, java.io.File)
+   */
+  public PollingCourtesyMonitor createExecCourtesyMonitor(String cmd,
+      File workingDir) {
+    return new ExecCourtesyMonitor(cmd, workingDir);
+  }
 
-	/* (non-Javadoc)
-	 * @see ca.eandb.jdcp.worker.policy.CourtesyMonitorFactory#createPowerCourtesyMonitor()
-	 */
-	public PowerCourtesyMonitor createPowerCourtesyMonitor() {
-		return null;
-	}
+  /* (non-Javadoc)
+   * @see ca.eandb.jdcp.worker.policy.CourtesyMonitorFactory#createPowerCourtesyMonitor()
+   */
+  public PowerCourtesyMonitor createPowerCourtesyMonitor() {
+    return null;
+  }
 
 }
