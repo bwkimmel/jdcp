@@ -48,7 +48,7 @@
     <dependency>
       <groupId>ca.eandb.util</groupId>
       <artifactId>eandb-util</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.2.0</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
