@@ -9,6 +9,8 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>jdcp-core</artifactId>
+  <name>${project.groupId}:${project.artifactId}</name>
+  <description>Java Distributed Computing Platform: Core library</description>
   <dependencies>
     <dependency>
       <groupId>ca.eandb.util</groupId>

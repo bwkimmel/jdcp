@@ -7,9 +7,9 @@
   <artifactId>jdcp</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>Java Distributed Computing Platform</name>
-  <description>A client/server based application written in Java for running
-      distributed computing jobs.</description>
+  <name>${project.groupId}:${project.artifactId}</name>
+  <description>Java Distributed Computing Platform: A client/server based
+      application running Java-based distributed computing jobs.</description>
   <licenses>
     <license>
       <name>MIT License</name>

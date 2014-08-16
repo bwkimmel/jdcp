@@ -9,6 +9,8 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>jdcp-server</artifactId>
+  <name>${project.groupId}:${project.artifactId}</name>
+  <description>Java Distributed Computing Platform: Server library</description>
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
