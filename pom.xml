@@ -10,6 +10,7 @@
   <name>${project.groupId}:${project.artifactId}</name>
   <description>Java Distributed Computing Platform: A client/server based
       application running Java-based distributed computing jobs.</description>
+  <url>http://jdcp.eandb.ca</url>
   <licenses>
     <license>
       <name>MIT License</name>
