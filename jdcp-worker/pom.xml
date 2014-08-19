@@ -6,7 +6,7 @@
   <parent>
     <groupId>ca.eandb.jdcp</groupId>
     <artifactId>jdcp</artifactId>
-    <version>0.3.0</version>
+    <version>0.3.1</version>
   </parent>
   <artifactId>jdcp-worker</artifactId>
   <name>${project.groupId}:${project.artifactId}</name>
@@ -15,7 +15,7 @@
     <dependency>
       <groupId>ca.eandb.util</groupId>
       <artifactId>eandb-util</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.2.2</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
