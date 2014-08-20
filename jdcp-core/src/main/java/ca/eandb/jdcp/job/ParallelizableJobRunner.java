@@ -52,6 +52,120 @@ import ca.eandb.util.progress.ProgressMonitorFactory;
  */
 public final class ParallelizableJobRunner implements Runnable {
 
+  /** A Builder for creating ParallelizableJobRunner instances. */
+  public static class Builder {
+    private ParallelizableJob job = null;
+    private File workingDirectory = null;
+    private Executor executor = null;
+    private int maxConcurrentWorkers =
+        Runtime.getRuntime().availableProcessors();
+    private ProgressMonitorFactory progressMonitorFactory
+        = DummyProgressMonitorFactory.getInstance();
+    private ProgressMonitor progressMonitor
+        = DummyProgressMonitor.getInstance();
+
+    /**
+     * Creates the configured ParallelizableJobRunner instance.
+     * @throws IllegalStateException If the job has not been set.
+     * @see #setJob(ParallelizableJob)
+     */
+    public ParallelizableJobRunner build() throws IOException {
+      if (job == null) {
+        throw new IllegalStateException(
+            "Cannot build ParallelizableJobRunner without a job.");
+      }
+      if (executor == null) {
+        executor = Executors.newFixedThreadPool(
+            maxConcurrentWorkers, new BackgroundThreadFactory());
+      }
+      return new ParallelizableJobRunner(job, workingDirectory, executor,
+          maxConcurrentWorkers, progressMonitorFactory, progressMonitor);
+    }
+
+    /**
+     * Sets the job to be executed by the ParallelizableJobRunner.  This
+     * property is required in order to build the ParallelizableJobRunner.
+     * @param job The <code>ParallelizableJob</code> to run.
+     * @return This Builder.
+     */
+    public Builder setJob(ParallelizableJob job) {
+      this.job = job;
+      return this;
+    }
+
+    /**
+     * Sets the working directory to use for writing results.  If not specified,
+     * a temporary working directory will be used.
+     * @param workingDirectory The working directory to write results to.
+     * @return This Builder.
+     */
+    public Builder setWorkingDirectory(File workingDirectory) {
+      this.workingDirectory = workingDirectory;
+      return this;
+    }
+
+    /**
+     * Sets the working directory to use for writing results.  If not specified,
+     * a temporary working directory will be used.
+     * @param workingDirectory The working directory to write results to.
+     * @return This Builder.
+     */
+    public Builder setWorkingDirectory(String workingDirectory) {
+      return setWorkingDirectory(new File(workingDirectory));
+    }
+
+    /**
+     * Sets the executor to use to run the threads for processing individual
+     * tasks.  If not set, a new fixed thread pool having maxConcurrentWorkers
+     * threads will be created.
+     * @param executor The Executor to use to run worker threads.
+     * @return This Builder.
+     */
+    public Builder setExecutor(Executor executor) {
+      this.executor = executor;
+      return this;
+    }
+
+    /**
+     * Sets the maximum number of concurrent tasks to run.  If not specified,
+     * this will be set to <code>Runtime.getRuntime().availableProcessors()</code>.
+     * @param maxConcurrentWorkers The maximum number of concurrent workers.
+     * @return This Builder.
+     * @see Runtime#availableProcessors()
+     */
+    public Builder setMaxConcurrentWorkers(int maxConcurrentWorkers) {
+      this.maxConcurrentWorkers = maxConcurrentWorkers;
+      return this;
+    }
+
+    /**
+     * Sets the ProgressMonitorFactory to use to create ProgressMonitors for
+     * individual tasks.  If not specified, a DummyProgressMonitorFactory will
+     * be used.
+     * @param progressMonitorFactory The ProgressMonitorFactory to use to create
+     *     ProgressMonitors for individual tasks.
+     * @return This Builder.
+     * @see DummyProgressMonitorFactory
+     */
+    public Builder setProgressMonitorFactory(
+        ProgressMonitorFactory progressMonitorFactory) {
+      this.progressMonitorFactory = progressMonitorFactory;
+      return this;
+    }
+
+    /**
+     * Sets the ProgressMonitor to use to report overall progress to.  If not
+     * specified, a DummyProgressMonitor will be used.
+     * @param progressMonitor The ProgressMonitor to report overall progress to.
+     * @return This Builder.
+     * @see DummyProgressMonitor
+     */
+    public Builder setProgressMonitor(ProgressMonitor progressMonitor) {
+      this.progressMonitor = progressMonitor;
+      return this;
+    }
+  }
+
   /**
    * Creates a new <code>ParallelizableJobRunner</code>.
    * @param job The <code>ParallelizableJob</code> to run.
