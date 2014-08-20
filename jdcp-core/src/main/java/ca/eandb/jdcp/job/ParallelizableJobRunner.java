@@ -28,7 +28,9 @@ package ca.eandb.jdcp.job;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.Files;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
@@ -278,10 +280,27 @@ public final class ParallelizableJobRunner implements Runnable {
 
   }
 
+  /**
+   * Gets the working directory, creating a temporary one if one was not
+   * specified during construction.
+   * @return The working directory.
+   */
+  private synchronized File getWorkingDirectory() {
+    if (workingDirectory == null) {
+      try {
+        workingDirectory =
+            Files.createTempDirectory(TEMP_DIRECTORY_PREFIX).toFile();
+      } catch (IOException e) {
+        throw new UnexpectedException(e);
+      }
+    }
+    return workingDirectory;
+  }
+
   private final HostService host = new HostService() {
 
     public FileOutputStream createFileOutputStream(String path) {
-      File file = new File(workingDirectory, path);
+      File file = new File(getWorkingDirectory(), path);
       File directory = file.getParentFile();
       directory.mkdirs();
       try {
@@ -292,7 +311,7 @@ public final class ParallelizableJobRunner implements Runnable {
     }
 
     public RandomAccessFile createRandomAccessFile(String path) {
-      File file = new File(workingDirectory, path);
+      File file = new File(getWorkingDirectory(), path);
       File directory = file.getParentFile();
       directory.mkdirs();
       try {
@@ -304,6 +323,9 @@ public final class ParallelizableJobRunner implements Runnable {
 
   };
 
+  /** The prefix to use for temporary working directories. */
+  private static final String TEMP_DIRECTORY_PREFIX = "jdcp-";
+
   /**
    * The <code>ProgressMonitorFactory</code> to use to create
    * <code>ProgressMonitor</code>s for worker tasks.
@@ -314,7 +336,7 @@ public final class ParallelizableJobRunner implements Runnable {
   private final JobExecutionWrapper job;
 
   /** The working directory for this job. */
-  private final File workingDirectory;
+  private File workingDirectory;
 
   /**
    * The <code>Semaphore</code> to use to limit the number of concurrent
