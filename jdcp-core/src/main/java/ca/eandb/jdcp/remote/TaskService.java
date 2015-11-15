@@ -102,6 +102,8 @@ public interface TaskService extends Remote {
    *     obtain.
    * @param jobId The <code>UUID</code> identifying the job for which to
    *     get the class digest.
+   * @return The MD5 digest for the definition of the given class associated
+   *     with the specified job.
    * @throws DelegationException If this <code>JobService</code> could not
    *     communicate with the provider of the class whose digest is being
    *     requested.
@@ -119,6 +121,8 @@ public interface TaskService extends Remote {
    *     obtain.
    * @param jobId The <code>UUID</code> identifying the job for which to
    *     get the class definition.
+   * @return The definition of the given class associated with the specified
+   *     job.
    * @throws DelegationException If this <code>JobService</code> could not
    *     communicate with the provider of the class whose definition is
    *     being requested.

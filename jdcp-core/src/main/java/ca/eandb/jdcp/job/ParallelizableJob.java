@@ -49,18 +49,22 @@ public interface ParallelizableJob extends Serializable {
    * Sets up this <code>ParallelizableJob</code> on the machine hosting the
    * job (not necessarily the same machine as the one processing the tasks
    * for this job).
+   * @throws Exception If an error occurs performing the operation.
    */
   void initialize() throws Exception;
 
   /**
    * Performs any final actions required for this
    * <code>ParallelizableJob</code>.
+   * @throws Exception If an error occurs performing the operation.
    */
   void finish() throws Exception;
 
   /**
    * Notifies the job that it is about to be suspended (for example, if the
    * server application is about to be shut down).
+   * @param output The <code>ObjectOutput</code> to save state to.
+   * @throws Exception If an error occurs performing the operation.
    */
   void saveState(ObjectOutput output) throws Exception;
 
@@ -68,6 +72,8 @@ public interface ParallelizableJob extends Serializable {
    * Notifies the job that it is about to be resumed after having been
    * suspended.  The job should reinstate any transient data (e.g., open
    * files).
+   * @param input The <code>ObjectInput</code> to restore state from.
+   * @throws Exception If an error occurs performing the operation.
    */
   void restoreState(ObjectInput input) throws Exception;
 
@@ -76,6 +82,7 @@ public interface ParallelizableJob extends Serializable {
    * @return The <code>Object</code> describing the next task to be
    *     performed, or <code>null</code> if there are no remaining
    *     tasks.
+   * @throws Exception If an error occurs performing the operation.
    */
   Object getNextTask() throws Exception;
 
@@ -88,7 +95,8 @@ public interface ParallelizableJob extends Serializable {
    *     a task.
    * @param monitor The <code>ProgressMonitor</code> to update with the
    *     progress of this <code>Job</code>.
-   * @see {@link #getNextTask()}.
+   * @see #getNextTask()
+   * @throws Exception If an error occurs performing the operation.
    */
   void submitTaskResults(Object task, Object results, ProgressMonitor monitor) throws Exception;
 
@@ -96,12 +104,14 @@ public interface ParallelizableJob extends Serializable {
    * Gets a value that indicates if this job is complete (i.e., if results
    * for all tasks have been submitted).
    * @return A value indicating if this job is complete.
+   * @throws Exception If an error occurs performing the operation.
    */
   boolean isComplete() throws Exception;
 
   /**
    * Gets the task worker to use to process the tasks of this job.
    * @return The task worker to use to process the tasks of this job.
+   * @throws Exception If an error occurs performing the operation.
    */
   TaskWorker worker() throws Exception;
 

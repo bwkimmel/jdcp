@@ -52,7 +52,10 @@ import ca.eandb.util.progress.ProgressMonitorFactory;
  */
 public final class ParallelizableJobRunner implements Runnable {
 
-  /** Creates a new Builder for initializing a ParallelizableJobRunner. */
+  /**
+   * Creates a new Builder for initializing a ParallelizableJobRunner.
+   * @return The new <code>Builder</code>.
+   */
   public static Builder newBuilder() {
     return new Builder();
   }
@@ -77,7 +80,9 @@ public final class ParallelizableJobRunner implements Runnable {
 
     /**
      * Creates the configured ParallelizableJobRunner instance.
+     * @return The new <code>ParallelizableJobRunner</code>.
      * @throws IllegalStateException If the job has not been set.
+     * @throws IOException If an error occurs setting up the working directory.
      * @see #setJob(ParallelizableJob)
      */
     public ParallelizableJobRunner build() throws IOException {

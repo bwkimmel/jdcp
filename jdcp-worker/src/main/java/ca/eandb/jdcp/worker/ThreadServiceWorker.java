@@ -62,20 +62,12 @@ import ca.eandb.util.rmi.Serialized;
 
 /**
  * A <code>Runnable</code> worker that processes tasks for a
- * <code>ParallelizableJob</code> from a remote <code>JobServiceMaster<code>.
+ * <code>ParallelizableJob</code> from a remote <code>JobServiceMaster</code>.
  * This class may potentially use multiple threads to process tasks.
  * @author Brad Kimmel
  */
 public final class ThreadServiceWorker implements Runnable {
 
-  /**
-   * Initializes the address of the master and the amount of time to idle
-   * when no task is available.
-   * @param monitorFactory The <code>ProgressMonitorFactory</code> to use to
-   *     create <code>ProgressMonitor</code>s for worker tasks.
-   * @param courtesyMonitor The <code>CourtesyMonitor</code> to use to
-   *     determine whether tasks should be allowed to run.
-   */
   public ThreadServiceWorker(JobServiceFactory serviceFactory, ThreadFactory threadFactory, ProgressMonitorFactory monitorFactory, CourtesyMonitor courtesyMonitor) {
 
     assert(maxWorkers > 0);
@@ -88,12 +80,6 @@ public final class ThreadServiceWorker implements Runnable {
 
   }
 
-  /**
-   * Initializes the address of the master and the amount of time to idle
-   * when no task is available.
-   * @param monitorFactory The <code>ProgressMonitorFactory</code> to use to
-   *     create <code>ProgressMonitor</code>s for worker tasks.
-   */
   public ThreadServiceWorker(JobServiceFactory serviceFactory, ThreadFactory threadFactory, ProgressMonitorFactory monitorFactory) {
     this(serviceFactory, threadFactory, monitorFactory, new UnconditionalCourtesyMonitor());
   }

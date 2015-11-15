@@ -42,6 +42,7 @@ public interface TaskWorker extends Serializable {
    *     the task to.
    * @return The <code>Object</code> describing the results obtained from
    *     the execution of the task.
+   * @throws Exception If an error occurred performing the operation.
    */
   Object performTask(Object task, ProgressMonitor monitor) throws Exception;
 
