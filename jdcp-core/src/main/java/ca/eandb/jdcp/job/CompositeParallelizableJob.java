@@ -95,7 +95,7 @@ public final class CompositeParallelizableJob implements ParallelizableJob {
       if (jobProgress == null) {
         jobProgress = new double[jobs.size()];
       }
-      totalProgress += (progress - jobProgress[jobNumber]) / (double) jobs.size();
+      totalProgress += (progress - jobProgress[jobNumber]) / jobs.size();
       jobProgress[jobNumber] = progress;
       return true;
     }
