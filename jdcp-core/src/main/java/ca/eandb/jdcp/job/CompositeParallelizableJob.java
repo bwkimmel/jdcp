@@ -95,7 +95,7 @@ public final class CompositeParallelizableJob implements ParallelizableJob {
       if (jobProgress == null) {
         jobProgress = new double[jobs.size()];
       }
-      totalProgress += (progress - jobProgress[jobNumber]) / (double) jobs.size();
+      totalProgress += (progress - jobProgress[jobNumber]) / jobs.size();
       jobProgress[jobNumber] = progress;
       return true;
     }
@@ -182,7 +182,8 @@ public final class CompositeParallelizableJob implements ParallelizableJob {
      * @see ca.eandb.jdcp.job.TaskWorker#performTask(java.lang.Object, ca.eandb.util.progress.ProgressMonitor)
      */
     @Override
-    public Object performTask(Object task_, ProgressMonitor monitor) {
+    public Object performTask(Object task_, ProgressMonitor monitor)
+        throws Exception {
       JobItem task = (JobItem) task_;
       return workers[task.jobNumber].performTask(task.item, monitor);
     }

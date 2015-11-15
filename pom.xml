@@ -46,7 +46,6 @@
     <module>jdcp-server-app</module>
     <module>jdcp-worker-app</module>
   </modules>
-
   <build>
     <plugins>
       <plugin>

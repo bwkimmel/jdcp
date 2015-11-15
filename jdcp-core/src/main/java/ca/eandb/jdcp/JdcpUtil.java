@@ -119,13 +119,13 @@ public final class JdcpUtil {
   }
 
   /**
-   * Submits a job to a server for processing.
-   * @param job The <code>ParallelizableJob</code> to be processed.
-   * @param description A description of the job.
+   * Connects to a job server and provides a source of tasks to be processed.
+   * @param name The name to assign to the <code>TaskService</code>.  This may
+   *     be used to manage this <code>TaskService</code> in later calls.
+   * @param taskService The <code>TaskService</code> to submit.
    * @param host The host name of the server to send the job to.
    * @param username The user name to use to authenticate with the server.
    * @param password The password to use to authenticate with the server.
-   * @return The <code>UUID</code> assigned to the job.
    * @throws SecurityException If the user does not have access to perform
    *     the requested action on the server.
    * @throws RemoteException If a failure occurs in attempting to communicate

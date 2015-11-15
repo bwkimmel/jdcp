@@ -44,6 +44,8 @@ public interface AuthenticationService extends Remote {
    * @param protocolVersionId The <code>UUID</code> indicating the protocol
    *     expected by the client.
    * @return The <code>JobService</code> to use for this session.
+   * @throws RemoteException if an error occurred communicating with the remote
+   *     host.
    * @throws LoginException if the user name or password are invalid.
    * @throws ProtocolVersionException if the protocol expected by the client
    *     (as indicated by <code>protocolVersionId</code>) is incompatible

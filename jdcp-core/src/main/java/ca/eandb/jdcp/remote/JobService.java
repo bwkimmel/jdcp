@@ -52,6 +52,9 @@ public interface JobService extends TaskService {
    * classes to be uploaded before the job is submitted for execution.
    * @param description A description for the job.
    * @return The <code>UUID</code> identifying the new job.
+   * @throws SecurityException If the caller does not have permission to
+   *     submit jobs.
+   * @throws RemoteException If a communication error occurs.
    * @see #setClassDefinition(String, UUID, byte[])
    * @see #submitJob(Serialized, UUID)
    */
@@ -81,7 +84,7 @@ public interface JobService extends TaskService {
   /**
    * Submits a new job to be processed.
    * @param job The <code>ParallelizableJob</code> to be processed.
-   * @param priority The priority to assign to the job.
+   * @param description A description for the job.
    * @return The <code>UUID</code> assigned to the job, or <code>null</code>
    *     if the job was not accepted.
    * @throws SecurityException If the caller does not have permission to
@@ -116,11 +119,7 @@ public interface JobService extends TaskService {
    * Gets the MD5 digest for the most recent definition of the given class.
    * @param name The fully qualified name of the class whose digest to
    *     obtain.
-   * @param jobId The <code>UUID</code> identifying the job for which to
-   *     get the class digest.
-   * @throws DelegationException If this <code>JobService</code> could not
-   *     communicate with the provider of the class whose digest is being
-   *     requested.
+   * @return The MD5 digest for the most recent definition of the given class.
    * @throws SecurityException If the caller does not have permission to
    *     obtain class digests.
    * @throws RemoteException If a communication error occurs.

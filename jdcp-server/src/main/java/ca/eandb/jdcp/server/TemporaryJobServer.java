@@ -109,13 +109,10 @@ public final class TemporaryJobServer implements TaskService {
 
   /**
    * Creates a new <code>JobServer</code>.
-   * @param outputDirectory The directory to write job results to.
    * @param monitorFactory The <code>ProgressMonitorFactory</code> to use to
    *     create <code>ProgressMonitor</code>s for individual jobs.
    * @param scheduler The <code>TaskScheduler</code> to use to assign
    *     tasks.
-   * @param classManager The <code>ParentClassManager</code> to use to
-   *     store and retrieve class definitions.
    * @param executor The <code>Executor</code> to use to run bits of code
    *     that should not hold up the remote caller.
    */
