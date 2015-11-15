@@ -52,6 +52,11 @@ import ca.eandb.util.progress.ProgressMonitorFactory;
  */
 public final class ParallelizableJobRunner implements Runnable {
 
+  /** Creates a new Builder for initializing a ParallelizableJobRunner. */
+  public static Builder newBuilder() {
+    return new Builder();
+  }
+
   /** A Builder for creating ParallelizableJobRunner instances. */
   public static class Builder {
     private ParallelizableJob job = null;
@@ -63,6 +68,12 @@ public final class ParallelizableJobRunner implements Runnable {
         = DummyProgressMonitorFactory.getInstance();
     private ProgressMonitor progressMonitor
         = DummyProgressMonitor.getInstance();
+
+    /**
+     * Must be created using static factory method.
+     * @see ParallelizableJobRunner#newBuilder()
+     */
+    private Builder() {}
 
     /**
      * Creates the configured ParallelizableJobRunner instance.
