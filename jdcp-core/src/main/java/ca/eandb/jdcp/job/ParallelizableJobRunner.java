@@ -284,6 +284,9 @@ public final class ParallelizableJobRunner implements Runnable {
            * tasks.
            */
           this.workerSlot.acquire();
+          if (workerException != null) {
+            throw workerException;
+          }
 
           /* Get the next task to run.  If there are no further tasks,
            * then wait for the remaining tasks to finish.
@@ -291,6 +294,9 @@ public final class ParallelizableJobRunner implements Runnable {
           Object task = this.job.getNextTask();
           if (task == null) {
             this.workerSlot.acquire(this.maxConcurrentWorkers - 1);
+            if (workerException != null) {
+              throw workerException;
+            }
             complete = true;
             break;
           }
@@ -361,6 +367,14 @@ public final class ParallelizableJobRunner implements Runnable {
     }
   }
 
+  private void setWorkerException(JobExecutionException e) {
+    synchronized (monitor) {
+      if (workerException == null) {
+        workerException = e;
+      }
+    }
+  }
+
   /**
    * Processes tasks for a <code>ParallelizableJob</code>.
    * @author Brad Kimmel
@@ -387,7 +401,9 @@ public final class ParallelizableJobRunner implements Runnable {
       try {
         submitResults(task, worker.performTask(task, monitor));
       } catch (JobExecutionException e) {
-        throw new RuntimeException(e);
+        setWorkerException(e);
+      } catch (Exception e) {
+        setWorkerException(new JobExecutionException(e));
       } finally {
         workerMonitorQueue.add(monitor);
         workerSlot.release();
@@ -483,5 +499,8 @@ public final class ParallelizableJobRunner implements Runnable {
 
   /** The current <code>ProgressMonitor</code>. */
   private ProgressMonitor monitor;
+
+  /** An exception that occurred while processing a task. */
+  private JobExecutionException workerException = null;
 
 }

@@ -146,10 +146,33 @@ public final class JobExecutionWrapper implements ParallelizableJob {
    */
   public TaskWorker worker() throws JobExecutionException {
     try {
-      return job.worker();
+      return new TaskWorkerWrapper(job.worker());
     } catch (Exception e) {
       throw new JobExecutionException(e);
     }
+  }
+
+  private static final class TaskWorkerWrapper implements TaskWorker {
+
+    /** Serialization version ID. */
+    private static final long serialVersionUID = 997997810158070736L;
+
+    private final TaskWorker inner;
+
+    public TaskWorkerWrapper(TaskWorker inner) {
+      this.inner = inner;
+    }
+
+    @Override
+    public Object performTask(Object task, ProgressMonitor monitor)
+        throws JobExecutionException {
+      try {
+        return inner.performTask(task, monitor);
+      } catch (Exception e) {
+        throw new JobExecutionException(e);
+      }
+    }
+
   }
 
 }
