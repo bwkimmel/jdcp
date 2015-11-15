@@ -89,8 +89,8 @@ public final class AuthenticationServer extends UnicastRemoteObject implements
    * Creates a new <code>AuthenticationServer</code>.
    * @param service The <code>JobService</code> to authenticate for.
    * @param port The port to listen on.
-   * @param csf
-   * @param ssf
+   * @param csf The <code>RMIClientSocketFactory</code> to use.
+   * @param ssf The <code>RMIServerSocketFactory</code> to use.
    * @throws RemoteException If a communication error occurs.
    */
   public AuthenticationServer(JobService service, int port, RMIClientSocketFactory csf,

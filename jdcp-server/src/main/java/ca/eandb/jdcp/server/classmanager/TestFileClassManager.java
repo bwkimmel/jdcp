@@ -32,7 +32,7 @@ import ca.eandb.util.StringUtil;
 
 /**
  * A main class for testing the <code>FileClassManager</code> class.
- * @see ca.eandb.jdcp.server.classmanager.FileClassManager.
+ * @see ca.eandb.jdcp.server.classmanager.FileClassManager
  * @author Brad Kimmel
  */
 public final class TestFileClassManager {

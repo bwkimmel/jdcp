@@ -28,7 +28,9 @@ package ca.eandb.jdcp.job;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.Files;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
@@ -49,6 +51,136 @@ import ca.eandb.util.progress.ProgressMonitorFactory;
  * @author Brad Kimmel
  */
 public final class ParallelizableJobRunner implements Runnable {
+
+  /**
+   * Creates a new Builder for initializing a ParallelizableJobRunner.
+   * @return The new <code>Builder</code>.
+   */
+  public static Builder newBuilder() {
+    return new Builder();
+  }
+
+  /** A Builder for creating ParallelizableJobRunner instances. */
+  public static class Builder {
+    private ParallelizableJob job = null;
+    private File workingDirectory = null;
+    private Executor executor = null;
+    private int maxConcurrentWorkers =
+        Runtime.getRuntime().availableProcessors();
+    private ProgressMonitorFactory progressMonitorFactory
+        = DummyProgressMonitorFactory.getInstance();
+    private ProgressMonitor progressMonitor
+        = DummyProgressMonitor.getInstance();
+
+    /**
+     * Must be created using static factory method.
+     * @see ParallelizableJobRunner#newBuilder()
+     */
+    private Builder() {}
+
+    /**
+     * Creates the configured ParallelizableJobRunner instance.
+     * @return The new <code>ParallelizableJobRunner</code>.
+     * @throws IllegalStateException If the job has not been set.
+     * @throws IOException If an error occurs setting up the working directory.
+     * @see #setJob(ParallelizableJob)
+     */
+    public ParallelizableJobRunner build() throws IOException {
+      if (job == null) {
+        throw new IllegalStateException(
+            "Cannot build ParallelizableJobRunner without a job.");
+      }
+      if (executor == null) {
+        executor = Executors.newFixedThreadPool(
+            maxConcurrentWorkers, new BackgroundThreadFactory());
+      }
+      return new ParallelizableJobRunner(job, workingDirectory, executor,
+          maxConcurrentWorkers, progressMonitorFactory, progressMonitor);
+    }
+
+    /**
+     * Sets the job to be executed by the ParallelizableJobRunner.  This
+     * property is required in order to build the ParallelizableJobRunner.
+     * @param job The <code>ParallelizableJob</code> to run.
+     * @return This Builder.
+     */
+    public Builder setJob(ParallelizableJob job) {
+      this.job = job;
+      return this;
+    }
+
+    /**
+     * Sets the working directory to use for writing results.  If not specified,
+     * a temporary working directory will be used.
+     * @param workingDirectory The working directory to write results to.
+     * @return This Builder.
+     */
+    public Builder setWorkingDirectory(File workingDirectory) {
+      this.workingDirectory = workingDirectory;
+      return this;
+    }
+
+    /**
+     * Sets the working directory to use for writing results.  If not specified,
+     * a temporary working directory will be used.
+     * @param workingDirectory The working directory to write results to.
+     * @return This Builder.
+     */
+    public Builder setWorkingDirectory(String workingDirectory) {
+      return setWorkingDirectory(new File(workingDirectory));
+    }
+
+    /**
+     * Sets the executor to use to run the threads for processing individual
+     * tasks.  If not set, a new fixed thread pool having maxConcurrentWorkers
+     * threads will be created.
+     * @param executor The Executor to use to run worker threads.
+     * @return This Builder.
+     */
+    public Builder setExecutor(Executor executor) {
+      this.executor = executor;
+      return this;
+    }
+
+    /**
+     * Sets the maximum number of concurrent tasks to run.  If not specified,
+     * this will be set to <code>Runtime.getRuntime().availableProcessors()</code>.
+     * @param maxConcurrentWorkers The maximum number of concurrent workers.
+     * @return This Builder.
+     * @see Runtime#availableProcessors()
+     */
+    public Builder setMaxConcurrentWorkers(int maxConcurrentWorkers) {
+      this.maxConcurrentWorkers = maxConcurrentWorkers;
+      return this;
+    }
+
+    /**
+     * Sets the ProgressMonitorFactory to use to create ProgressMonitors for
+     * individual tasks.  If not specified, a DummyProgressMonitorFactory will
+     * be used.
+     * @param progressMonitorFactory The ProgressMonitorFactory to use to create
+     *     ProgressMonitors for individual tasks.
+     * @return This Builder.
+     * @see DummyProgressMonitorFactory
+     */
+    public Builder setProgressMonitorFactory(
+        ProgressMonitorFactory progressMonitorFactory) {
+      this.progressMonitorFactory = progressMonitorFactory;
+      return this;
+    }
+
+    /**
+     * Sets the ProgressMonitor to use to report overall progress to.  If not
+     * specified, a DummyProgressMonitor will be used.
+     * @param progressMonitor The ProgressMonitor to report overall progress to.
+     * @return This Builder.
+     * @see DummyProgressMonitor
+     */
+    public Builder setProgressMonitor(ProgressMonitor progressMonitor) {
+      this.progressMonitor = progressMonitor;
+      return this;
+    }
+  }
 
   /**
    * Creates a new <code>ParallelizableJobRunner</code>.
@@ -157,6 +289,9 @@ public final class ParallelizableJobRunner implements Runnable {
            * tasks.
            */
           this.workerSlot.acquire();
+          if (workerException != null) {
+            throw workerException;
+          }
 
           /* Get the next task to run.  If there are no further tasks,
            * then wait for the remaining tasks to finish.
@@ -164,6 +299,9 @@ public final class ParallelizableJobRunner implements Runnable {
           Object task = this.job.getNextTask();
           if (task == null) {
             this.workerSlot.acquire(this.maxConcurrentWorkers - 1);
+            if (workerException != null) {
+              throw workerException;
+            }
             complete = true;
             break;
           }
@@ -234,6 +372,14 @@ public final class ParallelizableJobRunner implements Runnable {
     }
   }
 
+  private void setWorkerException(JobExecutionException e) {
+    synchronized (monitor) {
+      if (workerException == null) {
+        workerException = e;
+      }
+    }
+  }
+
   /**
    * Processes tasks for a <code>ParallelizableJob</code>.
    * @author Brad Kimmel
@@ -260,7 +406,9 @@ public final class ParallelizableJobRunner implements Runnable {
       try {
         submitResults(task, worker.performTask(task, monitor));
       } catch (JobExecutionException e) {
-        throw new RuntimeException(e);
+        setWorkerException(e);
+      } catch (Exception e) {
+        setWorkerException(new JobExecutionException(e));
       } finally {
         workerMonitorQueue.add(monitor);
         workerSlot.release();
@@ -278,10 +426,27 @@ public final class ParallelizableJobRunner implements Runnable {
 
   }
 
+  /**
+   * Gets the working directory, creating a temporary one if one was not
+   * specified during construction.
+   * @return The working directory.
+   */
+  private synchronized File getWorkingDirectory() {
+    if (workingDirectory == null) {
+      try {
+        workingDirectory =
+            Files.createTempDirectory(TEMP_DIRECTORY_PREFIX).toFile();
+      } catch (IOException e) {
+        throw new UnexpectedException(e);
+      }
+    }
+    return workingDirectory;
+  }
+
   private final HostService host = new HostService() {
 
     public FileOutputStream createFileOutputStream(String path) {
-      File file = new File(workingDirectory, path);
+      File file = new File(getWorkingDirectory(), path);
       File directory = file.getParentFile();
       directory.mkdirs();
       try {
@@ -292,7 +457,7 @@ public final class ParallelizableJobRunner implements Runnable {
     }
 
     public RandomAccessFile createRandomAccessFile(String path) {
-      File file = new File(workingDirectory, path);
+      File file = new File(getWorkingDirectory(), path);
       File directory = file.getParentFile();
       directory.mkdirs();
       try {
@@ -304,6 +469,9 @@ public final class ParallelizableJobRunner implements Runnable {
 
   };
 
+  /** The prefix to use for temporary working directories. */
+  private static final String TEMP_DIRECTORY_PREFIX = "jdcp-";
+
   /**
    * The <code>ProgressMonitorFactory</code> to use to create
    * <code>ProgressMonitor</code>s for worker tasks.
@@ -314,7 +482,7 @@ public final class ParallelizableJobRunner implements Runnable {
   private final JobExecutionWrapper job;
 
   /** The working directory for this job. */
-  private final File workingDirectory;
+  private File workingDirectory;
 
   /**
    * The <code>Semaphore</code> to use to limit the number of concurrent
@@ -336,5 +504,8 @@ public final class ParallelizableJobRunner implements Runnable {
 
   /** The current <code>ProgressMonitor</code>. */
   private ProgressMonitor monitor;
+
+  /** An exception that occurred while processing a task. */
+  private JobExecutionException workerException = null;
 
 }

@@ -35,7 +35,7 @@ import ca.eandb.util.rmi.Serialized;
 /**
  * A description of a task assigned by a <code>JobMasterService</code>.
  * @author Brad Kimmel
- * @see {@link JobService#requestTask()}.
+ * @see JobService#requestTask()
  */
 public final class TaskDescription implements Serializable {
 
@@ -45,7 +45,7 @@ public final class TaskDescription implements Serializable {
    * @param taskId The ID of the task to be performed.
    * @param task An <code>Object</code> describing the task to be performed.
    *     This should be passed to <code>TaskWorker.performTask</code>.
-   * @see {@link #performTask(Object, ca.eandb.util.progress.ProgressMonitor)}.
+   * @see TaskWorker#performTask(Object, ca.eandb.util.progress.ProgressMonitor)
    */
   public TaskDescription(UUID jobId, int taskId, Object task) {
     this.jobId = jobId;
@@ -60,9 +60,9 @@ public final class TaskDescription implements Serializable {
    * <code>UUID</code> given by {@link #getJobId()}.  The <code>TaskWorker</code>
    * may be obtained by calling {@link JobService#getTaskWorker(UUID)}.
    * @return The <code>Object</code> describing the task to be performed.
-   * @see {@link #getJobId()},
-   *     {@link #performTask(Object, ca.eandb.util.progress.ProgressMonitor)},
-   *     {@link JobService#getTaskWorker(UUID)}.
+   * @see #getJobId()
+   * @see TaskWorker#performTask(Object, ca.eandb.util.progress.ProgressMonitor)
+   * @see JobService#getTaskWorker(UUID)
    */
   public Serialized<Object> getTask() {
     return this.task;
@@ -74,7 +74,7 @@ public final class TaskDescription implements Serializable {
    * to get the <code>TaskWorker</code> to use to perform this task.
    * @return The <code>UUID</code> of the job that this task is associated
    *     with.
-   * @see {@link JobService#getTaskWorker(UUID)}.
+   * @see JobService#getTaskWorker(UUID)
    */
   public UUID getJobId() {
     return this.jobId;
@@ -85,7 +85,7 @@ public final class TaskDescription implements Serializable {
    * <code>JobMasterService.submitTaskResults</code> when submitting the
    * results of this task.
    * @return The ID of the task to be performed.
-   * @see {@link JobService#submitTaskResults(UUID, int, Object)}.
+   * @see JobService#submitTaskResults(UUID, int, Serialized)
    */
   public int getTaskId() {
     return this.taskId;
