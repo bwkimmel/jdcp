@@ -205,7 +205,7 @@ public final class CompositeParallelizableJob implements ParallelizableJob {
    */
   @Override
   public void initialize() throws Exception {
-    for (ParallelizableJob job : jobs) {
+    for (LifeCycleManageable job : jobs) {
       job.initialize();
     }
   }
@@ -223,7 +223,7 @@ public final class CompositeParallelizableJob implements ParallelizableJob {
    */
   @Override
   public void saveState(ObjectOutput output) throws Exception {
-    for (ParallelizableJob job : jobs) {
+    for (LifeCycleManageable job : jobs) {
       job.saveState(output);
     }
   }
@@ -233,7 +233,7 @@ public final class CompositeParallelizableJob implements ParallelizableJob {
    */
   @Override
   public void restoreState(ObjectInput input) throws Exception {
-    for (ParallelizableJob job : jobs) {
+    for (LifeCycleManageable job : jobs) {
       job.restoreState(input);
     }
   }
