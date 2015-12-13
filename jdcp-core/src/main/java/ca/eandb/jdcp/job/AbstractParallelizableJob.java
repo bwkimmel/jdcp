@@ -40,6 +40,7 @@ import ca.eandb.util.io.OutputArchive;
  * @author Brad Kimmel
  */
 public abstract class AbstractParallelizableJob implements ParallelizableJob {
+  private static final long serialVersionUID = -6179661263867434277L;
 
   /**
    * A <code>HostService</code> object for providing secure access to the
