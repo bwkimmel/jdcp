@@ -149,9 +149,7 @@ public abstract class CachingJobServiceClassLoaderStrategy implements ClassLoade
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.util.classloader.ClassLoaderStrategy#getClassDefinition(java.lang.String)
-   */
+  @Override
   public final ByteBuffer getClassDefinition(String name) {
 
     try {

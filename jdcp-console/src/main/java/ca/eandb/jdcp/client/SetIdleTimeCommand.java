@@ -36,9 +36,7 @@ import ca.eandb.util.args.AbstractCommand;
  */
 public class SetIdleTimeCommand extends AbstractCommand<Configuration> {
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.client.Command#run(java.util.List, ca.eandb.jdcp.client.Configuration)
-   */
+  @Override
   public void run(String[] args, Configuration conf) {
     int seconds = Integer.parseInt(args[0]);
     try {

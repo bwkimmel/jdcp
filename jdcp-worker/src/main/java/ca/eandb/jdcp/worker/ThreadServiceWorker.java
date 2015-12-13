@@ -96,9 +96,7 @@ public final class ThreadServiceWorker implements Runnable {
     this.dataSource = dataSource;
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Runnable#run()
-   */
+  @Override
   public synchronized void run() {
 
     runThread = Thread.currentThread();
@@ -360,9 +358,7 @@ public final class ThreadServiceWorker implements Runnable {
       return currentTaskId;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Runnable#run()
-     */
+    @Override
     public void run() {
 
       try {
@@ -686,16 +682,12 @@ public final class ThreadServiceWorker implements Runnable {
       return shutdownPending || (workerId >= maxWorkers);
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#isCancelPending()
-     */
+    @Override
     public boolean isCancelPending() {
       return isLocalCancelPending() || monitor.isCancelPending();
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#addCancelListener(ca.eandb.util.progress.CancelListener)
-     */
+    @Override
     public void addCancelListener(CancelListener listener) {
       cancelListeners.addCancelListener(listener);
     }
@@ -711,54 +703,42 @@ public final class ThreadServiceWorker implements Runnable {
       return cancelPending || isWorkerShutdownPending();
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#notifyCancelled()
-     */
+    @Override
     public void notifyCancelled() {
       if (isWorkerShutdownPending()) {
         monitor.notifyCancelled();
       }
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#notifyComplete()
-     */
+    @Override
     public void notifyComplete() {
       if (isWorkerShutdownPending()) {
         monitor.notifyComplete();
       }
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#notifyIndeterminantProgress()
-     */
+    @Override
     public boolean notifyIndeterminantProgress() {
       waitForCourtesyMonitor();
       return monitor.notifyIndeterminantProgress()
           && !isLocalCancelPending();
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#notifyProgress(int, int)
-     */
+    @Override
     public boolean notifyProgress(int value, int maximum) {
       waitForCourtesyMonitor();
       return monitor.notifyProgress(value, maximum)
         && !isLocalCancelPending();
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#notifyProgress(double)
-     */
+    @Override
     public boolean notifyProgress(double progress) {
       waitForCourtesyMonitor();
       return monitor.notifyProgress(progress)
         && !isLocalCancelPending();
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#notifyStatusChanged(java.lang.String)
-     */
+    @Override
     public void notifyStatusChanged(String status) {
       waitForCourtesyMonitor();
       monitor.notifyStatusChanged(status);

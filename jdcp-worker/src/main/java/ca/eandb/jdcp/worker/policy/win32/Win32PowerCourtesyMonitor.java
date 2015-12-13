@@ -131,45 +131,33 @@ public final class Win32PowerCourtesyMonitor extends AsyncCourtesyMonitor
     update();
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.policy.win32.PowerCourtesyMonitor#isRequireAC()
-   */
+  @Override
   public synchronized final boolean isRequireAC() {
     return requireAC;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.policy.win32.PowerCourtesyMonitor#setRequireAC(boolean)
-   */
+  @Override
   public synchronized final void setRequireAC(boolean requireAC) {
     this.requireAC = requireAC;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.policy.win32.PowerCourtesyMonitor#getMinBatteryLifePercent()
-   */
+  @Override
   public synchronized final int getMinBatteryLifePercent() {
     return minBatteryLifePercent;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.policy.win32.PowerCourtesyMonitor#setMinBatteryLifePercent(byte)
-   */
+  @Override
   public synchronized final void setMinBatteryLifePercent(
       int minBatteryLifePercent) {
     this.minBatteryLifePercent = minBatteryLifePercent;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.policy.win32.PowerCourtesyMonitor#getMinBatteryLifePercentWhileCharging()
-   */
+  @Override
   public synchronized final int getMinBatteryLifePercentWhileCharging() {
     return minBatteryLifePercentWhileCharging;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.policy.win32.PowerCourtesyMonitor#setMinBatteryLifePercentWhileCharging(byte)
-   */
+  @Override
   public synchronized final void setMinBatteryLifePercentWhileCharging(
       int minBatteryLifePercentWhileCharging) {
     this.minBatteryLifePercentWhileCharging = minBatteryLifePercentWhileCharging;

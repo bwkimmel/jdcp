@@ -61,9 +61,7 @@ public final class JobServiceClassLoaderStrategy implements ClassLoaderStrategy 
     this.jobId = jobId;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.util.classloader.ClassLoaderStrategy#getClassDefinition(java.lang.String)
-   */
+  @Override
   public ByteBuffer getClassDefinition(String name) {
 
     try {

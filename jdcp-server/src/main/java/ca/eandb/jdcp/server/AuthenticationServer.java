@@ -99,9 +99,7 @@ public final class AuthenticationServer extends UnicastRemoteObject implements
     this.service = service;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.AuthenticationService#authenticate(java.lang.String, java.lang.String, java.util.UUID)
-   */
+  @Override
   public JobService authenticate(final String username, final String password, UUID protocolVersionId)
       throws RemoteException, LoginException, ProtocolVersionException {
 

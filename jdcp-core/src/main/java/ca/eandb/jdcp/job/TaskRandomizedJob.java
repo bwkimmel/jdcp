@@ -60,9 +60,7 @@ public class TaskRandomizedJob implements ParallelizableJob {
     this.inner = inner;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#getNextTask()
-   */
+  @Override
   public Object getNextTask() throws Exception {
     while (true) {
       Object task = inner.getNextTask();
@@ -80,59 +78,43 @@ public class TaskRandomizedJob implements ParallelizableJob {
     return tasks.isEmpty() ? null : tasks.remove(tasks.size() - 1);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#isComplete()
-   */
+  @Override
   public boolean isComplete() throws Exception {
     return inner.isComplete();
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#submitTaskResults(java.lang.Object, java.lang.Object, ca.eandb.util.progress.ProgressMonitor)
-   */
+  @Override
   public void submitTaskResults(Object task, Object results,
       ProgressMonitor monitor) throws Exception {
     inner.submitTaskResults(task, results, monitor);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.AbstractParallelizableJob#finish()
-   */
+  @Override
   public void finish() throws Exception {
     inner.finish();
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.AbstractParallelizableJob#initialize()
-   */
+  @Override
   public void initialize() throws Exception {
     inner.initialize();
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.AbstractParallelizableJob#restoreState(java.io.ObjectInput)
-   */
+  @Override
   public void restoreState(ObjectInput input) throws Exception {
     inner.restoreState(input);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.AbstractParallelizableJob#saveState(java.io.ObjectOutput)
-   */
+  @Override
   public void saveState(ObjectOutput output) throws Exception {
     inner.saveState(output);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.AbstractParallelizableJob#setHostService(ca.eandb.jdcp.job.HostService)
-   */
+  @Override
   public void setHostService(HostService host) {
     inner.setHostService(host);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#worker()
-   */
+  @Override
   public TaskWorker worker() throws Exception {
     return inner.worker();
   }

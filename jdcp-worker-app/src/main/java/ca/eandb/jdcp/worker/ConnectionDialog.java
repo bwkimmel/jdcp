@@ -90,9 +90,6 @@ public class ConnectionDialog extends JDialog {
     initialize();
   }
 
-  /* (non-Javadoc)
-   * @see java.awt.Dialog#setVisible(boolean)
-   */
   @Override
   public void setVisible(boolean b) {
     if (b) {
@@ -505,9 +502,7 @@ public class ConnectionDialog extends JDialog {
       this.remaining = seconds;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Runnable#run()
-     */
+    @Override
     public void run() {
       try {
         while (remaining > 0 && !Thread.interrupted()) {

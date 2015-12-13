@@ -65,16 +65,12 @@ public final class InternalCachingJobServiceClassLoaderStrategy extends
     return name + "$$" + StringUtil.toHex(digest);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheLookup(java.lang.String, byte[])
-   */
+  @Override
   protected byte[] cacheLookup(String name, byte[] digest) {
     return cache.get(getKey(name, digest));
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheStore(java.lang.String, byte[], byte[])
-   */
+  @Override
   protected void cacheStore(String name, byte[] digest, byte[] def) {
     cache.put(getKey(name, digest), def);
   }

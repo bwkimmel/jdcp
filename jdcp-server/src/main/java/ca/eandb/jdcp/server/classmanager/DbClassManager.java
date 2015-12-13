@@ -135,9 +135,7 @@ public final class DbClassManager extends AbstractClassManager implements Parent
     return snapshotIndex;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.server.classmanager.ParentClassManager#createChildClassManager()
-   */
+  @Override
   public ChildClassManager createChildClassManager() {
     Connection con = null;
 
@@ -178,9 +176,7 @@ public final class DbClassManager extends AbstractClassManager implements Parent
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.server.classmanager.ParentClassManager#getChildClassManager(int)
-   */
+  @Override
   public ChildClassManager getChildClassManager(int id) {
     synchronized (children) {
       DbChildClassManager child = children.get(id);
@@ -205,16 +201,12 @@ public final class DbClassManager extends AbstractClassManager implements Parent
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.server.classmanager.ClassManager#getClassDigest(java.lang.String)
-   */
+  @Override
   public byte[] getClassDigest(String name) {
     return getClassField(name, "MD5");
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.util.classloader.ClassLoaderStrategy#getClassDefinition(java.lang.String)
-   */
+  @Override
   public ByteBuffer getClassDefinition(String name) {
     byte[] def = getClassField(name, "Definition");
     return (def != null) ? ByteBuffer.wrap(def) : null;
@@ -234,9 +226,7 @@ public final class DbClassManager extends AbstractClassManager implements Parent
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.server.classmanager.ClassManager#setClassDefinition(java.lang.String, java.nio.ByteBuffer)
-   */
+  @Override
   public void setClassDefinition(String name, ByteBuffer def) {
     Connection con = null;
     try {
@@ -311,17 +301,13 @@ public final class DbClassManager extends AbstractClassManager implements Parent
       }
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.jdcp.server.classmanager.ChildClassManager#getChildId()
-     */
+    @Override
     public int getChildId() {
       check();
       return id;
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.jdcp.server.classmanager.ClassManager#setClassDefinition(java.lang.String, java.nio.ByteBuffer)
-     */
+    @Override
     public void setClassDefinition(String name, ByteBuffer def) {
       check();
 
@@ -375,17 +361,13 @@ public final class DbClassManager extends AbstractClassManager implements Parent
       }
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.classloader.ClassLoaderStrategy#getClassDefinition(java.lang.String)
-     */
+    @Override
     public ByteBuffer getClassDefinition(String name) {
       byte[] def = getClassField(name, "Definition");
       return (def != null) ? ByteBuffer.wrap(def) : null;
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.jdcp.server.classmanager.ClassManager#getClassDigest(java.lang.String)
-     */
+    @Override
     public byte[] getClassDigest(String name) {
       return getClassField(name, "MD5");
     }
@@ -418,9 +400,7 @@ public final class DbClassManager extends AbstractClassManager implements Parent
       }
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.jdcp.server.classmanager.ChildClassManager#release()
-     */
+    @Override
     public void release() {
       Connection con = null;
       try {

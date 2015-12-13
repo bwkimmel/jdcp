@@ -48,37 +48,27 @@ public abstract class AbstractParallelizableJob implements ParallelizableJob {
    */
   private transient HostService host = null;
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#setHostService(ca.eandb.jdcp.job.HostService)
-   */
+  @Override
   public final void setHostService(HostService host) {
     this.host = host;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#initialize()
-   */
+  @Override
   public void initialize() throws Exception {
     /* nothing to do. */
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#finish()
-   */
+  @Override
   public void finish() throws Exception {
     /* nothing to do. */
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#restoreState(java.io.ObjectInput)
-   */
+  @Override
   public void restoreState(ObjectInput input) throws Exception {
     archiveState(new InputArchive(input));
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#saveState(java.io.ObjectOutput)
-   */
+  @Override
   public void saveState(ObjectOutput output) throws Exception {
     archiveState(new OutputArchive(output));
   }

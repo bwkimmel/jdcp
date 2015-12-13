@@ -131,9 +131,7 @@ public final class JobHub implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getClassDefinition(java.lang.String, java.util.UUID)
-   */
+  @Override
   public byte[] getClassDefinition(String name, UUID jobId) {
     ServiceInfo info = routes.get(jobId);
     if (info == null) {
@@ -142,9 +140,7 @@ public final class JobHub implements JobService {
     return info.getClassDefinition(name, jobId);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getClassDigest(java.lang.String, java.util.UUID)
-   */
+  @Override
   public byte[] getClassDigest(String name, UUID jobId) {
     ServiceInfo info = routes.get(jobId);
     if (info == null) {
@@ -153,9 +149,7 @@ public final class JobHub implements JobService {
     return info.getClassDigest(name, jobId);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getFinishedTasks(java.util.UUID[], int[])
-   */
+  @Override
   public BitSet getFinishedTasks(UUID[] jobIds, int[] taskIds)
       throws IllegalArgumentException {
     if (jobIds == null || taskIds == null) {
@@ -172,9 +166,7 @@ public final class JobHub implements JobService {
     return finished;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getTaskWorker(java.util.UUID)
-   */
+  @Override
   public Serialized<TaskWorker> getTaskWorker(UUID jobId)
       throws IllegalArgumentException {
     ServiceInfo info = routes.get(jobId);
@@ -185,9 +177,7 @@ public final class JobHub implements JobService {
     return info.getTaskWorker(jobId);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#reportException(java.util.UUID, int, java.lang.Exception)
-   */
+  @Override
   public void reportException(final UUID jobId, final int taskId,
       final Exception e) {
     final ServiceInfo info = routes.get(jobId);
@@ -204,9 +194,7 @@ public final class JobHub implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#requestTask()
-   */
+  @Override
   public TaskDescription requestTask() {
     int n = services.size();
     if (n > 0) {
@@ -235,16 +223,12 @@ public final class JobHub implements JobService {
     return idleTask;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#setIdleTime(int)
-   */
+  @Override
   public void setIdleTime(int idleSeconds) throws IllegalArgumentException {
     idleTask = new TaskDescription(null, 0, idleSeconds);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#submitTaskResults(java.util.UUID, int, ca.eandb.util.rmi.Serialized)
-   */
+  @Override
   public void submitTaskResults(final UUID jobId, final int taskId,
       final Serialized<Object> results) {
     final ServiceInfo info = routes.get(jobId);
@@ -264,100 +248,74 @@ public final class JobHub implements JobService {
   ///////////////////////////////////////////////////////////////////////////
   // The following operations are not supported
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#cancelJob(java.util.UUID)
-   */
+  @Override
   public void cancelJob(UUID jobId) throws IllegalArgumentException,
       SecurityException, RemoteException {
     throw new UnsupportedOperationException();
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#createJob(java.lang.String)
-   */
+  @Override
   public UUID createJob(String description) throws SecurityException,
       RemoteException {
     throw new UnsupportedOperationException();
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getClassDigest(java.lang.String)
-   */
+  @Override
   public byte[] getClassDigest(String name) throws SecurityException,
       RemoteException {
     throw new UnsupportedOperationException();
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#setClassDefinition(java.lang.String, byte[])
-   */
+  @Override
   public void setClassDefinition(String name, byte[] def)
       throws SecurityException, RemoteException {
     throw new UnsupportedOperationException();
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#setClassDefinition(java.lang.String, java.util.UUID, byte[])
-   */
+  @Override
   public void setClassDefinition(String name, UUID jobId, byte[] def)
       throws IllegalArgumentException, SecurityException, RemoteException {
     throw new UnsupportedOperationException();
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#setJobPriority(java.util.UUID, int)
-   */
+  @Override
   public void setJobPriority(UUID jobId, int priority)
       throws IllegalArgumentException, SecurityException, RemoteException {
     throw new UnsupportedOperationException();
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#submitJob(ca.eandb.util.rmi.Serialized, java.util.UUID)
-   */
+  @Override
   public void submitJob(Serialized<ParallelizableJob> job, UUID jobId)
       throws IllegalArgumentException, SecurityException,
       ClassNotFoundException, RemoteException, JobExecutionException {
     throw new UnsupportedOperationException();
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#submitJob(ca.eandb.util.rmi.Serialized, java.lang.String)
-   */
+  @Override
   public UUID submitJob(Serialized<ParallelizableJob> job, String description)
       throws SecurityException, ClassNotFoundException, RemoteException,
       JobExecutionException {
     throw new UnsupportedOperationException();
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#registerTaskService(java.lang.String, ca.eandb.jdcp.remote.TaskService)
-   */
+  @Override
   public void registerTaskService(String name, TaskService service)
       throws SecurityException, RemoteException {
     throw new UnsupportedOperationException();
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#unregisterTaskService(java.lang.String)
-   */
+  @Override
   public void unregisterTaskService(String name) throws SecurityException,
       RemoteException {
     throw new UnsupportedOperationException();
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#waitForJobStatusChange(long, long)
-   */
   @Override
   public JobStatus waitForJobStatusChange(long lastEventId, long timeoutMillis)
       throws SecurityException, RemoteException {
     throw new UnsupportedOperationException();
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#waitForJobStatusChange(java.util.UUID, long, long)
-   */
   @Override
   public JobStatus waitForJobStatusChange(UUID jobId, long lastEventId,
       long timeoutMillis) throws IllegalArgumentException,
@@ -365,9 +323,6 @@ public final class JobHub implements JobService {
     throw new UnsupportedOperationException();
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getJobStatus(java.util.UUID)
-   */
   @Override
   public JobStatus getJobStatus(UUID jobId) throws IllegalArgumentException,
       SecurityException, RemoteException {

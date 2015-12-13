@@ -56,9 +56,7 @@ public final class DummyParallelizableJob extends AbstractParallelizableJob
     assert(minSleepTime <= maxSleepTime);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#getNextTask()
-   */
+  @Override
   public Object getNextTask() {
 
     if (this.nextTask < this.tasks) {
@@ -75,9 +73,7 @@ public final class DummyParallelizableJob extends AbstractParallelizableJob
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#submitResults(java.lang.Object, java.lang.Object, ca.eandb.util.progress.ProgressMonitor)
-   */
+  @Override
   public void submitTaskResults(Object task, Object results, ProgressMonitor monitor) {
 
     int taskValue = (Integer) task;
@@ -88,16 +84,12 @@ public final class DummyParallelizableJob extends AbstractParallelizableJob
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#isComplete()
-   */
+  @Override
   public boolean isComplete() {
     return this.numResultsReceived >= this.tasks;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#finish()
-   */
+  @Override
   public void finish() {
 
     FileOutputStream stream = createFileOutputStream("results.txt");
@@ -109,16 +101,11 @@ public final class DummyParallelizableJob extends AbstractParallelizableJob
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#worker()
-   */
+  @Override
   public TaskWorker worker() {
     return this.worker;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.AbstractParallelizableJob#archiveState(ca.eandb.util.io.Archive)
-   */
   @Override
   protected void archiveState(Archive ar) throws IOException {
     nextTask = ar.archiveInt(nextTask);
@@ -156,10 +143,7 @@ public final class DummyParallelizableJob extends AbstractParallelizableJob
    */
   private final TaskWorker worker = new TaskWorker() {
 
-    /*
-     * (non-Javadoc)
-     * @see ca.eandb.jdcp.job.TaskWorker#performTask(java.lang.Object, ca.eandb.util.progress.ProgressMonitor)
-     */
+    @Override
     public Object performTask(Object task, ProgressMonitor monitor) {
 
       int value = (Integer) task;

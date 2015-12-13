@@ -86,9 +86,6 @@ public final class FileCachingJobServiceClassLoaderStrategy extends
     this(service, jobId, new File(directory));
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheLookup(java.lang.String, byte[])
-   */
   @Override
   protected byte[] cacheLookup(String name, byte[] digest) {
     File file = getCacheEntryFile(name, digest, false);
@@ -106,9 +103,6 @@ public final class FileCachingJobServiceClassLoaderStrategy extends
     return def;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheStore(java.lang.String, byte[], byte[])
-   */
   @Override
   protected void cacheStore(String name, byte[] digest, byte[] def) {
     File file = getCacheEntryFile(name, digest, true);

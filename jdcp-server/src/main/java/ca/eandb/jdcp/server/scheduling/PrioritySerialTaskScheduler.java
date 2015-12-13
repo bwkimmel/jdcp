@@ -100,9 +100,7 @@ public final class PrioritySerialTaskScheduler implements TaskScheduler {
       this.id = id;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
-     */
+    @Override
     public int compareTo(JobInfo other) {
       if (priority > other.priority) {
         return -1;
@@ -191,9 +189,7 @@ public final class PrioritySerialTaskScheduler implements TaskScheduler {
    */
   private final class JobIdComparator implements Comparator<UUID> {
 
-    /* (non-Javadoc)
-     * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-     */
+    @Override
     public int compare(UUID id1, UUID id2) {
       JobInfo job1 = jobs.get(id1);
       JobInfo job2 = jobs.get(id2);
@@ -222,9 +218,7 @@ public final class PrioritySerialTaskScheduler implements TaskScheduler {
     return job;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.server.scheduling.TaskScheduler#add(ca.eandb.jdcp.job.TaskDescription)
-   */
+  @Override
   public void add(TaskDescription task) {
     UUID jobId = task.getJobId();
     JobInfo job = getJob(jobId);
@@ -234,25 +228,19 @@ public final class PrioritySerialTaskScheduler implements TaskScheduler {
     job.addTask(task);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.server.scheduling.TaskScheduler#get(java.util.UUID, int)
-   */
+  @Override
   public TaskDescription get(UUID jobId, int taskId) {
     JobInfo job = getJob(jobId);
     return (job != null) ? job.getTask(taskId) : null;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.server.scheduling.TaskScheduler#contains(java.util.UUID, int)
-   */
+  @Override
   public boolean contains(UUID jobId, int taskId) {
     JobInfo job = getJob(jobId);
     return (job != null) ? job.contains(taskId) : false;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.scheduling.TaskScheduler#getNextTask()
-   */
+  @Override
   public TaskDescription getNextTask() {
     TaskDescription desc = null;
 
@@ -274,17 +262,13 @@ public final class PrioritySerialTaskScheduler implements TaskScheduler {
     return desc;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.scheduling.TaskScheduler#remove(java.util.UUID, int)
-   */
+  @Override
   public TaskDescription remove(UUID jobId, int taskId) {
     JobInfo job = jobs.get(jobId);
     return (job != null) ? job.removeTask(taskId) : null;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.scheduling.TaskScheduler#setJobPriority(java.util.UUID, int)
-   */
+  @Override
   public void setJobPriority(UUID jobId, int priority) {
     JobInfo job = jobs.get(jobId);
     jobQueue.remove(jobId);
@@ -292,9 +276,7 @@ public final class PrioritySerialTaskScheduler implements TaskScheduler {
     jobQueue.add(jobId);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.scheduling.TaskScheduler#removeJob(java.util.UUID)
-   */
+  @Override
   public void removeJob(UUID jobId) {
     jobQueue.remove(jobId);
     jobs.remove(jobId);

@@ -56,16 +56,12 @@ public final class JobExecutionWrapper implements ParallelizableJob {
     this.job = job;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#setHostService(ca.eandb.jdcp.job.HostService)
-   */
+  @Override
   public void setHostService(HostService host) {
     job.setHostService(host);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#finish()
-   */
+  @Override
   public void finish() throws JobExecutionException {
     try {
       job.finish();
@@ -74,9 +70,7 @@ public final class JobExecutionWrapper implements ParallelizableJob {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#getNextTask()
-   */
+  @Override
   public Object getNextTask() throws JobExecutionException {
     try {
       return job.getNextTask();
@@ -85,9 +79,7 @@ public final class JobExecutionWrapper implements ParallelizableJob {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#initialize(ca.eandb.jdcp.job.Host)
-   */
+  @Override
   public void initialize() throws JobExecutionException {
     try {
       job.initialize();
@@ -96,9 +88,7 @@ public final class JobExecutionWrapper implements ParallelizableJob {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#save(java.io.ObjectOutput)
-   */
+  @Override
   public void saveState(ObjectOutput output) throws JobExecutionException {
     try {
       job.saveState(output);
@@ -107,9 +97,7 @@ public final class JobExecutionWrapper implements ParallelizableJob {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#restore(java.io.ObjectInput)
-   */
+  @Override
   public void restoreState(ObjectInput input) throws JobExecutionException {
     try {
       job.restoreState(input);
@@ -118,9 +106,7 @@ public final class JobExecutionWrapper implements ParallelizableJob {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#isComplete()
-   */
+  @Override
   public boolean isComplete() throws JobExecutionException {
     try {
       return job.isComplete();
@@ -129,9 +115,7 @@ public final class JobExecutionWrapper implements ParallelizableJob {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#submitTaskResults(java.lang.Object, java.lang.Object, ca.eandb.util.progress.ProgressMonitor)
-   */
+  @Override
   public void submitTaskResults(Object task, Object results,
       ProgressMonitor monitor) throws JobExecutionException {
     try {
@@ -141,9 +125,7 @@ public final class JobExecutionWrapper implements ParallelizableJob {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#worker()
-   */
+  @Override
   public TaskWorker worker() throws JobExecutionException {
     try {
       return new TaskWorkerWrapper(job.worker());

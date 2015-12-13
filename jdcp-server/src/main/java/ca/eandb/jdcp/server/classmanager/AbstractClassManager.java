@@ -34,9 +34,7 @@ import java.nio.ByteBuffer;
  */
 public abstract class AbstractClassManager implements ClassManager {
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.server.classmanager.ClassManager#setClassDefinition(java.lang.String, byte[])
-   */
+  @Override
   public void setClassDefinition(String name, byte[] def) {
     this.setClassDefinition(name, ByteBuffer.wrap(def));
   }

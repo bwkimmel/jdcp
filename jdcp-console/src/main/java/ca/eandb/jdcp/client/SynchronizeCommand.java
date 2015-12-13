@@ -44,9 +44,6 @@ import ca.eandb.util.io.FileUtil;
  */
 public final class SynchronizeCommand extends AbstractCommand<Configuration> {
 
-  /* (non-Javadoc)
-   * @see ca.eandb.util.args.AbstractCommand#run(java.lang.String[], java.lang.Object)
-   */
   @Override
   protected void run(String[] args, Configuration conf) {
     for (String arg : args) {

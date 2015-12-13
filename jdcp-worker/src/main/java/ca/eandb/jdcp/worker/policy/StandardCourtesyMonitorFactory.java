@@ -34,24 +34,18 @@ import java.io.File;
 public class StandardCourtesyMonitorFactory implements
     CourtesyMonitorFactory {
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.policy.CourtesyMonitorFactory#createExecCourtesyMonitor(java.lang.String)
-   */
+  @Override
   public PollingCourtesyMonitor createExecCourtesyMonitor(String cmd) {
     return new ExecCourtesyMonitor(cmd);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.policy.CourtesyMonitorFactory#createExecCourtesyMonitor(java.lang.String, java.io.File)
-   */
+  @Override
   public PollingCourtesyMonitor createExecCourtesyMonitor(String cmd,
       File workingDir) {
     return new ExecCourtesyMonitor(cmd, workingDir);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.policy.CourtesyMonitorFactory#createPowerCourtesyMonitor()
-   */
+  @Override
   public PowerCourtesyMonitor createPowerCourtesyMonitor() {
     return null;
   }

@@ -52,9 +52,7 @@ public final class CompositeCourtesyMonitor implements CourtesyMonitor {
     return this;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.policy.CourtesyMonitor#allowTasksToRun()
-   */
+  @Override
   public boolean allowTasksToRun() {
     for (CourtesyMonitor monitor : monitors) {
       if (!monitor.allowTasksToRun()) {
@@ -64,9 +62,7 @@ public final class CompositeCourtesyMonitor implements CourtesyMonitor {
     return true;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.policy.CourtesyMonitor#waitFor()
-   */
+  @Override
   public void waitFor() throws InterruptedException {
     while (!allowTasksToRun()) {
       for (CourtesyMonitor monitor : monitors) {
