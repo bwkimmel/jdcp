@@ -156,7 +156,6 @@ public final class TemporaryJobServer implements TaskService {
     return jobs.isEmpty();
   }
 
-  @Override
   public UUID submitJob(ParallelizableJob job, String description)
       throws ClassNotFoundException, JobExecutionException {
     ScheduledJob sched = new ScheduledJob(job, description, monitorFactory.createProgressMonitor(description));
@@ -177,7 +176,6 @@ public final class TemporaryJobServer implements TaskService {
     return sched.id;
   }
 
-  @Override
   public void cancelJob(UUID jobId) throws IllegalArgumentException {
     if (!jobs.containsKey(jobId)) {
       throw new IllegalArgumentException("No job with provided Job ID");
@@ -300,7 +298,6 @@ public final class TemporaryJobServer implements TaskService {
     }
   }
 
-  @Override
   public void setIdleTime(int idleSeconds) throws IllegalArgumentException,
       SecurityException {
     idleTask = new TaskDescription(null, 0, idleSeconds);
@@ -309,7 +306,6 @@ public final class TemporaryJobServer implements TaskService {
     }
   }
 
-  @Override
   public void setJobPriority(UUID jobId, int priority)
       throws IllegalArgumentException, SecurityException {
     if (!jobs.containsKey(jobId)) {
