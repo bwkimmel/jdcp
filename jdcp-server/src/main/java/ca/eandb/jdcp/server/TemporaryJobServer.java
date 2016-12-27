@@ -369,22 +369,22 @@ public final class TemporaryJobServer implements TaskService {
   private class ScheduledJob {
 
     /** The <code>ParallelizableJob</code> to be processed. */
-    public JobExecutionWrapper        job;
+    public JobExecutionWrapper job;
 
     /** The <code>UUID</code> identifying the job. */
-    public final UUID            id;
+    public final UUID id;
 
     /** A description of the job. */
-    public final String            description;
+    public final String description;
 
     /** The <code>TaskWorker</code> to use to process tasks for the job. */
-    public Serialized<TaskWorker>      worker;
+    public Serialized<TaskWorker> worker;
 
     /**
      * The <code>ProgressMonitor</code> to use to monitor the progress of
      * the <code>Job</code>.
      */
-    public final ProgressMonitor      monitor;
+    public final ProgressMonitor monitor;
 
     /**
      * Initializes the scheduled job.
@@ -396,15 +396,15 @@ public final class TemporaryJobServer implements TaskService {
      */
     public ScheduledJob(ParallelizableJob job, String description, ProgressMonitor monitor) throws JobExecutionException {
 
-      this.id          = UUID.randomUUID();
-      this.description    = description;
+      this.id = UUID.randomUUID();
+      this.description = description;
 
       //String title      = String.format("%s (%s)", this.job.getClass().getSimpleName(), this.id.toString());
-      this.monitor      = monitor;
+      this.monitor = monitor;
       this.monitor.notifyStatusChanged("Awaiting job submission");
 
-      this.job      = new JobExecutionWrapper(job);
-      this.worker      = new Serialized<TaskWorker>(this.job.worker());
+      this.job = new JobExecutionWrapper(job);
+      this.worker = new Serialized<TaskWorker>(this.job.worker());
       this.monitor.notifyStatusChanged("");
       this.job.initialize();
     }
