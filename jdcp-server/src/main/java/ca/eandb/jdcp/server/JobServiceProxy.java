@@ -77,9 +77,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
     this.service = service;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#cancelJob(java.util.UUID)
-   */
+  @Override
   public void cancelJob(final UUID jobId) throws IllegalArgumentException,
       SecurityException, RemoteException {
 
@@ -107,9 +105,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#createJob(java.lang.String)
-   */
+  @Override
   public UUID createJob(final String description) throws SecurityException,
       RemoteException {
 
@@ -134,9 +130,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getClassDefinition(java.lang.String, java.util.UUID)
-   */
+  @Override
   public byte[] getClassDefinition(final String name, final UUID jobId)
       throws SecurityException, RemoteException {
 
@@ -161,9 +155,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getClassDigest(java.lang.String, java.util.UUID)
-   */
+  @Override
   public byte[] getClassDigest(final String name, final UUID jobId)
       throws SecurityException, RemoteException {
 
@@ -188,9 +180,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getClassDigest(java.lang.String)
-   */
+  @Override
   public byte[] getClassDigest(final String name) throws SecurityException,
       RemoteException {
 
@@ -215,9 +205,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getTaskWorker(java.util.UUID)
-   */
+  @Override
   public Serialized<TaskWorker> getTaskWorker(final UUID jobId)
       throws IllegalArgumentException, SecurityException, RemoteException {
 
@@ -244,9 +232,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#requestTask()
-   */
+  @Override
   public TaskDescription requestTask() throws SecurityException,
       RemoteException {
 
@@ -271,9 +257,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#setClassDefinition(java.lang.String, byte[])
-   */
+  @Override
   public void setClassDefinition(final String name, final byte[] def)
       throws SecurityException, RemoteException {
 
@@ -299,9 +283,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#setClassDefinition(java.lang.String, java.util.UUID, byte[])
-   */
+  @Override
   public void setClassDefinition(final String name, final UUID jobId, final byte[] def)
       throws IllegalArgumentException, SecurityException, RemoteException {
 
@@ -329,9 +311,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#setIdleTime(int)
-   */
+  @Override
   public void setIdleTime(final int idleSeconds) throws IllegalArgumentException,
       SecurityException, RemoteException {
 
@@ -359,9 +339,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#setJobPriority(java.util.UUID, int)
-   */
+  @Override
   public void setJobPriority(final UUID jobId, final int priority)
       throws IllegalArgumentException, SecurityException, RemoteException {
 
@@ -389,9 +367,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#submitJob(ca.eandb.util.rmi.Serialized, java.util.UUID)
-   */
+  @Override
   public void submitJob(final Serialized<ParallelizableJob> job, final UUID jobId)
       throws IllegalArgumentException, SecurityException,
       ClassNotFoundException, RemoteException, JobExecutionException {
@@ -424,9 +400,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#submitJob(ca.eandb.util.rmi.Serialized, java.lang.String)
-   */
+  @Override
   public UUID submitJob(final Serialized<ParallelizableJob> job, final String description)
       throws SecurityException, ClassNotFoundException, RemoteException, JobExecutionException {
 
@@ -457,9 +431,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#submitTaskResults(java.util.UUID, int, ca.eandb.util.rmi.Serialized)
-   */
+  @Override
   public void submitTaskResults(final UUID jobId, final int taskId,
       final Serialized<Object> results) throws SecurityException,
       RemoteException {
@@ -488,9 +460,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#reportException(java.util.UUID, int, java.lang.Exception)
-   */
+  @Override
   public void reportException(final UUID jobId, final int taskId,
       final Exception ex) throws SecurityException,
       RemoteException {
@@ -517,9 +487,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getFinishedTasks(java.util.UUID[], int[])
-   */
+  @Override
   public BitSet getFinishedTasks(final UUID[] jobIds, final int[] taskIds)
       throws SecurityException, RemoteException {
 
@@ -546,9 +514,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#registerTaskService(java.lang.String, ca.eandb.jdcp.remote.TaskService)
-   */
+  @Override
   public void registerTaskService(final String name, final TaskService taskService)
       throws SecurityException, RemoteException {
 
@@ -574,9 +540,7 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#unregisterTaskService(java.lang.String)
-   */
+  @Override
   public void unregisterTaskService(final String name)
       throws IllegalArgumentException, SecurityException, RemoteException {
 
@@ -604,9 +568,6 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#waitForJobStatusChange(long, long)
-   */
   @Override
   public JobStatus waitForJobStatusChange(final long lastEventId, final long timeoutMillis)
       throws SecurityException, RemoteException {
@@ -662,9 +623,6 @@ public final class JobServiceProxy extends UnicastRemoteObject implements JobSer
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getJobStatus(java.util.UUID)
-   */
   @Override
   public JobStatus getJobStatus(final UUID jobId) throws IllegalArgumentException,
       SecurityException, RemoteException {

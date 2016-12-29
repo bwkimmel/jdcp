@@ -139,9 +139,7 @@ public final class FileClassManager extends AbstractClassManager implements
     }
   };
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.server.classmanager.ParentClassManager#getChildClassManager(int)
-   */
+  @Override
   public ca.eandb.jdcp.server.classmanager.ChildClassManager getChildClassManager(int id) {
     int index = Collections.binarySearch(activeChildren, id,
         childComparator);
@@ -289,16 +287,12 @@ public final class FileClassManager extends AbstractClassManager implements
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.server.classmanager.ClassManager#getClassDigest(java.lang.String)
-   */
+  @Override
   public byte[] getClassDigest(String name) {
     return getClassDigest(currentDirectory, name);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.server.classmanager.ClassManager#setClassDefinition(java.lang.String, java.nio.ByteBuffer)
-   */
+  @Override
   public void setClassDefinition(String name, ByteBuffer def) {
     byte[] digest = computeClassDigest(def);
     if (classExists(currentDirectory, name)) {
@@ -326,16 +320,12 @@ public final class FileClassManager extends AbstractClassManager implements
     return new File(deprecatedDirectory, Integer.toString(childIndex));
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.util.classloader.ClassLoaderStrategy#getClassDefinition(java.lang.String)
-   */
+  @Override
   public ByteBuffer getClassDefinition(String name) {
     return getClassDefinition(currentDirectory, name);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.server.classmanager.ParentClassManager#createChildClassManager()
-   */
+  @Override
   public FileChildClassManager createChildClassManager() {
     FileChildClassManager child = new FileChildClassManager();
     activeChildren.add(child);
@@ -442,25 +432,19 @@ public final class FileClassManager extends AbstractClassManager implements
       return currentDirectory;
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.jdcp.server.classmanager.ClassManager#getClassDigest(java.lang.String)
-     */
+    @Override
     public byte[] getClassDigest(String name) {
       File directory = getClassDirectory(name);
       return FileClassManager.this.getClassDigest(directory, name);
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.jdcp.server.classmanager.ClassManager#setClassDefinition(java.lang.String, java.nio.ByteBuffer)
-     */
+    @Override
     public void setClassDefinition(String name, ByteBuffer def) {
       check();
       writeClass(childDirectory, name, def);
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.classloader.ClassLoaderStrategy#getClassDefinition(java.lang.String)
-     */
+    @Override
     public ByteBuffer getClassDefinition(String name) {
       File directory = getClassDirectory(name);
       return FileClassManager.this.getClassDefinition(directory, name);
@@ -476,17 +460,13 @@ public final class FileClassManager extends AbstractClassManager implements
       return FileClassManager.this;
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.jdcp.server.classmanager.ChildClassManager#release()
-     */
+    @Override
     public void release() {
       released = true;
       releaseChildClassManager(this);
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.jdcp.server.classmanager.ChildClassManager#getChildId()
-     */
+    @Override
     public int getChildId() {
       check();
       return childIndex;

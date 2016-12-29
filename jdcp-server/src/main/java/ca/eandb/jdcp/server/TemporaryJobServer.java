@@ -156,9 +156,6 @@ public final class TemporaryJobServer implements TaskService {
     return jobs.isEmpty();
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#submitJob(ca.eandb.util.rmi.Envelope, java.lang.String)
-   */
   public UUID submitJob(ParallelizableJob job, String description)
       throws ClassNotFoundException, JobExecutionException {
     ScheduledJob sched = new ScheduledJob(job, description, monitorFactory.createProgressMonitor(description));
@@ -179,9 +176,6 @@ public final class TemporaryJobServer implements TaskService {
     return sched.id;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#cancelJob(java.util.UUID)
-   */
   public void cancelJob(UUID jobId) throws IllegalArgumentException {
     if (!jobs.containsKey(jobId)) {
       throw new IllegalArgumentException("No job with provided Job ID");
@@ -190,9 +184,7 @@ public final class TemporaryJobServer implements TaskService {
     removeScheduledJob(jobId, false);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getTaskWorker(java.util.UUID)
-   */
+  @Override
   public Serialized<TaskWorker> getTaskWorker(UUID jobId)
       throws IllegalArgumentException, SecurityException {
     ScheduledJob sched = jobs.get(jobId);
@@ -203,9 +195,7 @@ public final class TemporaryJobServer implements TaskService {
     throw new IllegalArgumentException("No submitted job with provided Job ID");
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#requestTask()
-   */
+  @Override
   public synchronized TaskDescription requestTask() throws SecurityException {
     TaskDescription taskDesc = scheduler.getNextTask();
     if (taskDesc != null) {
@@ -220,9 +210,7 @@ public final class TemporaryJobServer implements TaskService {
     return idleTask;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#submitTaskResults(java.util.UUID, int, ca.eandb.util.rmi.Envelope)
-   */
+  @Override
   public void submitTaskResults(final UUID jobId, final int taskId,
       final Serialized<Object> results) throws SecurityException {
     ScheduledJob sched = jobs.get(jobId);
@@ -231,9 +219,7 @@ public final class TemporaryJobServer implements TaskService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#reportException(java.util.UUID, int, java.lang.Exception)
-   */
+  @Override
   public void reportException(final UUID jobId, final int taskId, final Exception e)
       throws SecurityException, RemoteException {
     ScheduledJob sched = jobs.get(jobId);
@@ -242,9 +228,7 @@ public final class TemporaryJobServer implements TaskService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getFinishedTasks(java.util.UUID[], int[])
-   */
+  @Override
   public BitSet getFinishedTasks(UUID[] jobIds, int[] taskIds)
       throws IllegalArgumentException, SecurityException, RemoteException {
 
@@ -277,17 +261,13 @@ public final class TemporaryJobServer implements TaskService {
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getClassDefinition(java.lang.String, java.util.UUID)
-   */
+  @Override
   public byte[] getClassDefinition(String name, UUID jobId)
       throws SecurityException {
     return getClassDefinition(name);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getClassDigest(java.lang.String, java.util.UUID)
-   */
+  @Override
   public byte[] getClassDigest(String name, UUID jobId) {
     return getClassDigest(name);
   }
@@ -318,9 +298,6 @@ public final class TemporaryJobServer implements TaskService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#setIdleTime(int)
-   */
   public void setIdleTime(int idleSeconds) throws IllegalArgumentException,
       SecurityException {
     idleTask = new TaskDescription(null, 0, idleSeconds);
@@ -329,9 +306,6 @@ public final class TemporaryJobServer implements TaskService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#setJobPriority(java.util.UUID, int)
-   */
   public void setJobPriority(UUID jobId, int priority)
       throws IllegalArgumentException, SecurityException {
     if (!jobs.containsKey(jobId)) {
@@ -395,22 +369,22 @@ public final class TemporaryJobServer implements TaskService {
   private class ScheduledJob {
 
     /** The <code>ParallelizableJob</code> to be processed. */
-    public JobExecutionWrapper        job;
+    public JobExecutionWrapper job;
 
     /** The <code>UUID</code> identifying the job. */
-    public final UUID            id;
+    public final UUID id;
 
     /** A description of the job. */
-    public final String            description;
+    public final String description;
 
     /** The <code>TaskWorker</code> to use to process tasks for the job. */
-    public Serialized<TaskWorker>      worker;
+    public Serialized<TaskWorker> worker;
 
     /**
      * The <code>ProgressMonitor</code> to use to monitor the progress of
      * the <code>Job</code>.
      */
-    public final ProgressMonitor      monitor;
+    public final ProgressMonitor monitor;
 
     /**
      * Initializes the scheduled job.
@@ -422,15 +396,15 @@ public final class TemporaryJobServer implements TaskService {
      */
     public ScheduledJob(ParallelizableJob job, String description, ProgressMonitor monitor) throws JobExecutionException {
 
-      this.id          = UUID.randomUUID();
-      this.description    = description;
+      this.id = UUID.randomUUID();
+      this.description = description;
 
       //String title      = String.format("%s (%s)", this.job.getClass().getSimpleName(), this.id.toString());
-      this.monitor      = monitor;
+      this.monitor = monitor;
       this.monitor.notifyStatusChanged("Awaiting job submission");
 
-      this.job      = new JobExecutionWrapper(job);
-      this.worker      = new Serialized<TaskWorker>(this.job.worker());
+      this.job = new JobExecutionWrapper(job);
+      this.worker = new Serialized<TaskWorker>(this.job.worker());
       this.monitor.notifyStatusChanged("");
       this.job.initialize();
     }
@@ -553,9 +527,7 @@ public final class TemporaryJobServer implements TaskService {
       this.monitor = monitor;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Runnable#run()
-     */
+    @Override
     public void run() {
       if (task != null) {
         try {

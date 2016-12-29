@@ -97,9 +97,7 @@ final class ServiceWrapper implements TaskService {
     throw new DelegationException("No connection to server");
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.TaskService#getClassDefinition(java.lang.String, java.util.UUID)
-   */
+  @Override
   public byte[] getClassDefinition(final String name, final UUID jobId)
       throws DelegationException {
     return run(new ServiceOperation<byte[]>() {
@@ -110,9 +108,7 @@ final class ServiceWrapper implements TaskService {
     });
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.TaskService#getClassDigest(java.lang.String, java.util.UUID)
-   */
+  @Override
   public byte[] getClassDigest(final String name, final UUID jobId)
       throws DelegationException {
     return run(new ServiceOperation<byte[]>() {
@@ -123,9 +119,7 @@ final class ServiceWrapper implements TaskService {
     });
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.TaskService#getFinishedTasks(java.util.UUID[], int[])
-   */
+  @Override
   public BitSet getFinishedTasks(final UUID[] jobIds, final int[] taskIds)
       throws DelegationException {
     return run(new ServiceOperation<BitSet>() {
@@ -136,9 +130,7 @@ final class ServiceWrapper implements TaskService {
     });
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.TaskService#getTaskWorker(java.util.UUID)
-   */
+  @Override
   public Serialized<TaskWorker> getTaskWorker(final UUID jobId)
       throws DelegationException {
     return run(new ServiceOperation<Serialized<TaskWorker>>() {
@@ -149,9 +141,7 @@ final class ServiceWrapper implements TaskService {
     });
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.TaskService#reportException(java.util.UUID, int, java.lang.Exception)
-   */
+  @Override
   public void reportException(final UUID jobId, final int taskId, final Exception e)
       throws DelegationException {
     run(new ServiceOperation<Object>() {
@@ -163,9 +153,7 @@ final class ServiceWrapper implements TaskService {
     });
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.TaskService#requestTask()
-   */
+  @Override
   public TaskDescription requestTask() throws DelegationException {
     return run(new ServiceOperation<TaskDescription>() {
       public TaskDescription run(TaskService service) throws RemoteException,
@@ -175,9 +163,7 @@ final class ServiceWrapper implements TaskService {
     });
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.TaskService#submitTaskResults(java.util.UUID, int, ca.eandb.util.rmi.Serialized)
-   */
+  @Override
   public void submitTaskResults(final UUID jobId, final int taskId,
       final Serialized<Object> results) throws DelegationException {
     run(new ServiceOperation<Object>() {

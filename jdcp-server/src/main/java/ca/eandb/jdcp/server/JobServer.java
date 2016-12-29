@@ -207,9 +207,7 @@ public final class JobServer implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#createJob(java.lang.String)
-   */
+  @Override
   public UUID createJob(String description) throws SecurityException {
     ProgressMonitor monitor = monitorFactory.createProgressMonitor(description);
     ScheduledJob sched = new ScheduledJob(description, monitor);
@@ -223,9 +221,7 @@ public final class JobServer implements JobService {
     return sched.id;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#submitJob(ca.eandb.util.rmi.Envelope, java.util.UUID)
-   */
+  @Override
   public void submitJob(Serialized<ParallelizableJob> job, UUID jobId)
       throws IllegalArgumentException, SecurityException, ClassNotFoundException, JobExecutionException {
     ScheduledJob sched = jobs.get(jobId);
@@ -249,9 +245,7 @@ public final class JobServer implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#submitJob(ca.eandb.util.rmi.Envelope, java.lang.String)
-   */
+  @Override
   public UUID submitJob(Serialized<ParallelizableJob> job, String description)
       throws SecurityException, ClassNotFoundException, JobExecutionException {
     ProgressMonitor monitor = monitorFactory.createProgressMonitor(description);
@@ -278,9 +272,7 @@ public final class JobServer implements JobService {
     return sched.id;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#cancelJob(java.util.UUID)
-   */
+  @Override
   public void cancelJob(UUID jobId) throws IllegalArgumentException, SecurityException {
     if (!jobs.containsKey(jobId)) {
       throw new IllegalArgumentException("No job with provided Job ID");
@@ -289,9 +281,7 @@ public final class JobServer implements JobService {
     removeScheduledJob(jobId, false);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getTaskWorker(java.util.UUID)
-   */
+  @Override
   public Serialized<TaskWorker> getTaskWorker(UUID jobId)
       throws IllegalArgumentException, SecurityException {
     ScheduledJob sched = jobs.get(jobId);
@@ -307,9 +297,7 @@ public final class JobServer implements JobService {
     throw new IllegalArgumentException("No submitted job with provided Job ID");
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#requestTask()
-   */
+  @Override
   public synchronized TaskDescription requestTask() throws SecurityException {
     TaskDescription taskDesc = scheduler.getNextTask();
     if (taskDesc != null) {
@@ -353,9 +341,7 @@ public final class JobServer implements JobService {
     return idleTask;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#submitTaskResults(java.util.UUID, int, ca.eandb.util.rmi.Envelope)
-   */
+  @Override
   public void submitTaskResults(final UUID jobId, final int taskId,
       final Serialized<Object> results) throws SecurityException {
     ScheduledJob sched = jobs.get(jobId);
@@ -383,9 +369,7 @@ public final class JobServer implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#reportException(java.util.UUID, int, java.lang.Exception)
-   */
+  @Override
   public void reportException(final UUID jobId, final int taskId, final Exception e)
       throws SecurityException, RemoteException {
     ScheduledJob sched = jobs.get(jobId);
@@ -407,9 +391,7 @@ public final class JobServer implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getFinishedTasks(java.util.UUID[], int[])
-   */
+  @Override
   public BitSet getFinishedTasks(UUID[] jobIds, int[] taskIds)
       throws IllegalArgumentException, SecurityException, RemoteException {
 
@@ -451,9 +433,7 @@ public final class JobServer implements JobService {
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getClassDefinition(java.lang.String, java.util.UUID)
-   */
+  @Override
   public byte[] getClassDefinition(String name, UUID jobId)
       throws SecurityException {
     ScheduledJob sched = jobs.get(jobId);
@@ -476,9 +456,7 @@ public final class JobServer implements JobService {
     throw new IllegalArgumentException("No job with provided Job ID");
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getClassDigest(java.lang.String, java.util.UUID)
-   */
+  @Override
   public byte[] getClassDigest(String name, UUID jobId)
       throws SecurityException {
     ScheduledJob sched = jobs.get(jobId);
@@ -494,16 +472,12 @@ public final class JobServer implements JobService {
     throw new IllegalArgumentException("No job with provided Job ID");
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getClassDigest(java.lang.String)
-   */
+  @Override
   public byte[] getClassDigest(String name) throws SecurityException {
     return classManager.getClassDigest(name);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#setClassDefinition(java.lang.String, byte[])
-   */
+  @Override
   public void setClassDefinition(String name, byte[] def)
       throws SecurityException {
     classManager.setClassDefinition(name, def);
@@ -513,9 +487,7 @@ public final class JobServer implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#setClassDefinition(java.lang.String, java.util.UUID, byte[])
-   */
+  @Override
   public void setClassDefinition(String name, UUID jobId, byte[] def)
       throws IllegalArgumentException, SecurityException {
     ScheduledJob sched = jobs.get(jobId);
@@ -531,9 +503,7 @@ public final class JobServer implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#setIdleTime(int)
-   */
+  @Override
   public void setIdleTime(int idleSeconds) throws IllegalArgumentException,
       SecurityException {
     idleTask = new TaskDescription(null, 0, idleSeconds);
@@ -542,9 +512,7 @@ public final class JobServer implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#setJobPriority(java.util.UUID, int)
-   */
+  @Override
   public void setJobPriority(UUID jobId, int priority)
       throws IllegalArgumentException, SecurityException {
     if (!jobs.containsKey(jobId)) {
@@ -596,9 +564,7 @@ public final class JobServer implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#registerTaskService(java.lang.String, ca.eandb.jdcp.remote.TaskService)
-   */
+  @Override
   public void registerTaskService(String name, TaskService service)
       throws SecurityException, RemoteException {
     if (hosts.containsKey(name)) {
@@ -609,9 +575,7 @@ public final class JobServer implements JobService {
     services.add(info);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#unregisterTaskService(java.lang.String)
-   */
+  @Override
   public void unregisterTaskService(String name) throws SecurityException,
       RemoteException {
     ServiceInfo info = hosts.get(name);
@@ -909,9 +873,7 @@ public final class JobServer implements JobService {
       return file;
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.jdcp.job.HostService#createFileOutputStream(java.lang.String)
-     */
+    @Override
     public FileOutputStream createFileOutputStream(final String path) {
       return AccessController.doPrivileged(new PrivilegedAction<FileOutputStream>() {
         public FileOutputStream run() {
@@ -927,9 +889,7 @@ public final class JobServer implements JobService {
       });
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.jdcp.job.HostService#createRandomAccessFile(java.lang.String)
-     */
+    @Override
     public RandomAccessFile createRandomAccessFile(final String path) {
       return AccessController.doPrivileged(new PrivilegedAction<RandomAccessFile>() {
         public RandomAccessFile run() {
@@ -945,71 +905,47 @@ public final class JobServer implements JobService {
       });
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#notifyProgress(int, int)
-     */
     @Override
     public boolean notifyProgress(int value, int maximum) {
       setJobStatus(getJobStatus().withProgress((double) value / (double) maximum));
       return monitor.notifyProgress(value, maximum);
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#notifyProgress(double)
-     */
     @Override
     public boolean notifyProgress(double progress) {
       setJobStatus(getJobStatus().withProgress(progress));
       return monitor.notifyProgress(progress);
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#notifyIndeterminantProgress()
-     */
     @Override
     public boolean notifyIndeterminantProgress() {
       setJobStatus(getJobStatus().withIndeterminantProgress());
       return monitor.notifyIndeterminantProgress();
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#notifyComplete()
-     */
     @Override
     public void notifyComplete() {
       setJobStatus(getJobStatus().asComplete());
       monitor.notifyComplete();
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#notifyCancelled()
-     */
     @Override
     public void notifyCancelled() {
       setJobStatus(getJobStatus().asCancelled());
       monitor.notifyCancelled();
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#notifyStatusChanged(java.lang.String)
-     */
     @Override
     public void notifyStatusChanged(String newStatus) {
       setJobStatus(getJobStatus().withStatus(newStatus));
       monitor.notifyStatusChanged(newStatus);
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#isCancelPending()
-     */
     @Override
     public boolean isCancelPending() {
       return monitor.isCancelPending();
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#addCancelListener(ca.eandb.util.progress.CancelListener)
-     */
     @Override
     public void addCancelListener(CancelListener listener) {
       monitor.addCancelListener(listener);
@@ -1059,9 +995,7 @@ public final class JobServer implements JobService {
       this.monitor = monitor;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Runnable#run()
-     */
+    @Override
     public void run() {
       ClassLoader cl = sched.classLoader;
       if (task != null) {
@@ -1118,9 +1052,6 @@ public final class JobServer implements JobService {
       this.jobId = jobId;
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.CancelListener#cancelRequested()
-     */
     @Override
     public void cancelRequested() {
       cancelJob(jobId);
@@ -1162,9 +1093,6 @@ public final class JobServer implements JobService {
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#waitForJobStatusChange(long, long)
-   */
   @Override
   public synchronized JobStatus waitForJobStatusChange(long lastEventId, long timeoutMillis)
       throws SecurityException, RemoteException {
@@ -1192,9 +1120,6 @@ public final class JobServer implements JobService {
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#waitForJobStatusChange(java.util.UUID, long, long)
-   */
   @Override
   public JobStatus waitForJobStatusChange(UUID jobId, long lastEventId, long timeoutMillis)
       throws IllegalArgumentException, SecurityException, RemoteException {
@@ -1221,9 +1146,6 @@ public final class JobServer implements JobService {
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getJobStatus(java.util.UUID)
-   */
   @Override
   public JobStatus getJobStatus(UUID jobId) throws IllegalArgumentException,
       SecurityException, RemoteException {

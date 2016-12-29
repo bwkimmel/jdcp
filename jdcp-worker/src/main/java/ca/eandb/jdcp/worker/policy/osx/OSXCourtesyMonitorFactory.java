@@ -35,9 +35,7 @@ import ca.eandb.jdcp.worker.policy.StandardCourtesyMonitorFactory;
 public final class OSXCourtesyMonitorFactory extends
     StandardCourtesyMonitorFactory {
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.policy.StandardCourtesyMonitorFactory#createPowerCourtesyMonitor()
-   */
+  @Override
   public PowerCourtesyMonitor createPowerCourtesyMonitor() {
     // TODO Implement OSXPowerCourtesyMonitor and uncomment the following
     // line.

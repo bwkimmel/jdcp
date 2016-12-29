@@ -68,16 +68,12 @@ public abstract class AsyncCourtesyMonitor implements CourtesyMonitor {
     allow = false;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.policy.CourtesyMonitor#allowTasksToRun()
-   */
+  @Override
   public final synchronized boolean allowTasksToRun() {
     return allow;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.policy.CourtesyMonitor#waitFor()
-   */
+  @Override
   public final synchronized void waitFor() throws InterruptedException {
     if (!allow) {
       wait();

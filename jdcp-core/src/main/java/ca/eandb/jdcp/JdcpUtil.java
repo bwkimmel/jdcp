@@ -59,7 +59,7 @@ public final class JdcpUtil {
    * and a server.  This is used for verifying protocol compatibility when
    * authenticating with the server.
    */
-  public static final UUID PROTOCOL_VERSION_ID = UUID.fromString("E818C36E-2EA4-4BA4-B793-C96B818E85FF");
+  public static final UUID PROTOCOL_VERSION_ID = UUID.fromString("32f63a29-642d-4ff3-84a4-b1f34940642a");
 
   /**
    * Connects to a JDCP server.

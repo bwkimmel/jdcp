@@ -1,0 +1,30 @@
+grant CodeBase "file:${project.build.finalName}.jar" {
+    permission java.security.AllPermission;
+};
+
+grant Principal ca.eandb.util.auth.RolePrincipal "jdcp.worker" {
+  permission ca.eandb.jdcp.security.JdcpPermission "getJobClassDefinition";
+  permission ca.eandb.jdcp.security.JdcpPermission "getJobClassDigest";
+  permission ca.eandb.jdcp.security.JdcpPermission "getTaskWorker";
+  permission ca.eandb.jdcp.security.JdcpPermission "requestTask";
+  permission ca.eandb.jdcp.security.JdcpPermission "submitTaskResults";
+  permission ca.eandb.jdcp.security.JdcpPermission "reportException";
+  permission ca.eandb.jdcp.security.JdcpPermission "getFinishedTasks";
+};
+
+grant Principal ca.eandb.util.auth.RolePrincipal "jdcp.admin" {
+    permission ca.eandb.jdcp.security.JdcpPermission "*";
+};
+
+grant Principal ca.eandb.util.auth.RolePrincipal "jdcp.submitter.basic" {
+  permission ca.eandb.jdcp.security.JdcpPermission "createJob";
+  permission ca.eandb.jdcp.security.JdcpPermission "submitJob";
+  permission ca.eandb.jdcp.security.JdcpPermission "getJobClassDigest";
+};
+
+grant Principal ca.eandb.util.auth.RolePrincipal "jdcp.submitter.advanced" {
+  permission ca.eandb.jdcp.security.JdcpPermission "createJob";
+  permission ca.eandb.jdcp.security.JdcpPermission "submitJob";
+  permission ca.eandb.jdcp.security.JdcpPermission "setJobClassDefinition";
+  permission ca.eandb.jdcp.security.JdcpPermission "getJobClassDigest";
+};

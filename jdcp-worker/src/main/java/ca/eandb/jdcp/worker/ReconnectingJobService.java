@@ -71,9 +71,7 @@ public final class ReconnectingJobService implements JobService {
     return service;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#cancelJob(java.util.UUID)
-   */
+  @Override
   public void cancelJob(UUID jobId) throws IllegalArgumentException,
       SecurityException {
     JobService service = null;
@@ -88,9 +86,7 @@ public final class ReconnectingJobService implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#createJob(java.lang.String)
-   */
+  @Override
   public UUID createJob(String description) throws SecurityException {
     JobService service = null;
     while (true) {
@@ -103,9 +99,7 @@ public final class ReconnectingJobService implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getClassDefinition(java.lang.String, java.util.UUID)
-   */
+  @Override
   public byte[] getClassDefinition(String name, UUID jobId)
       throws SecurityException {
     JobService service = null;
@@ -119,9 +113,7 @@ public final class ReconnectingJobService implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getClassDigest(java.lang.String, java.util.UUID)
-   */
+  @Override
   public byte[] getClassDigest(String name, UUID jobId)
       throws SecurityException {
     JobService service = null;
@@ -135,9 +127,7 @@ public final class ReconnectingJobService implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getClassDigest(java.lang.String)
-   */
+  @Override
   public byte[] getClassDigest(String name) throws SecurityException {
     JobService service = null;
     while (true) {
@@ -150,9 +140,7 @@ public final class ReconnectingJobService implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getTaskWorker(java.util.UUID)
-   */
+  @Override
   public Serialized<TaskWorker> getTaskWorker(UUID jobId)
       throws IllegalArgumentException, SecurityException {
     JobService service = null;
@@ -166,9 +154,7 @@ public final class ReconnectingJobService implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#reportException(java.util.UUID, int, java.lang.Exception)
-   */
+  @Override
   public void reportException(UUID jobId, int taskId, Exception e)
       throws SecurityException {
     JobService service = null;
@@ -183,9 +169,7 @@ public final class ReconnectingJobService implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#requestTask()
-   */
+  @Override
   public TaskDescription requestTask() throws SecurityException {
     JobService service = null;
     while (true) {
@@ -198,9 +182,7 @@ public final class ReconnectingJobService implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#setClassDefinition(java.lang.String, byte[])
-   */
+  @Override
   public void setClassDefinition(String name, byte[] def)
       throws SecurityException {
     JobService service = null;
@@ -215,9 +197,7 @@ public final class ReconnectingJobService implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#setClassDefinition(java.lang.String, java.util.UUID, byte[])
-   */
+  @Override
   public void setClassDefinition(String name, UUID jobId, byte[] def)
       throws IllegalArgumentException, SecurityException {
     JobService service = null;
@@ -232,9 +212,7 @@ public final class ReconnectingJobService implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#setIdleTime(int)
-   */
+  @Override
   public void setIdleTime(int idleSeconds) throws IllegalArgumentException,
       SecurityException {
     JobService service = null;
@@ -249,9 +227,7 @@ public final class ReconnectingJobService implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#setJobPriority(java.util.UUID, int)
-   */
+  @Override
   public void setJobPriority(UUID jobId, int priority)
       throws IllegalArgumentException, SecurityException {
     JobService service = null;
@@ -266,9 +242,7 @@ public final class ReconnectingJobService implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#submitJob(ca.eandb.util.rmi.Serialized, java.util.UUID)
-   */
+  @Override
   public void submitJob(Serialized<ParallelizableJob> job, UUID jobId)
       throws IllegalArgumentException, SecurityException,
       ClassNotFoundException, JobExecutionException {
@@ -284,9 +258,7 @@ public final class ReconnectingJobService implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#submitJob(ca.eandb.util.rmi.Serialized, java.lang.String)
-   */
+  @Override
   public UUID submitJob(Serialized<ParallelizableJob> job, String description)
       throws SecurityException, ClassNotFoundException,
       JobExecutionException {
@@ -301,9 +273,7 @@ public final class ReconnectingJobService implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#submitTaskResults(java.util.UUID, int, ca.eandb.util.rmi.Serialized)
-   */
+  @Override
   public void submitTaskResults(UUID jobId, int taskId,
       Serialized<Object> results) throws SecurityException {
     JobService service = null;
@@ -318,9 +288,7 @@ public final class ReconnectingJobService implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getFinishedTasks(java.util.UUID[], int[])
-   */
+  @Override
   public BitSet getFinishedTasks(UUID[] jobIds, int[] taskIds)
       throws IllegalArgumentException, SecurityException, RemoteException {
     JobService service = null;
@@ -346,9 +314,7 @@ public final class ReconnectingJobService implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#registerTaskService(java.lang.String, ca.eandb.jdcp.remote.TaskService)
-   */
+  @Override
   public void registerTaskService(String name, TaskService taskService)
       throws SecurityException, RemoteException {
     JobService service = null;
@@ -375,9 +341,7 @@ public final class ReconnectingJobService implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#unregisterTaskService(java.lang.String)
-   */
+  @Override
   public void unregisterTaskService(String name)
       throws IllegalArgumentException, SecurityException, RemoteException {
     JobService service = null;
@@ -404,9 +368,6 @@ public final class ReconnectingJobService implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#waitForJobStatusChange(long, long)
-   */
   @Override
   public JobStatus waitForJobStatusChange(long lastEventId, long timeoutMillis)
       throws SecurityException, RemoteException {
@@ -433,9 +394,6 @@ public final class ReconnectingJobService implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#waitForJobStatusChange(java.util.UUID, long, long)
-   */
   @Override
   public JobStatus waitForJobStatusChange(UUID jobId, long lastEventId,
       long timeoutMillis) throws IllegalArgumentException,
@@ -463,9 +421,6 @@ public final class ReconnectingJobService implements JobService {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.remote.JobService#getJobStatus(java.util.UUID)
-   */
   @Override
   public JobStatus getJobStatus(UUID jobId) throws IllegalArgumentException,
       SecurityException, RemoteException {

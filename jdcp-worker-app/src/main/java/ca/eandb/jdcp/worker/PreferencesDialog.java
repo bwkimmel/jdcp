@@ -92,9 +92,6 @@ public final class PreferencesDialog extends JDialog {
     initialize();
   }
 
-  /* (non-Javadoc)
-   * @see java.awt.Dialog#setVisible(boolean)
-   */
   @Override
   public void setVisible(boolean b) {
     if (b) {

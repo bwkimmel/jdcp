@@ -103,9 +103,6 @@ public final class PersistenceCachingJobServiceClassLoaderStrategy extends
     this.persistenceService = (PersistenceService) ServiceManager.lookup("javax.jnlp.PersistenceService");
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheLookup(java.lang.String, byte[])
-   */
   @Override
   protected byte[] cacheLookup(String name, byte[] digest) {
 
@@ -147,9 +144,6 @@ public final class PersistenceCachingJobServiceClassLoaderStrategy extends
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheStore(java.lang.String, byte[], byte[])
-   */
   @Override
   protected void cacheStore(String name, byte[] digest, byte[] def) {
     URL url = getUrlForCacheEntry(name, digest);

@@ -265,9 +265,7 @@ public final class ParallelizableJobRunner implements Runnable {
     this(job, new File(workingDirectory), maxConcurrentWorkers);
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Runnable#run()
-   */
+  @Override
   public synchronized void run() {
 
     int taskNumber = 0;
@@ -399,9 +397,7 @@ public final class ParallelizableJobRunner implements Runnable {
       this.monitor = monitor;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Runnable#run()
-     */
+    @Override
     public void run() {
       try {
         submitResults(task, worker.performTask(task, monitor));

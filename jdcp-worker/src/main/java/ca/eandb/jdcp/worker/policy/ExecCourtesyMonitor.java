@@ -51,9 +51,7 @@ public final class ExecCourtesyMonitor extends PollingCourtesyMonitor {
     this.workingDirectory = workingDirectory;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.policy.PollingCourtesyMonitor#poll()
-   */
+  @Override
   public boolean poll() {
     try {
       Process process = Runtime.getRuntime().exec(command, null,

@@ -25,8 +25,6 @@
 
 package ca.eandb.jdcp.job;
 
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.io.Serializable;
 
 import ca.eandb.util.progress.ProgressMonitor;
@@ -35,7 +33,7 @@ import ca.eandb.util.progress.ProgressMonitor;
  * Represents a job that can be split into smaller chunks.
  * @author Brad Kimmel
  */
-public interface ParallelizableJob extends Serializable {
+public interface ParallelizableJob extends LifeCycleManageable, Serializable {
 
   /**
    * Sets the <code>HostService</code> object that provides secure access
@@ -44,38 +42,6 @@ public interface ParallelizableJob extends Serializable {
    * @param host The <code>HostService</code> to use.
    */
   void setHostService(HostService host);
-
-  /**
-   * Sets up this <code>ParallelizableJob</code> on the machine hosting the
-   * job (not necessarily the same machine as the one processing the tasks
-   * for this job).
-   * @throws Exception If an error occurs performing the operation.
-   */
-  void initialize() throws Exception;
-
-  /**
-   * Performs any final actions required for this
-   * <code>ParallelizableJob</code>.
-   * @throws Exception If an error occurs performing the operation.
-   */
-  void finish() throws Exception;
-
-  /**
-   * Notifies the job that it is about to be suspended (for example, if the
-   * server application is about to be shut down).
-   * @param output The <code>ObjectOutput</code> to save state to.
-   * @throws Exception If an error occurs performing the operation.
-   */
-  void saveState(ObjectOutput output) throws Exception;
-
-  /**
-   * Notifies the job that it is about to be resumed after having been
-   * suspended.  The job should reinstate any transient data (e.g., open
-   * files).
-   * @param input The <code>ObjectInput</code> to restore state from.
-   * @throws Exception If an error occurs performing the operation.
-   */
-  void restoreState(ObjectInput input) throws Exception;
 
   /**
    * Gets the next task to be performed.

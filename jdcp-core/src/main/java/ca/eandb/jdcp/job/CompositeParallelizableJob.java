@@ -79,17 +79,11 @@ public final class CompositeParallelizableJob implements ParallelizableJob {
       this.jobNumber = jobNumber;
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#notifyProgress(int, int)
-     */
     @Override
     public boolean notifyProgress(int value, int maximum) {
       return notifyProgress((double) value / (double) maximum);
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#notifyProgress(double)
-     */
     @Override
     public synchronized boolean notifyProgress(double progress) {
       if (jobProgress == null) {
@@ -100,50 +94,32 @@ public final class CompositeParallelizableJob implements ParallelizableJob {
       return true;
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#notifyIndeterminantProgress()
-     */
     @Override
     public boolean notifyIndeterminantProgress() {
       /* ignore. */
       return true;
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#notifyComplete()
-     */
     @Override
     public void notifyComplete() {
       notifyProgress(1.0);
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#notifyCancelled()
-     */
     @Override
     public void notifyCancelled() {
       /* ignore. */
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#notifyStatusChanged(java.lang.String)
-     */
     @Override
     public void notifyStatusChanged(String status) {
       /* ignore. */
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#isCancelPending()
-     */
     @Override
     public boolean isCancelPending() {
       return false;
     }
 
-    /* (non-Javadoc)
-     * @see ca.eandb.util.progress.ProgressMonitor#addCancelListener(ca.eandb.util.progress.CancelListener)
-     */
     @Override
     public void addCancelListener(CancelListener listener) {
       /* nothing to do. */
@@ -177,10 +153,6 @@ public final class CompositeParallelizableJob implements ParallelizableJob {
       this.workers = workers;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see ca.eandb.jdcp.job.TaskWorker#performTask(java.lang.Object, ca.eandb.util.progress.ProgressMonitor)
-     */
     @Override
     public Object performTask(Object task_, ProgressMonitor monitor)
         throws Exception {
@@ -190,9 +162,6 @@ public final class CompositeParallelizableJob implements ParallelizableJob {
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#setHostService(ca.eandb.jdcp.job.HostService)
-   */
   @Override
   public void setHostService(HostService host) {
     for (ParallelizableJob job : jobs) {
@@ -200,47 +169,32 @@ public final class CompositeParallelizableJob implements ParallelizableJob {
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#initialize()
-   */
   @Override
   public void initialize() throws Exception {
-    for (ParallelizableJob job : jobs) {
+    for (LifeCycleManageable job : jobs) {
       job.initialize();
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#finish()
-   */
   @Override
   public void finish() throws Exception {
     /* Nothing to do.  finish() is called on sub jobs as they complete. */
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#saveState(java.io.ObjectOutput)
-   */
   @Override
   public void saveState(ObjectOutput output) throws Exception {
-    for (ParallelizableJob job : jobs) {
+    for (LifeCycleManageable job : jobs) {
       job.saveState(output);
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#restoreState(java.io.ObjectInput)
-   */
   @Override
   public void restoreState(ObjectInput input) throws Exception {
-    for (ParallelizableJob job : jobs) {
+    for (LifeCycleManageable job : jobs) {
       job.restoreState(input);
     }
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#getNextTask()
-   */
   @Override
   public Object getNextTask() throws Exception {
     for (int i = 0, n = jobs.size(); i < n; i++) {
@@ -253,9 +207,6 @@ public final class CompositeParallelizableJob implements ParallelizableJob {
     return null;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#submitTaskResults(java.lang.Object, java.lang.Object, ca.eandb.util.progress.ProgressMonitor)
-   */
   @Override
   public void submitTaskResults(Object task_, Object results,
       ProgressMonitor monitor) throws Exception {
@@ -268,9 +219,6 @@ public final class CompositeParallelizableJob implements ParallelizableJob {
     monitor.notifyProgress(totalProgress);
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#isComplete()
-   */
   @Override
   public boolean isComplete() throws Exception {
     for (ParallelizableJob job : jobs) {
@@ -281,9 +229,6 @@ public final class CompositeParallelizableJob implements ParallelizableJob {
     return true;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.job.ParallelizableJob#worker()
-   */
   @Override
   public synchronized TaskWorker worker() throws Exception {
     if (worker == null) {

@@ -69,9 +69,7 @@ public final class ScriptCommand implements Command<Configuration> {
 
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.util.args.Command#process(java.util.Queue, java.lang.Object)
-   */
+  @Override
   public void process(Queue<String> argq, final Configuration conf) {
     if (SCRIPTING_SUPPORTED) {
 

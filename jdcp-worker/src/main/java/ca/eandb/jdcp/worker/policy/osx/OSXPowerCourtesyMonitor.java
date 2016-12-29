@@ -56,44 +56,32 @@ public final class OSXPowerCourtesyMonitor extends AsyncCourtesyMonitor
    */
   private int minBatteryLifePercentWhileCharging = 0;
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor#isRequireAC()
-   */
+  @Override
   public final boolean isRequireAC() {
     return requireAC;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor#setRequireAC(boolean)
-   */
+  @Override
   public final void setRequireAC(boolean requireAC) {
     this.requireAC = requireAC;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor#getMinBatteryLifePercent()
-   */
+  @Override
   public final int getMinBatteryLifePercent() {
     return minBatteryLifePercent;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor#setMinBatteryLifePercent(int)
-   */
+  @Override
   public final void setMinBatteryLifePercent(int minBatteryLifePercent) {
     this.minBatteryLifePercent = minBatteryLifePercent;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor#getMinBatteryLifePercentWhileCharging()
-   */
+  @Override
   public final int getMinBatteryLifePercentWhileCharging() {
     return minBatteryLifePercentWhileCharging;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor#setMinBatteryLifePercentWhileCharging(int)
-   */
+  @Override
   public final void setMinBatteryLifePercentWhileCharging(
       int minBatteryLifePercentWhileCharging) {
     this.minBatteryLifePercentWhileCharging = minBatteryLifePercentWhileCharging;
@@ -110,9 +98,7 @@ public final class OSXPowerCourtesyMonitor extends AsyncCourtesyMonitor
     // TODO Start a thread to receive events when the power status changes.
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor#update()
-   */
+  @Override
   public void update() {
     // TODO Determine the power status and call allow() or disallow()
     // depending on that status.

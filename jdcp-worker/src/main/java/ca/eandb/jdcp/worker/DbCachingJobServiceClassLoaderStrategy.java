@@ -117,9 +117,6 @@ public final class DbCachingJobServiceClassLoaderStrategy extends
     this.ds = ds;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheLookup(java.lang.String, byte[])
-   */
   @Override
   protected byte[] cacheLookup(String name, byte[] digest) {
     String sql =
@@ -137,9 +134,6 @@ public final class DbCachingJobServiceClassLoaderStrategy extends
     return null;
   }
 
-  /* (non-Javadoc)
-   * @see ca.eandb.jdcp.worker.CachingJobServiceClassLoaderStrategy#cacheStore(java.lang.String, byte[], byte[])
-   */
   @Override
   protected void cacheStore(String name, byte[] digest, byte[] def) {
     try {
