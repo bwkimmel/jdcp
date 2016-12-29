@@ -155,6 +155,10 @@ public abstract class CachingJobServiceClassLoaderStrategy implements ClassLoade
     try {
 
       byte[] digest = getClassDigest(name);
+      if (digest == null) {
+        return null;
+      }
+
       byte[] def = cacheLookup(name, digest);
 
       if (def == null) {
