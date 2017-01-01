@@ -317,7 +317,7 @@ public final class JobServer implements JobService {
     if (n > 0) {
       ServiceInfo[] serv;
       synchronized (this) {
-        serv = (ServiceInfo[]) services.toArray(new ServiceInfo[n]);
+        serv = services.toArray(new ServiceInfo[n]);
       }
       for (ServiceInfo info : serv) {
         try {
