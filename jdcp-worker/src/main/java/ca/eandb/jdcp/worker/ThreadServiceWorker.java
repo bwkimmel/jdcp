@@ -263,37 +263,39 @@ public final class ThreadServiceWorker implements Runnable {
    *
    * @author Brad Kimmel
    */
-  private static class TaskWorkerRef {
+  private static class TaskWorkerInfo {
     public TaskWorker worker;
+    public ClassLoader loader;
   };
 
   /** A <code>Map</code> containing the active <code>TaskWorker</code>s. */
-  private final Map<UUID, TaskWorkerRef> workerMap = Collections.synchronizedMap(new HashMap<UUID, TaskWorkerRef>());
+  private final Map<UUID, TaskWorkerInfo> workerMap =
+      Collections.synchronizedMap(new HashMap<UUID, TaskWorkerInfo>());
 
   /**
    * Obtains the task worker to process tasks for the job with the specified
    * <code>UUID</code>.
    * @param jobId The <code>UUID</code> of the job to obtain the task worker
    *     for.
-   * @return The <code>TaskWorker</code> to process tasks for the job with
+   * @return The <code>TaskWorkerInfo</code> to process tasks for the job with
    *     the specified <code>UUID</code>, or <code>null</code> if the job
    *     is invalid or has already been completed.
    * @throws ClassNotFoundException
    */
-  private TaskWorker getTaskWorker(UUID jobId) throws ClassNotFoundException {
+  private TaskWorkerInfo getTaskWorker(UUID jobId) throws ClassNotFoundException {
 
     /* First try to get the worker from the local map. */
-    TaskWorkerRef ref;
+    TaskWorkerInfo info;
     synchronized (workerMap) {
-      ref = workerMap.get(jobId);
-      if (ref == null) {
-        ref = new TaskWorkerRef();
-        workerMap.put(jobId, ref);
+      info = workerMap.get(jobId);
+      if (info == null) {
+        info = new TaskWorkerInfo();
+        workerMap.put(jobId, info);
       }
     }
 
-    synchronized (ref) {
-      if (ref.worker == null) {
+    synchronized (info) {
+      if (info.worker == null) {
 
         /* The task worker was not in the cache, so use the service to
          * obtain the task worker.
@@ -302,23 +304,27 @@ public final class ThreadServiceWorker implements Runnable {
 
         ClassLoaderStrategy strategy;
         if (dataSource != null) {
-          strategy = new DbCachingJobServiceClassLoaderStrategy(service, jobId, dataSource);
+          strategy = new DbCachingJobServiceClassLoaderStrategy(
+              service, jobId, dataSource);
         } else {
-          strategy = new InternalCachingJobServiceClassLoaderStrategy(service, jobId);
+          strategy = new InternalCachingJobServiceClassLoaderStrategy(
+              service, jobId);
         }
 
-        ClassLoader loader = new StrategyClassLoader(strategy, ThreadServiceWorker.class.getClassLoader());
-        ref.worker = envelope.deserialize(loader);
+        info.loader = new StrategyClassLoader(
+            strategy, ThreadServiceWorker.class.getClassLoader());
+        info.worker = envelope.deserialize(info.loader);
 
         if (logger.isInfoEnabled()) {
-          logger.info(String.format("Got worker (thread=%d)", Thread.currentThread().getId()));
+          logger.info(String.format(
+              "Got worker (thread=%d)", Thread.currentThread().getId()));
         }
 
       }
     }
 
-    assert(ref.worker != null);
-    return ref.worker;
+    assert(info.worker != null);
+    return info;
 
   }
 
@@ -386,30 +392,29 @@ public final class ThreadServiceWorker implements Runnable {
             activeWorkers.add(this);
 
             this.monitor.notifyStatusChanged("Obtaining task worker...");
-            TaskWorker worker;
+            TaskWorkerInfo info;
             try {
-              worker = getTaskWorker(jobId);
+              info = getTaskWorker(jobId);
             } catch (DelegationException e) {
-              worker = null;
+              info = null;
             } catch (ClassNotFoundException e) {
               service.reportException(jobId, 0, e);
               idle(EXCEPTION_IDLE_SECONDS, EXCEPTION_IDLE_MESSAGE);
-              worker = null;
+              info = null;
             }
 
-            if (worker == null) {
+            if (info == null) {
               this.monitor.notifyStatusChanged("Could not obtain worker...");
               this.monitor.notifyCancelled();
               return;
             }
 
             this.monitor.notifyStatusChanged("Performing task...");
-            ClassLoader loader = worker.getClass().getClassLoader();
             Object results;
 
             try {
-              Object task = taskDesc.getTask().deserialize(loader);
-              results = worker.performTask(task, monitor);
+              Object task = taskDesc.getTask().deserialize(info.loader);
+              results = info.worker.performTask(task, monitor);
             } catch (DelegationException e) {
               results = null;
             } catch (Exception e) {
