@@ -57,7 +57,7 @@ public final class JobServerMain {
   /**
    * Runs the JDCP server application.
    * @param args Command line arguments.
-   * @throws IOException
+   * @throws IOException if an I/O error occurs while running the application
    */
   public static void main(String[] args) throws IOException {
     Properties props = new Properties(System.getProperties());

@@ -132,11 +132,6 @@ public final class MainWindow extends JFrame {
 
   };
 
-  /**
-   * This method initializes jSplitPane
-   *
-   * @return javax.swing.JSplitPane
-   */
   private JSplitPane getJSplitPane() {
     if (jSplitPane == null) {
       jSplitPane = new JSplitPane();
@@ -150,11 +145,6 @@ public final class MainWindow extends JFrame {
     return jSplitPane;
   }
 
-  /**
-   * This method initializes progressPanel
-   *
-   * @return ca.eandb.util.progress.ProgressPanel
-   */
   private ProgressPanel getProgressPanel() {
     if (progressPanel == null) {
       progressPanel = new ProgressPanel();
@@ -162,11 +152,6 @@ public final class MainWindow extends JFrame {
     return progressPanel;
   }
 
-  /**
-   * This method initializes consolePane
-   *
-   * @return javax.swing.JEditorPane
-   */
   private JEditorPane getConsolePane() {
     if (consolePane == null) {
       consolePane = new JEditorPane();
@@ -176,11 +161,6 @@ public final class MainWindow extends JFrame {
     return consolePane;
   }
 
-  /**
-   * This method initializes consoleScrollPane
-   *
-   * @return javax.swing.JScrollPane
-   */
   private JScrollPane getConsoleScrollPane() {
     if (consoleScrollPane == null) {
       consoleScrollPane = new JScrollPane();
@@ -189,10 +169,6 @@ public final class MainWindow extends JFrame {
     return consoleScrollPane;
   }
 
-  /**
-   * @param args
-   * @throws IOException
-   */
   public static void main(String[] args) throws IOException {
     Properties props = new Properties(System.getProperties());
     props.load(MainWindow.class.getResourceAsStream("system.properties"));
@@ -240,18 +216,10 @@ public final class MainWindow extends JFrame {
     initialize();
   }
 
-  /**
-   * This is the default constructor
-   */
   public MainWindow() {
     this(new Options());
   }
 
-  /**
-   * This method initializes this
-   *
-   * @return void
-   */
   private void initialize() {
     this.setSize(300, 200);
     this.setContentPane(getJContentPane());
@@ -305,11 +273,6 @@ public final class MainWindow extends JFrame {
     startWorker();
   }
 
-  /**
-   * Initializes the system tray icon.
-   *
-   * REQUIRES JAVA SE 6 OR HIGHER.
-   */
   private void initializeSystemTray() {
     if (SystemTray.isSupported()) {
 
@@ -616,11 +579,6 @@ public final class MainWindow extends JFrame {
     statusLabel.setText(" " + status);
   }
 
-  /**
-   * This method initializes jContentPane
-   *
-   * @return javax.swing.JPanel
-   */
   private JPanel getJContentPane() {
     if (jContentPane == null) {
       statusLabel = new JLabel();

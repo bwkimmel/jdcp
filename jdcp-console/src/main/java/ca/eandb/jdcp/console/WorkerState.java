@@ -96,6 +96,18 @@ public final class WorkerState {
    * @param host The name of the host to connect to.
    * @param username The user name to log in with.
    * @param password The password to log in with.
+   * @param internal If set, class definitions downloaded from the server will
+   *     be cached in memory only.  Otherwise, class definitions will be
+   *     persisted to a database.
+   * @param courtesyCommand an optional shell command to be invoked
+   *     periodically to query whether to continue processing worker tasks. If
+   *     the shell script returns a non-zero exit code, worker tasks will be
+   *     suspended. Worker tasks will resume when the shell script returns an
+   *     exit code of zero.
+   * @param courtesyWorkingDirectory the working directory in which to run the
+   *     {@code courtesyCommand} shell script
+   * @param courtesyPollingInterval the number of seconds between invocations
+   *     of the {@code courtesyCommand} shell script
    */
   @CommandArgument
   public void start(
