@@ -6,7 +6,7 @@
   <parent>
     <groupId>ca.eandb.jdcp</groupId>
     <artifactId>jdcp</artifactId>
-    <version>0.4.2</version>
+    <version>0.4.3-SNAPSHOT</version>
   </parent>
   <artifactId>jdcp-worker-app</artifactId>
   <name>${project.groupId}:${project.artifactId}</name>
