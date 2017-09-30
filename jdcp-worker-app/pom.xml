@@ -43,6 +43,14 @@
             <descriptor>${project.parent.basedir}/src/assembly/bin.xml</descriptor>
           </descriptors>
         </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
