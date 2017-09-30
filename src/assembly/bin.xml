@@ -11,7 +11,7 @@
   <fileSets>
     <fileSet>
       <directory>${parent.basedir}</directory>
-      <outputDirectory>/</outputDirectory>
+      <outputDirectory/>
       <includes>
         <include>LICENSE*</include>
       </includes>
@@ -20,7 +20,7 @@
     <!-- Copy the main jar file -->
     <fileSet>
       <directory>${project.build.directory}</directory>
-      <outputDirectory>/</outputDirectory>
+      <outputDirectory/>
       <includes>
         <include>${project.build.finalName}.jar</include>
       </includes>
@@ -29,7 +29,7 @@
     <!-- Just copy most files in src/main/bin -->
     <fileSet>
       <directory>${project.basedir}/src/main/bin</directory>
-      <outputDirectory>/</outputDirectory>
+      <outputDirectory/>
       <includes>
         <include>**/*</include>
       </includes>
@@ -43,7 +43,7 @@
     <!-- Filter .bat files and everything in etc/ -->
     <fileSet>
       <directory>${project.basedir}/src/main/bin</directory>
-      <outputDirectory>/</outputDirectory>
+      <outputDirectory/>
       <includes>
         <include>*.bat</include>
         <include>etc/**/*</include>
@@ -57,7 +57,7 @@
     <!-- Filter .sh files and set make them executable -->
     <fileSet>
       <directory>${project.basedir}/src/main/bin</directory>
-      <outputDirectory>/</outputDirectory>
+      <outputDirectory/>
       <fileMode>755</fileMode>
       <includes>
         <include>**/*.sh</include>
