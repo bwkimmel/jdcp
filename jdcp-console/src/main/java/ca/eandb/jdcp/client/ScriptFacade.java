@@ -53,6 +53,8 @@ public final class ScriptFacade {
    * Sets the time (in seconds) that the JDCP server will instruct workers to
    * idle if there are no jobs to be processed.
    * @param seconds The idle time (in seconds).
+   * @throws Exception if an error occurs in delegating the request to the
+   *     configured job service
    */
   public void setIdleTime(int seconds) throws Exception {
     config.getJobService().setIdleTime(seconds);
@@ -63,6 +65,8 @@ public final class ScriptFacade {
    * @param jobId The <code>UUID</code> of the job for which to set the
    *     priority.
    * @param priority The priority to assign to the job.
+   * @throws Exception if an error occurs in delegating the request to the
+   *     configured job service
    */
   public void setJobPriority(UUID jobId, int priority) throws Exception {
     config.getJobService().setJobPriority(jobId, priority);
@@ -71,6 +75,8 @@ public final class ScriptFacade {
   /**
    * Cancel the specified job.
    * @param jobId The <code>UUID</code> identifying the job to cancel.
+   * @throws Exception if an error occurs in delegating the request to the
+   *     configured job service
    */
   public void cancelJob(UUID jobId) throws Exception {
     config.getJobService().cancelJob(jobId);
@@ -80,6 +86,8 @@ public final class ScriptFacade {
    * Cancel the specified job.
    * @param jobId A <code>String</code> representation of the
    *     <code>UUID</code> identifying the job to cancel.
+   * @throws Exception if an error occurs in delegating the request to the
+   *     configured job service
    */
   public void cancelJob(String jobId) throws Exception {
     cancelJob(UUID.fromString(jobId));
@@ -89,6 +97,8 @@ public final class ScriptFacade {
    * Submits a job to be processed.
    * @param job The <code>ParallelizableJob</code> to submit.
    * @return The <code>UUID</code> identifying the submitted job.
+   * @throws Exception if an error occurs in delegating the request to the
+   *     configured job service
    */
   public UUID submitJob(ParallelizableJob job) throws Exception {
     return submitJob(job, job.getClass().getSimpleName());
@@ -99,6 +109,8 @@ public final class ScriptFacade {
    * @param job The <code>ParallelizableJob</code> to submit.
    * @param description A description of the job.
    * @return The <code>UUID</code> identifying the submitted job.
+   * @throws Exception if an error occurs in delegating the request to the
+   *     configured job service
    */
   public UUID submitJob(ParallelizableJob job, String description) throws Exception {
     return config.getJobService().submitJob(

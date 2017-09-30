@@ -42,16 +42,8 @@ import ca.eandb.util.args.BooleanFieldOption;
 import ca.eandb.util.args.StringFieldOption;
 import ca.eandb.util.args.UnrecognizedCommand;
 
-/**
- * @author Brad
- *
- */
 public final class ConsoleMain {
 
-  /**
-   * @param args
-   * @throws IOException
-   */
   public static void main(String[] args) throws IOException {
     Properties props = new Properties(System.getProperties());
     props.load(ConsoleMain.class.getResourceAsStream("system.properties"));

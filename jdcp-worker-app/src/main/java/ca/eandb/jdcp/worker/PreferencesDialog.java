@@ -46,10 +46,6 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-/**
- * @author Brad
- *
- */
 public final class PreferencesDialog extends JDialog {
 
   private static final Preferences pref = Preferences.userNodeForPackage(MainWindow.class);  //  @jve:decl-index=0:
@@ -84,9 +80,6 @@ public final class PreferencesDialog extends JDialog {
 
   private JCheckBox cacheClassDefinitions;
 
-  /**
-   * @param owner
-   */
   public PreferencesDialog(Frame owner) {
     super(owner, true);
     initialize();
@@ -179,22 +172,12 @@ public final class PreferencesDialog extends JDialog {
     pref.putBoolean("cacheClassDefinitions", cacheClassDefinitions);
   }
 
-  /**
-   * This method initializes this
-   *
-   * @return void
-   */
   private void initialize() {
     this.setSize(480, 350);
     this.setTitle("Preferences");
     this.setContentPane(getJContentPane());
   }
 
-  /**
-   * This method initializes jContentPane
-   *
-   * @return javax.swing.JPanel
-   */
   private JPanel getJContentPane() {
     if (jContentPane == null) {
       jContentPane = new JPanel();
@@ -205,11 +188,6 @@ public final class PreferencesDialog extends JDialog {
     return jContentPane;
   }
 
-  /**
-   * This method initializes buttonPanel
-   *
-   * @return javax.swing.JPanel
-   */
   private JPanel getButtonPanel() {
     if (buttonPanel == null) {
       buttonPanel = new JPanel();
@@ -233,11 +211,6 @@ public final class PreferencesDialog extends JDialog {
     return buttonPanel;
   }
 
-  /**
-   * This method initializes okButton
-   *
-   * @return javax.swing.JButton
-   */
   private JButton getOkButton() {
     if (okButton == null) {
       okButton = new JButton();
@@ -256,11 +229,6 @@ public final class PreferencesDialog extends JDialog {
     return okButton;
   }
 
-  /**
-   * This method initializes cancelButton
-   *
-   * @return javax.swing.JButton
-   */
   private JButton getCancelButton() {
     if (cancelButton == null) {
       cancelButton = new JButton();
@@ -276,11 +244,6 @@ public final class PreferencesDialog extends JDialog {
     return cancelButton;
   }
 
-  /**
-   * This method initializes mainPanel
-   *
-   * @return javax.swing.JPanel
-   */
   private JPanel getMainPanel() {
     if (mainPanel == null) {
       int row = -1;
@@ -442,11 +405,6 @@ public final class PreferencesDialog extends JDialog {
     return requireACCheckBox;
   }
 
-  /**
-   * This method initializes runOnStartupCheckBox
-   *
-   * @return javax.swing.JCheckBox
-   */
   private JCheckBox getRunOnStartupCheckBox() {
     if (runOnStartupCheckBox == null) {
       runOnStartupCheckBox = new JCheckBox("Run on startup");

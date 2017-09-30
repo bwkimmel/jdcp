@@ -76,8 +76,8 @@ public class Configuration {
   private JobService service = null;
 
   /**
-   * Obtains the <code>JobService</code> to use for this client session.
-   * @return
+   * Gets the <code>JobService</code> to use for this client session.
+   * @return the <code>JobService</code> to use for this client session
    */
   public JobService getJobService() {
     if (service == null) {

@@ -82,9 +82,6 @@ public class ConnectionDialog extends JDialog {
   private int timeout = 0;
   private Thread timeoutThread = null;
 
-  /**
-   * @param owner
-   */
   public ConnectionDialog(Frame owner) {
     super(owner, true);
     initialize();
