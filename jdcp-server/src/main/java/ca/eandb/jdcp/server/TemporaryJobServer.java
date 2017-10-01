@@ -470,7 +470,6 @@ public final class TemporaryJobServer implements TaskService {
     /**
      * Writes the results of a <code>ScheduledJob</code> to the output
      * directory.
-     * @param sched The <code>ScheduledJob</code> to write results for.
      * @throws JobExecutionException If the job throws an exception.
      */
     private synchronized void finalizeJob() throws JobExecutionException {

@@ -44,10 +44,6 @@ import org.apache.log4j.Logger;
 import ca.eandb.util.UnexpectedException;
 import ca.eandb.util.sql.DbUtil;
 
-/**
- * @author Brad Kimmel
- *
- */
 public final class DbClassManager extends AbstractClassManager implements ParentClassManager {
 
   private static final Logger logger = Logger.getLogger(DbClassManager.class);
@@ -90,7 +86,8 @@ public final class DbClassManager extends AbstractClassManager implements Parent
         String nameType = DbUtil.getTypeName(Types.VARCHAR, 1024, con);
         String md5Type = DbUtil.getTypeName(Types.BINARY, 16, con);
 
-        sql =  "CREATE TABLE ParentClasses ( \n" +
+        sql =
+            "CREATE TABLE ParentClasses ( \n" +
             "  Name " + nameType + " NOT NULL, \n" +
             "  SnapshotIndex " + intType + " NOT NULL, \n" +
             "  Definition " + blobType + " NOT NULL, \n" +
@@ -99,13 +96,15 @@ public final class DbClassManager extends AbstractClassManager implements Parent
             ")";
         DbUtil.update(ds, sql);
 
-        sql =  "CREATE TABLE ChildClassManagers ( \n" +
+        sql =
+            "CREATE TABLE ChildClassManagers ( \n" +
             "  ChildID " + intType + " NOT NULL PRIMARY KEY, \n" +
             "  SnapshotIndex " + intType + " NOT NULL \n" +
             ")";
         DbUtil.update(ds, sql);
 
-        sql =  "CREATE TABLE ChildClasses ( \n" +
+        sql =
+            "CREATE TABLE ChildClasses ( \n" +
             "  ChildID " + intType + " NOT NULL, \n" +
             "  Name " + nameType + " NOT NULL, \n" +
             "  Definition " + blobType + " NOT NULL, \n" +
@@ -280,10 +279,6 @@ public final class DbClassManager extends AbstractClassManager implements Parent
     }
   }
 
-  /**
-   * @author Brad Kimmel
-   *
-   */
   private final class DbChildClassManager extends AbstractClassManager
       implements ChildClassManager {
 

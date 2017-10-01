@@ -601,37 +601,37 @@ public final class JobServer implements JobService {
   private class ScheduledJob implements HostService, ProgressMonitor {
 
     /** The <code>ParallelizableJob</code> to be processed. */
-    public JobExecutionWrapper        job;
+    public JobExecutionWrapper job;
 
     /** The <code>UUID</code> identifying the job. */
-    public final UUID            id;
+    public final UUID id;
 
     /** A description of the job. */
-    public final String            description;
+    public final String description;
 
     /** The <code>TaskWorker</code> to use to process tasks for the job. */
-    public Serialized<TaskWorker>      worker;
+    public Serialized<TaskWorker> worker;
 
     /**
      * The <code>ProgressMonitor</code> to use to monitor the progress of
      * the <code>Job</code>.
      */
-    public final ProgressMonitor      monitor;
+    public final ProgressMonitor monitor;
 
     /**
      * The <code>ClassManager</code> to use to store the class definitions
      * applicable to this job.
      */
-    public final ChildClassManager      classManager;
+    public final ChildClassManager classManager;
 
     /** The working directory for this job. */
-    private final File            workingDirectory;
+    private final File workingDirectory;
 
     /** The <code>ClassLoader</code> to use to deserialize this job. */
-    public ClassLoader            classLoader;
+    public ClassLoader classLoader;
 
     /** A value indicating if the last attempt to obtain a task failed. */
-    private boolean              stalled = false;
+    private boolean stalled = false;
 
     /**
      * Initializes the scheduled job.
@@ -641,16 +641,16 @@ public final class JobServer implements JobService {
      */
     public ScheduledJob(String description, ProgressMonitor monitor) {
 
-      this.id          = UUID.randomUUID();
-      this.description    = description;
+      this.id = UUID.randomUUID();
+      this.description = description;
 
-      //String title      = String.format("%s (%s)", this.job.getClass().getSimpleName(), this.id.toString());
-      this.monitor      = monitor;
+      //String title = String.format("%s (%s)", this.job.getClass().getSimpleName(), this.id.toString());
+      this.monitor = monitor;
       this.monitor.notifyStatusChanged("Awaiting job submission");
 
-      this.classManager    = JobServer.this.classManager.createChildClassManager();
+      this.classManager = JobServer.this.classManager.createChildClassManager();
 
-      this.workingDirectory  = new File(outputDirectory, id.toString());
+      this.workingDirectory = new File(outputDirectory, id.toString());
 
       setJobStatus(new JobStatus(id, description, JobState.NEW, 0.0,
           "Awaiting job submission"));
@@ -719,9 +719,9 @@ public final class JobServer implements JobService {
      * @throws JobExecutionException If the job throws an exception.
      */
     public void initializeJob(Serialized<ParallelizableJob> job) throws ClassNotFoundException, JobExecutionException {
-      this.classLoader  = new StrategyClassLoader(classManager, JobServer.class.getClassLoader());
-      this.job      = new JobExecutionWrapper(job.deserialize(classLoader));
-      this.worker      = new Serialized<TaskWorker>(this.job.worker());
+      this.classLoader = new StrategyClassLoader(classManager, JobServer.class.getClassLoader());
+      this.job = new JobExecutionWrapper(job.deserialize(classLoader));
+      this.worker = new Serialized<TaskWorker>(this.job.worker());
       notifyStatusChanged("");
 
       this.workingDirectory.mkdir();
@@ -822,7 +822,6 @@ public final class JobServer implements JobService {
     /**
      * Writes the results of a <code>ScheduledJob</code> to the output
      * directory.
-     * @param sched The <code>ScheduledJob</code> to write results for.
      * @throws JobExecutionException If the job throws an exception.
      */
     private synchronized void finalizeJob() throws JobExecutionException {
@@ -833,11 +832,11 @@ public final class JobServer implements JobService {
 
       try {
 
-        String        filename    = String.format("%s.zip", id.toString());
-        File        outputFile    = new File(outputDirectory, filename);
+        String filename = String.format("%s.zip", id.toString());
+        File outputFile = new File(outputDirectory, filename);
 
-        File        logFile      = new File(workingDirectory, "job.log");
-        PrintStream      log        = new PrintStream(new FileOutputStream(logFile, true));
+        File logFile = new File(workingDirectory, "job.log");
+        PrintStream log = new PrintStream(new FileOutputStream(logFile, true));
 
         log.printf("%tc: Job %s completed.", new Date(), id.toString());
         log.println();
