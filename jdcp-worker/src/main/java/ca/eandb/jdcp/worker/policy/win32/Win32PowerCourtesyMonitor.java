@@ -32,15 +32,15 @@ import javax.swing.JWindow;
 import ca.eandb.jdcp.worker.policy.AsyncCourtesyMonitor;
 import ca.eandb.jdcp.worker.policy.PowerCourtesyMonitor;
 import ca.eandb.jdcp.worker.policy.win32.Kernel32.SYSTEM_POWER_STATUS;
-import ca.eandb.jdcp.worker.policy.win32.User32.WindowProc;
-import ca.eandb.jdcp.worker.policy.win32.W32API.HWND;
-import ca.eandb.jdcp.worker.policy.win32.W32API.LPARAM;
-import ca.eandb.jdcp.worker.policy.win32.W32API.LRESULT;
-import ca.eandb.jdcp.worker.policy.win32.W32API.WPARAM;
 import ca.eandb.util.UnexpectedException;
 
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
+import com.sun.jna.platform.win32.WinDef.LRESULT;
+import com.sun.jna.platform.win32.WinDef.LPARAM;
+import com.sun.jna.platform.win32.WinDef.WPARAM;
+import com.sun.jna.platform.win32.WinDef.HWND;
+import com.sun.jna.platform.win32.WinUser.WindowProc;
 
 /**
  * A <code>CourtesyMonitor</code> that monitors the power status of this
