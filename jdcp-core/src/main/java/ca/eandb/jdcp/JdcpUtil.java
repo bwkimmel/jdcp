@@ -64,6 +64,8 @@ public final class JdcpUtil {
   /**
    * Connects to a JDCP server.
    * @param host The host name of the server to send the job to.
+   * @param port The port on the server to connect to. If zero,
+   *     {@link #DEFAULT_PORT} will be used.
    * @param username The user name to use to authenticate with the server.
    * @param password The password to use to authenticate with the server.
    * @return The <code>JobService</code> to use to communicate with the
@@ -76,10 +78,13 @@ public final class JdcpUtil {
    * @throws ProtocolVersionException If this client is incompatible with the
    *     server.
    */
-  public static JobService connect(String host, String username,
+  public static JobService connect(String host, int port, String username,
       String password) throws RemoteException, NotBoundException,
       LoginException, ProtocolVersionException {
-    Registry registry = LocateRegistry.getRegistry(host, DEFAULT_PORT);
+    if (port == 0) {
+      port = DEFAULT_PORT;
+    }
+    Registry registry = LocateRegistry.getRegistry(host, port);
     AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
     return auth.authenticate(username, password, PROTOCOL_VERSION_ID);
   }
@@ -89,6 +94,7 @@ public final class JdcpUtil {
    * @param job The <code>ParallelizableJob</code> to be processed.
    * @param description A description of the job.
    * @param host The host name of the server to send the job to.
+   * @param port The port on the server to connect to.
    * @param username The user name to use to authenticate with the server.
    * @param password The password to use to authenticate with the server.
    * @return The <code>UUID</code> assigned to the job.
@@ -107,12 +113,12 @@ public final class JdcpUtil {
    *     server.
    */
   public static UUID submitJob(ParallelizableJob job, String description,
-      String host, String username, String password)
+      String host, int port, String username, String password)
       throws SecurityException, RemoteException, ClassNotFoundException,
       JobExecutionException, LoginException, NotBoundException, ProtocolVersionException {
 
     Serialized<ParallelizableJob> payload = new Serialized<ParallelizableJob>(job);
-    JobService service = connect(host, username, password);
+    JobService service = connect(host, port, username, password);
 
     return service.submitJob(payload, description);
 
@@ -124,6 +130,7 @@ public final class JdcpUtil {
    *     be used to manage this <code>TaskService</code> in later calls.
    * @param taskService The <code>TaskService</code> to submit.
    * @param host The host name of the server to send the job to.
+   * @param port The port on the server to connect to.
    * @param username The user name to use to authenticate with the server.
    * @param password The password to use to authenticate with the server.
    * @throws SecurityException If the user does not have access to perform
@@ -141,11 +148,11 @@ public final class JdcpUtil {
    *     server.
    */
   public static void registerTaskService(String name, TaskService taskService,
-      String host, String username, String password)
+      String host, int port, String username, String password)
       throws SecurityException, RemoteException, ClassNotFoundException,
       JobExecutionException, LoginException, NotBoundException, ProtocolVersionException {
 
-    JobService service = connect(host, username, password);
+    JobService service = connect(host, port, username, password);
     service.registerTaskService(name, taskService);
 
   }

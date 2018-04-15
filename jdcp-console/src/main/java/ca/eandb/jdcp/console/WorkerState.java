@@ -113,6 +113,7 @@ public final class WorkerState {
   public void start(
       @OptionArgument("ncpus") int numberOfCpus,
       @OptionArgument("host") final String host,
+      @OptionArgument(value="port", shortKey='p') int port,
       @OptionArgument("username") final String username,
       @OptionArgument("password") final String password,
       @OptionArgument(value="nodb", shortKey='i') final boolean internal,
@@ -142,6 +143,7 @@ public final class WorkerState {
       public JobService connect() {
         return waitForService(
             host.equals("") ? "localhost" : host,
+            port == 0 ? JdcpUtil.DEFAULT_PORT : port,
             username.equals("") ? "guest" : username,
             password, RECONNECT_INTERVAL);
       }
@@ -188,11 +190,11 @@ public final class WorkerState {
 
   }
 
-  private JobService waitForService(String host, String username, String password, int retryInterval) {
+  private JobService waitForService(String host, int port, String username, String password, int retryInterval) {
     JobService service = null;
     while (true) {
       reconnectCountdown = 0;
-      service = connect(host, username, password);
+      service = connect(host, port, username, password);
       if (service != null) {
         break;
       }
@@ -211,10 +213,13 @@ public final class WorkerState {
     return service;
   }
 
-  private JobService connect(String host, String username, String password) {
+  private JobService connect(String host, int port, String username, String password) {
+    if (port == 0) {
+      port = JdcpUtil.DEFAULT_PORT;
+    }
     JobService service = null;
     try {
-      Registry registry = LocateRegistry.getRegistry(host, JdcpUtil.DEFAULT_PORT);
+      Registry registry = LocateRegistry.getRegistry(host, port);
       AuthenticationService auth = (AuthenticationService) registry.lookup("AuthenticationService");
       service = auth.authenticate(username, password, JdcpUtil.PROTOCOL_VERSION_ID);
     } catch (NotBoundException e) {
